@@ -1,8 +1,9 @@
 #!/usr/bin/env python2
-from abc import ABCMeta
+import abc
+import threading
 
 class Head:
-    __metaclass__ = ABCMeta
+    __metaclass__ = abc.ABCMeta
 
     @abstractmethod
     def calibrate(self):
@@ -35,7 +36,15 @@ class Camera(Head):
 
 
 class Stage:
-    __metaclass__ = ABCMeta
+    __metaclass__ = abc.ABCMeta
+
+    def __init__(self, *args, **kwargs):
+        self._garcon = threading.Event()
+        self._initialise(*arg, **kwargs)
+
+    @abstractmethod
+    def _initialise(self, *args, **kwargs):
+        self._garcon.set()
 
     @abstractmethod
     def calibrate(self):
@@ -44,12 +53,16 @@ class Stage:
     @abstactmethod
     def status(self):
         """return information on:
+         * ready?
          * calibration
          * idle?
          * position
          * what head is attached
         """
         pass
+
+    def wait(self):
+        self._garcon.wait()
 
     @abstractmethod
     def register(self, head, **kwargs):
@@ -61,4 +74,15 @@ class Stage:
         """return a list of registered heads"""
         pass
 
+    @abstractmethod
+    def bounds(self):
+        """return bounding polygon"""
+        pass
+
+
+class Polygon(object):
+    """a bounding coordinate polygon specified in millimetres"""
+
+    def subdivide(self):
+        pass
 
