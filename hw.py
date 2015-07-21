@@ -34,3 +34,31 @@ class Camera(Head):
         pass
 
 
+class Stage:
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def calibrate(self):
+        pass
+
+    @abstactmethod
+    def status(self):
+        """return information on:
+         * calibration
+         * idle?
+         * position
+         * what head is attached
+        """
+        pass
+
+    @abstractmethod
+    def register(self, head, **kwargs):
+        """register a head instance; use kwargs to specify how to switch to the head?"""
+        pass
+
+    @abstractmethod
+    def query(self):
+        """return a list of registered heads"""
+        pass
+
+
