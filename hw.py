@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 import abc
 import threading
+import vector
 
 class Head:
     __metaclass__ = abc.ABCMeta
@@ -82,7 +83,24 @@ class Stage:
 
 class Polygon(object):
     """a bounding coordinate polygon specified in millimetres"""
+    def __init__(self, *coords):
+        self.coords = coords
 
     def subdivide(self):
         pass
+
+class Rectangle(Polygon):
+    """bounding polygon, guaranteed rectangular; support rotation?"""
+
+    def __init__(self, origin, dirnAB, lenAB, lenAC):
+        """create a rectangle from origin with width lenAB in the dirnAB direction and height lenAC"""
+        self.origin = origin
+        self.angle = dirnAN.θ()
+        self.width = lenAB
+        self.height = lenAC
+
+    def polygon(self):
+        """return a polygon object"""
+        pass
+
 
