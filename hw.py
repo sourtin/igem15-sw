@@ -3,6 +3,15 @@ import abc
 import threading
 from vector import Vector
 
+class Status(object):
+    def __init__(self, ready, idle, calibrated, position, **kwargs):
+        kwargs.ready = ready
+        kwargs.idle = idle
+        kwargs.calibrated = calibrated
+        kwargs.position = position
+        self.__dict__ = kwargs
+
+
 class Head:
     __metaclass__ = abc.ABCMeta
 
@@ -18,7 +27,7 @@ class Head:
          * position
          * attached
         """
-        pass
+        return Status(ready=False, idle=False, calibrated=False, position=Vector(0,0), attached=False)
 
     def config(self, **kwargs):
         # update any specified parameters
@@ -33,7 +42,7 @@ class Head:
 class Camera(Head):
     @abstractmethod
     def livefeed(self):
-        pass
+        return []
 
 
 class Stage:
@@ -60,7 +69,7 @@ class Stage:
          * position
          * what head is attached
         """
-        pass
+        return Status(ready=False, idle=False, calibrated=False, position=Vector(0,0), attachment=None)
 
     def wait(self):
         self._garcon.wait()
@@ -73,12 +82,12 @@ class Stage:
     @abstractmethod
     def query(self):
         """return a list of registered heads"""
-        pass
+        return []
 
     @abstractmethod
     def bounds(self):
-        """return bounding polygon"""
-        pass
+        """return bounding polygon, ideally a rectangle"""
+        return Rectangle(Vector(0,0), Vector(1,0), 1, 1)
 
 
 class Polygon(object):
@@ -97,6 +106,7 @@ class Polygon(object):
 
     def subdivide(self, *points):
         return Polygon(*points)
+
 
 class Rectangle(Polygon):
     """bounding polygon, guaranteed rectangular, metres; supports rotation"""
