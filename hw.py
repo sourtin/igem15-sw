@@ -34,7 +34,7 @@ class Head:
         # return current self._config
         pass
 
-    def act(self, cb, **kwargs):
+    def act(self, cb, coords, **kwargs):
         # perform action and call cb
         pass
 
@@ -88,6 +88,14 @@ class Stage:
     def bounds(self):
         """return bounding polygon, ideally a rectangle"""
         return Rectangle(Vector(0,0), Vector(1,0), 1, 1)
+
+    def select(self, head):
+        """select a head, make sure not to reselect an already selected head"""
+        pass
+
+    def move(self, coord):
+        """move head to coord"""
+        pass
 
 
 class Polygon(object):
