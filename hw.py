@@ -115,6 +115,20 @@ class Polygon(object):
     def subdivide(self, *points):
         return Polygon(*points)
 
+    def rectangle(self, angle):
+        """return bounding rectangle with specified angle"""
+        points = [point.rotate(angle) for point in self.points]
+        x_max = max(x for x,_ in points)
+        x_min = min(x for x,_ in points)
+        y_max = max(y for _,y in points)
+        y_min = min(y for _,y in points)
+
+        origin = Vector(x_min, y_min).rotate(-angle)
+        width = x_max - x_min
+        height = y_max - y_min
+        return Rectangle(origin, Vector(1, -angle), width, height)
+
+
 
 class Rectangle(Polygon):
     """bounding polygon, guaranteed rectangular, metres; supports rotation"""
@@ -136,17 +150,21 @@ class Rectangle(Polygon):
         return Polygon(a, b, c, d)
 
     def to_bench(self, point):
-        r, θ = point.polar()
-        return origin + Vector.from_polar(r, θ + self.angle)
+        return origin + point.rotate(self.angle)
 
     def from_bench(self, point):
-        r, θ = (point - origin).polar()
-        return Vector.from_polar(r, θ - self.angle)
+        return (point - origin).rotate(-self.angle)
 
     def subdivide(self, origin, dirnAB, lenAB, lenAD):
         origin += self.origin
         angle = self.angle + dirnAB.θ()
         return Rectangle(origin + self.origin, Vector.from_polar(lenAB, angle), lenAD)
+
+    def rotate(self, angle):
+        return Rectangle(origin, Vector(1, self.angle + angle), self.width, self.height)
+
+    def rectangle(self):
+        return self.rotate(0)
 
 
 
