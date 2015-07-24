@@ -72,6 +72,10 @@ class Vector(tuple):
         _, θ = self.polar()
         return Vector.from_polar(1, θ)
 
+    def rotate(self, ϕ):
+        r, θ = self.polar()
+        return Vector.from_polar(r, θ + ϕ)
+
 # generalise concept of bisection to a weighted sum of two vectors
 # finds the point a fraction p along the line a->b
 def dissect(a, b, p):
