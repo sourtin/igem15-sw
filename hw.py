@@ -3,6 +3,9 @@ import abc
 import threading
 from vector import Vector
 
+class HardwareException(Exception):
+    pass
+
 class Status(object):
     def __init__(self, ready, idle, calibrated, position, **kwargs):
         kwargs.ready = ready
@@ -29,11 +32,13 @@ class Head:
         """
         return Status(ready=False, idle=False, calibrated=False, position=Vector(0,0), attached=False)
 
+    @abstractmethod
     def config(self, **kwargs):
         # update any specified parameters
         # return current self._config
         pass
 
+    @abstractmethod
     def act(self, cb, coords, **kwargs):
         # perform action and call cb
         pass
@@ -43,6 +48,19 @@ class Camera(Head):
     @abstractmethod
     def livefeed(self):
         return []
+
+    @abstractmethod
+    def orientation(self):
+        """return angular orientation of images returned wrt bench coordinates"""
+        return 0
+
+    @abstractmethod
+    def resolution(self):
+        return 0, 0
+
+    @abstractmethod
+    def precision(self):
+        return float('inf')
 
 
 class Stage:
@@ -80,7 +98,7 @@ class Stage:
         pass
 
     @abstractmethod
-    def query(self):
+    def list(self):
         """return a list of registered heads"""
         return []
 
@@ -126,7 +144,7 @@ class Polygon(object):
         origin = Vector(x_min, y_min).rotate(-angle)
         width = x_max - x_min
         height = y_max - y_min
-        return Rectangle(origin, Vector(1, -angle), width, height)
+        return Rectangle(origin, -angle, width, height)
 
 
 
@@ -136,7 +154,10 @@ class Rectangle(Polygon):
     def __init__(self, origin, dirnAB, lenAB, lenAD):
         """create a rectangle from origin with width lenAB in the dirnAB direction and height lenAD"""
         self.origin = origin
-        self.angle = dirnAB.θ()
+        try:
+            self.angle = dirnAB.θ()
+        except AttributeError:
+            self.angle = dirnAB
         self.width = lenAB
         self.height = lenAD
 
@@ -158,10 +179,10 @@ class Rectangle(Polygon):
     def subdivide(self, origin, dirnAB, lenAB, lenAD):
         origin += self.origin
         angle = self.angle + dirnAB.θ()
-        return Rectangle(origin + self.origin, Vector.from_polar(lenAB, angle), lenAD)
+        return Rectangle(origin + self.origin, self.angle + dirbAB.θ(), lenAB, lenAD)
 
     def rotate(self, angle):
-        return Rectangle(origin, Vector(1, self.angle + angle), self.width, self.height)
+        return Rectangle(origin, self.angle + angle, self.width, self.height)
 
     def rectangle(self):
         return self.rotate(0)
