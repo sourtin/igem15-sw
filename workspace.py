@@ -9,6 +9,8 @@ class Workspace(object):
         self.queue = Queue()
         self.queue_optimisation = False
         self.thread = Thread(target=self.worker)
+        self.thread.daemon = True
+        self.thread.start()
 
     def enqueue(self, head, coords, cb, config, options):
         """head is a HW head, coords are a list of important coordinates passed,
@@ -26,8 +28,8 @@ class Workspace(object):
         return self.queue_optimisation
 
     def apparati(self):
-        """list apparati and their stati"""
-        pass
+        """list apparati"""
+        return []
 
     def bounds(self):
         """return bounding polygon"""
@@ -55,13 +57,15 @@ class Workspace(object):
             self.queue_optimisation = optimisation
             if optimisation:
                 try:
+                    block = bool(items) #*should* ensure correct blocking behaviour
                     while True:
-                        item = self.queue.get_nowait()
+                        item = self.queue.get(block)
                         if isinstance(item, bool):
                             optimisation = item
                             self.queue.task_done()
                             break
                         items.append(item)
+                        block = True
                 except Empty:
                     pass
 
