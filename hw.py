@@ -149,7 +149,7 @@ class Polygon(object):
 
     def centroid(self):
         origin = Vector(0,0)
-        return sum(self.points, origin)
+        return sum(self.points, origin) / len(self.points)
 
 
 
