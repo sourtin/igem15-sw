@@ -184,7 +184,7 @@ class Rectangle(Polygon):
     def subdivide(self, origin, dirnAB, lenAB, lenAD):
         origin += self.origin
         angle = self.angle + dirnAB.theta()
-        return Rectangle(origin + self.origin, self.angle + dirbAB.theta(), lenAB, lenAD)
+        return Rectangle(origin + self.origin, self.angle + dirnAB.theta(), lenAB, lenAD)
 
     def rotate(self, angle):
         return Rectangle(origin, self.angle + angle, self.width, self.height)
