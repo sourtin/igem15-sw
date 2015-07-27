@@ -1,8 +1,8 @@
 #!/usr/bin/env python2
 import hw
 from math import ceil
-from time import time, sleep
-from threading import Thread
+from time import time
+from threading import Thread, Event, Lock
 
 class Image(object):
     def __init__(self, rectangle, data, stamp=None):
@@ -49,6 +49,11 @@ class Canvas(object):
         self.min_stitch = min_stitch
         self.polygon = polygon
         self.images = self.generate_rects()
+
+        self.flags = {}
+        self.flags.invalidate = Event()
+        self.flags.image = Event()
+        self.lock = Lock()
         self.thread = Thread(target = self.worker)
         self.thread.daemon = True
         self.thread.start()
@@ -70,22 +75,50 @@ class Canvas(object):
 
     def worker(self):
         while True:
+            self.flags.invalidate.clear()
+            next = time()
             expiry = self.max_age
-            for (i, j), rect, image in self.images:
-                if image is None or time() - image.stamp >= expiry:
-                    cb = lambda image: self.update(i, j, image)
-                    # queue image replacement
-                    time.sleep(2)
-                    pass
+            with self.lock:
+                for (i, j), rect, image in self.images:
+                    if image is None or time() - image.stamp >= expiry:
+                        cb = lambda image: self.update(i, j, image)
+                        # queue image replacement
+                    elif image is not None:
+                        next = min(next, image.stamp + expiry)
+            if next > time():
+                self.flags.invalidate.wait(next - time())
 
     def update(self, i, j, image):
         def replace(el):
             (a, b), rect, _ = el
             return ((i,j), rect, image) if (a,b)==(i,j) else el
-        self.images = [replace(el) for el in self.images] #atomicity
+        with self.lock:
+            self.images = [replace(el) for el in self.images]
+            self.flags.image.set()
 
     def status(self):
         expiry = self.max_age
         return all(image is not None and time() - image.stamp < expiry for _,_,image in self.images)
+
+    def invalidate(self, i, j):
+        expiry = self.max_age
+        def replace(el):
+            (a, b), r, im = el
+            if (a, b) == (i, j):
+                im.stamp = time() - 2*expiry
+                return (i, j), r, im
+            else:
+                return el
+
+        with self.lock:
+            self.images = [replace(el) for el in self.images]
+            self.flags.invalidate.set()
+
+    def get(self):
+        image = None
+        while not all(im is not None for _,_,im in self.images):
+            self.flags.image.wait()
+        # construct image
+        return image
 
 
