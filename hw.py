@@ -1,4 +1,5 @@
 #!/usr/bin/env python2
+# -*- coding: utf-8 -*-
 import abc
 import threading
 from vector import Vector
@@ -146,6 +147,10 @@ class Polygon(object):
         height = y_max - y_min
         return Rectangle(origin, -angle, width, height)
 
+    def centroid(self):
+        origin = Vector(0,0)
+        return sum(self.points, origin)
+
 
 
 class Rectangle(Polygon):
@@ -186,6 +191,9 @@ class Rectangle(Polygon):
 
     def rectangle(self):
         return self.rotate(0)
+
+    def centroid(self):
+        return self.polygon().centroid()
 
 
 

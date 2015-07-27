@@ -1,4 +1,5 @@
 #!/usr/bin/env python2
+# -*- coding: utf-8 -*-
 import hw
 from math import ceil
 from time import time
@@ -31,7 +32,7 @@ class Image(object):
 
 
 class Canvas(object):
-    def __init__(self, workspace, camera, polygon, min_precision, max_age, min_stitch):
+    def __init__(self, workspace, camera, config, polygon, min_precision, max_age, min_stitch):
         """max_age in seconds, but up to microsec resolution"""
         try:
             precision, camera = sorted(h for h in map(
@@ -49,6 +50,7 @@ class Canvas(object):
         self.min_stitch = min_stitch
         self.polygon = polygon
         self.images = self.generate_rects()
+        self.config = config
 
         self.flags = {}
         self.flags.invalidate = Event()
@@ -78,11 +80,12 @@ class Canvas(object):
             self.flags.invalidate.clear()
             next = time()
             expiry = self.max_age
+            workspace, camera = self.backend
             with self.lock:
                 for (i, j), rect, image in self.images:
                     if image is None or time() - image.stamp >= expiry:
                         cb = lambda image: self.update(i, j, image)
-                        # queue image replacement
+                        workspace.enqueue(camera, rect.centroid(), cb, self.config, {})
                     elif image is not None:
                         next = min(next, image.stamp + expiry)
             if next > time():
