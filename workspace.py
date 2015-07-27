@@ -57,7 +57,7 @@ class Workspace(object):
             self.queue_optimisation = optimisation
             if optimisation:
                 try:
-                    block = bool(items) #*should* ensure correct blocking behaviour
+                    block = not bool(items)
                     while True:
                         item = self.queue.get(block)
                         if isinstance(item, bool):
@@ -65,7 +65,7 @@ class Workspace(object):
                             self.queue.task_done()
                             break
                         items.append(item)
-                        block = True
+                        block = False
                 except Empty:
                     pass
 
