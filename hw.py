@@ -1,8 +1,8 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
-import abc
-import threading
+from abc import ABCMeta, abstractmethod
 from vector import Vector
+import threading
 
 class HardwareException(Exception):
     pass
@@ -17,7 +17,7 @@ class Status(object):
 
 
 class Head:
-    __metaclass__ = abc.ABCMeta
+    __metaclass__ = ABCMeta
 
     @abstractmethod
     def calibrate(self):
@@ -65,7 +65,7 @@ class Camera(Head):
 
 
 class Stage:
-    __metaclass__ = abc.ABCMeta
+    __metaclass__ = ABCMeta
 
     def __init__(self, *args, **kwargs):
         self._garcon = threading.Event()
@@ -79,7 +79,7 @@ class Stage:
     def calibrate(self):
         pass
 
-    @abstactmethod
+    @abstractmethod
     def status(self):
         """return information on:
          * ready?
@@ -160,7 +160,7 @@ class Rectangle(Polygon):
         """create a rectangle from origin with width lenAB in the dirnAB direction and height lenAD"""
         self.origin = origin
         try:
-            self.angle = dirnAB.θ()
+            self.angle = dirnAB.theta()
         except AttributeError:
             self.angle = dirnAB
         self.width = lenAB
@@ -183,8 +183,8 @@ class Rectangle(Polygon):
 
     def subdivide(self, origin, dirnAB, lenAB, lenAD):
         origin += self.origin
-        angle = self.angle + dirnAB.θ()
-        return Rectangle(origin + self.origin, self.angle + dirbAB.θ(), lenAB, lenAD)
+        angle = self.angle + dirnAB.theta()
+        return Rectangle(origin + self.origin, self.angle + dirbAB.theta(), lenAB, lenAD)
 
     def rotate(self, angle):
         return Rectangle(origin, self.angle + angle, self.width, self.height)
