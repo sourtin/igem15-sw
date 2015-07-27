@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from abc import ABCMeta, abstractmethod
 from vector import Vector
@@ -160,7 +160,7 @@ class Rectangle(Polygon):
         """create a rectangle from origin with width lenAB in the dirnAB direction and height lenAD"""
         self.origin = origin
         try:
-            self.angle = dirnAB.theta()
+            self.angle = dirnAB.θ()
         except AttributeError:
             self.angle = dirnAB
         self.width = lenAB
@@ -183,8 +183,8 @@ class Rectangle(Polygon):
 
     def subdivide(self, origin, dirnAB, lenAB, lenAD):
         origin += self.origin
-        angle = self.angle + dirnAB.theta()
-        return Rectangle(origin + self.origin, self.angle + dirnAB.theta(), lenAB, lenAD)
+        angle = self.angle + dirnAB.θ()
+        return Rectangle(origin + self.origin, self.angle + dirnAB.θ(), lenAB, lenAD)
 
     def rotate(self, angle):
         return Rectangle(origin, self.angle + angle, self.width, self.height)
