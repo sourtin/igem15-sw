@@ -73,7 +73,7 @@ class Canvas(object):
         rows = int(ceil(bounding.height / (hei * prec)))
 
         return [i for s in [[((i,j), Rectangle(Vector(j*wid-stitch, i*hei-stitch), 0, width, height), None)
-            for j in reversed(range(cols)) if i%2 else range(cols)] for i in range(rows)] for i in s]
+            for j in (reversed(range(cols)) if i%2 else range(cols))] for i in range(rows)] for i in s]
 
     def worker(self):
         while True:
