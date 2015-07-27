@@ -55,27 +55,27 @@ class Vector(tuple):
     def polar(self):
         x, y = self
         r = sqrt(x*x + y*y)
-        theta = atan2(y, x)
-        return (r, theta)
+        θ = atan2(y, x)
+        return (r, θ)
 
     def r(self):
         x, y = self
         return sqrt(x*x + y*y)
 
-    def theta(self):
+    def θ(self):
         x, y = self
         return atan2(y, x)
 
-    def from_polar(r, theta):
-        return Vector(r * cos(theta), r * sin(theta))
+    def from_polar(r, θ):
+        return Vector(r * cos(θ), r * sin(θ))
 
     def normalise(self):
-        _, theta = self.polar()
-        return Vector.from_polar(1, theta)
+        _, θ = self.polar()
+        return Vector.from_polar(1, θ)
 
-    def rotate(self, phi):
-        r, theta = self.polar()
-        return Vector.from_polar(r, theta + phi)
+    def rotate(self, φ):
+        r, θ = self.polar()
+        return Vector.from_polar(r, θ + φ)
 
 # generalise concept of bisection to a weighted sum of two vectors
 # finds the point a fraction p along the line a->b
@@ -130,7 +130,7 @@ def parallel(a, b):
             return (ax == 0 and ay == 0) or (bx == 0 and by == 0)
 
 # rotate a vector counterclockwise
-def rotate(v, phi):
-    (r, theta) = v.polar()
-    return Vector.from_polar(r, theta + phi)
+def rotate(v, φ):
+    (r, θ) = v.polar()
+    return Vector.from_polar(r, θ + φ)
 
