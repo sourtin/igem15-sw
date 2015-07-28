@@ -56,7 +56,7 @@ class Canvas(object):
         self.flags.invalidate = Event()
         self.flags.image = Event()
         self.lock = Lock()
-        self.thread = Thread(target = self.worker)
+        self.thread = Thread(target=self.worker)
         self.thread.daemon = True
         self.thread.start()
 
