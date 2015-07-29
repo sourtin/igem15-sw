@@ -20,6 +20,12 @@ def tile(request):
     output.close()
     return Response(contents, content_type="image/png")
 
+import openslide
+def andromeda(request):
+    path = "/tmp/andromeda.tif"
+    im = openslide.OpenSlide(path)
+    im.close()
+
 
 if __name__ == '__main__':
     config = Configurator()
