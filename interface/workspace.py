@@ -1,5 +1,6 @@
-#!/usr/bin/env python2
-from Queue import Queue
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+from queue import Queue
 from threading import Thread
 
 class Workspace(object):

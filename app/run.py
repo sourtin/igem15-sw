@@ -4,9 +4,7 @@ from pyramid.config import Configurator
 from pyramid.response import Response
 
 from PIL import Image
-
 import StringIO
-import math
 
 def redir(request):
     return Response('<meta http-equiv="refresh" content="0;URL=/ui/main.html">')
@@ -44,6 +42,13 @@ def tile(request):
     contents = output.getvalue()
     output.close()
     return Response(contents, content_type="image/png")
+
+import openslide
+def andromeda(request):
+    path = "/tmp/andromeda.tif"
+    im = openslide.OpenSlide(path)
+    im.close()
+
 
 if __name__ == '__main__':
     config = Configurator()

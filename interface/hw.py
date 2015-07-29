@@ -1,7 +1,8 @@
-#!/usr/bin/env python2
-import abc
-import threading
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+from abc import ABCMeta, abstractmethod
 from vector import Vector
+import threading
 
 class HardwareException(Exception):
     pass
@@ -16,7 +17,7 @@ class Status(object):
 
 
 class Head:
-    __metaclass__ = abc.ABCMeta
+    __metaclass__ = ABCMeta
 
     @abstractmethod
     def calibrate(self):
@@ -64,7 +65,7 @@ class Camera(Head):
 
 
 class Stage:
-    __metaclass__ = abc.ABCMeta
+    __metaclass__ = ABCMeta
 
     def __init__(self, *args, **kwargs):
         self._garcon = threading.Event()
@@ -78,7 +79,7 @@ class Stage:
     def calibrate(self):
         pass
 
-    @abstactmethod
+    @abstractmethod
     def status(self):
         """return information on:
          * ready?
@@ -146,6 +147,10 @@ class Polygon(object):
         height = y_max - y_min
         return Rectangle(origin, -angle, width, height)
 
+    def centroid(self):
+        origin = Vector(0,0)
+        return sum(self.points, origin) / len(self.points)
+
 
 
 class Rectangle(Polygon):
@@ -179,13 +184,16 @@ class Rectangle(Polygon):
     def subdivide(self, origin, dirnAB, lenAB, lenAD):
         origin += self.origin
         angle = self.angle + dirnAB.θ()
-        return Rectangle(origin + self.origin, self.angle + dirbAB.θ(), lenAB, lenAD)
+        return Rectangle(origin + self.origin, self.angle + dirnAB.θ(), lenAB, lenAD)
 
     def rotate(self, angle):
         return Rectangle(origin, self.angle + angle, self.width, self.height)
 
     def rectangle(self):
         return self.rotate(0)
+
+    def centroid(self):
+        return self.polygon().centroid()
 
 
 
