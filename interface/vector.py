@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 from math import sqrt, atan2, cos, sin, acos, asin, pi
 
 class Vector(tuple):
@@ -72,9 +73,9 @@ class Vector(tuple):
         _, θ = self.polar()
         return Vector.from_polar(1, θ)
 
-    def rotate(self, ϕ):
+    def rotate(self, φ):
         r, θ = self.polar()
-        return Vector.from_polar(r, θ + ϕ)
+        return Vector.from_polar(r, θ + φ)
 
 # generalise concept of bisection to a weighted sum of two vectors
 # finds the point a fraction p along the line a->b
