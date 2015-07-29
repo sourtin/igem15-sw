@@ -24,7 +24,7 @@ def tile(request):
     x=int(request.matchdict['x'])
     y=int(request.matchdict['y'])
 
-    tilesize =  int(w / (1<<z))
+    tilesize = w >> z
 
     numxtiles = int(w / tilesize)
     numytiles = int(h / tilesize)
@@ -32,13 +32,16 @@ def tile(request):
     x = x % numxtiles
     y = y % numytiles
 
-    im = im.crop([x * tilesize, y*tilesize,(x+1)*tilesize, (y+1)*tilesize])
+    im = im.crop([x*tilesize, y*tilesize, (x+1)*tilesize, (y+1)*tilesize])
 
     with BytesIO() as output:
         im.resize([256, 256]).save(output, format='png')
         return Response(output.getvalue(), content_type="image/png")
 
 def translate(im, origin, wrap=False):
+    if origin == (0,0):
+        return im
+
     ox, oy = origin
     w, h = im.size
     tr = Image.new('RGBA', (w, h))
@@ -51,58 +54,61 @@ def translate(im, origin, wrap=False):
                 tr.putpixel((nx, ny), im.getpixel((x, y)))
     return tr
 
-def map(im_size, tile_size):
-    ceil_odd = lambda x: 1 + 2*math.ceil((x - 1)/2)
-    iw, ih = im_size
-    tw, th = tile_size
-    nx = ceil_odd(iw / tw)
-    ny = ceil_odd(ih / th)
-
-    mw = nx * tw #:
-    mh = ny * th #tile bounding box
-    bx = (nx - 1)//2 #:
-    by = (ny - 1)//2 #tile coord bounds
-    ox = (mw - iw)//2 #:
-    oy = (mh - ih)//2 #origin
-
-    return lambda x,y: (tw*(x + bx) - ox, th*(y + by) - oy)
-
-def render_tile(im, origin, z, size):
-    x, y = origin
-    x_ = 0 if x<0 else x #:
-    y_ = 0 if y<0 else y #>0
-    xt = x_ - x #:
-    yt = y_ - y #translation
-
-    x_ <<= z
-    y_ <<= z
-    print((x_,y_), z, size, xt, yt)
-    return translate(im.read_region((x_,y_), z, size), (xt, yt))
-
-
-
 class Andromeda(object):
     def __init__(self, path):
         import openslide
         self.im = openslide.OpenSlide(path)
         self.tile = 256, 256
-        assert isinstance(self.im, openslide.OpenSlide)
+
+        # calculate bounding tiles for outermost zoom
+        iw, ih = self.im.level_dimensions[-1]
+        tw, th = self.tile
+        self.nx = math.ceil(0.5 * iw / tw)
+        self.ny = math.ceil(0.5 * ih / th)
+
+        # offsets
+        iw, ih = self.im.dimensions
+        self.zmax = self.im.level_count - 1
+        bw = 2 * (self.nx << self.zmax) * tw
+        bh = 2 * (self.ny << self.zmax) * th
+        self.ox = int((bw - iw)/2)
+        self.oy = int((bh - ih)/2)
+
+    def map(self, x, y, z):
+        # translate tile coords to level 0
+        tw, th = self.tile
+        x = ((x*tw) << z) - self.ox
+        y = ((y*th) << z) - self.oy
+
+        # calculate translation parameters if necessary
+        x_ = 0 if x<0 else x
+        y_ = 0 if y<0 else y
+        xt = x_ - x
+        yt = y_ - y
+
+        # translate level 0 coordss to level z
+        xt >>= z
+        yt >>= z
+
+        # pull from the tiff and translate if necessary
+        pil = self.im.read_region((x_, y_), z, self.tile)
+        return translate(pil, (xt, yt))
 
     def get(self, request):
-        im = self.im
-        dims = im.level_dimensions
-        dimn = len(dims) - 1
-
-
-        z = dimn - int(request.matchdict['z'])
+        # get x,y,z coords
+        z = int(request.matchdict['z'])
+        z_ = self.zmax - int(request.matchdict['z'])
         x = int(request.matchdict['x'])
         y = int(request.matchdict['y'])
 
-        print(x, y, z, dims[z])
-        mapper = map(dims[z], self.tile)
+        # transform x,y into bounding tiles calculated earlier
+        # so that we can centre everything nicely...
+        x += self.nx << z
+        y += self.ny << z
 
+        # generate 256x256 .png for leaflet.js
         with BytesIO() as out:
-            render_tile(self.im, mapper(x,y), z, self.tile).save(out, format='png')
+            self.map(x, y, z_).save(out, format='png')
             return Response(out.getvalue(), content_type="image/png")
 
 if __name__ == '__main__':
