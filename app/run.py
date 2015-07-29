@@ -4,7 +4,9 @@ from pyramid.config import Configurator
 from pyramid.response import Response
 
 from PIL import Image
+
 import StringIO
+import math
 
 def redir(request):
     return Response('<meta http-equiv="refresh" content="0;URL=/ui/main.html">')
@@ -12,14 +14,36 @@ def redir(request):
 def tile(request):
     img_filename = "ui/stage.jpg"
     im = Image.open(img_filename)
-    x=int(request.matchdict['x']) * 256
-    y=int(request.matchdict['y']) * 256
+    assert isinstance(im, Image.Image)
+
+    w, h = im.size
+
+    mintilesize = int(max(w, h) / 512)
+    maxzoomlevel = int(math.log(mintilesize, 2))
+
+    #print im.size
+
+    z=int(request.matchdict['z'])
+    x=int(request.matchdict['x'])
+    y=int(request.matchdict['y'])
+
+    tilesize =  w / int(2**(z))
+
+    numxtiles = int(w / tilesize)
+    numytiles = int(h / tilesize)
+
+    x = x % numxtiles
+    y = y % numytiles
+
+    im = im.crop([x * tilesize, y*tilesize,(x+1)*tilesize, (y+1)*tilesize])
+
     output = StringIO.StringIO()
-    im.crop((x, y, x+256, y+256)).save(output, format='png')
+
+    im.resize([256, 256]).save(output, format='png')
+
     contents = output.getvalue()
     output.close()
     return Response(contents, content_type="image/png")
-
 
 if __name__ == '__main__':
     config = Configurator()
