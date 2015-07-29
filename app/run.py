@@ -1,10 +1,11 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 from wsgiref.simple_server import make_server
 from pyramid.config import Configurator
 from pyramid.response import Response
 
 from PIL import Image
-import StringIO
+from io import BytesIO
+import math
 
 def redir(request):
     return Response('<meta http-equiv="refresh" content="0;URL=/ui/main.html">')
@@ -19,13 +20,11 @@ def tile(request):
     mintilesize = int(max(w, h) / 512)
     maxzoomlevel = int(math.log(mintilesize, 2))
 
-    #print im.size
-
     z=int(request.matchdict['z'])
     x=int(request.matchdict['x'])
     y=int(request.matchdict['y'])
 
-    tilesize =  w / int(2**(z))
+    tilesize =  int(w / (1<<z))
 
     numxtiles = int(w / tilesize)
     numytiles = int(h / tilesize)
@@ -35,20 +34,24 @@ def tile(request):
 
     im = im.crop([x * tilesize, y*tilesize,(x+1)*tilesize, (y+1)*tilesize])
 
-    output = StringIO.StringIO()
+    with BytesIO() as output:
+        im.resize([256, 256]).save(output, format='png')
+        return Response(output.getvalue(), content_type="image/png")
 
-    im.resize([256, 256]).save(output, format='png')
+class Andromeda(object):
+    def __init__(self, path):
+        import openslide
+        self.im = openslide.OpenSlide(path)
+        assert isinstance(self.im, openslide.Openslide)
 
-    contents = output.getvalue()
-    output.close()
-    return Response(contents, content_type="image/png")
+    def get(self, request):
+        z=int(request.matchdict['z'])
+        x=int(request.matchdict['x'])
+        y=int(request.matchdict['y'])
 
-import openslide
-def andromeda(request):
-    path = "/tmp/andromeda.tif"
-    im = openslide.OpenSlide(path)
-    im.close()
-
+        with BytesIO() as out:
+            self.im.read_region((0,0), 8, (256,256)).save(out, format='png')
+            return Response(out.getvalue(), content_type="image/png")
 
 if __name__ == '__main__':
     config = Configurator()
@@ -60,6 +63,11 @@ if __name__ == '__main__':
     config.add_route('tile', '/tile/{x}/{y}/{z}')
     config.add_view(tile, route_name='tile')
 
+    andromeda = Andromeda("/tmp/andromeda.tif")
+    config.add_route('andromeda', '/andromeda/{x}/{y}/{z}')
+    config.add_view(andromeda.get, route_name='andromeda')
+
     app = config.make_wsgi_app()
     server = make_server('0.0.0.0', 8080, app)
     server.serve_forever()
+
