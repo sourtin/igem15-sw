@@ -38,19 +38,71 @@ def tile(request):
         im.resize([256, 256]).save(output, format='png')
         return Response(output.getvalue(), content_type="image/png")
 
+def translate(im, origin, wrap=False):
+    ox, oy = origin
+    w, h = im.size
+    tr = Image.new('RGBA', (w, h))
+
+    for x in range(w):
+        for y in range(h):
+            nx = (x + ox) % w if wrap else x + ox
+            ny = (y + oy) % h if wrap else y + oy
+            if 0 <= nx < w and 0 <= ny < h:
+                tr.putpixel((nx, ny), im.getpixel((x, y)))
+    return tr
+
+def map(im_size, tile_size):
+    ceil_odd = lambda x: 1 + 2*math.ceil((x - 1)/2)
+    iw, ih = im_size
+    tw, th = tile_size
+    nx = ceil_odd(iw / tw)
+    ny = ceil_odd(ih / th)
+
+    mw = nx * tw #:
+    mh = ny * th #tile bounding box
+    bx = (nx - 1)//2 #:
+    by = (ny - 1)//2 #tile coord bounds
+    ox = (mw - iw)//2 #:
+    oy = (mh - ih)//2 #origin
+
+    return lambda x,y: (tw*(x + bx) - ox, th*(y + by) - oy)
+
+def render_tile(im, origin, z, size):
+    x, y = origin
+    x_ = 0 if x<0 else x #:
+    y_ = 0 if y<0 else y #>0
+    xt = x_ - x #:
+    yt = y_ - y #translation
+
+    x_ <<= z
+    y_ <<= z
+    print((x_,y_), z, size, xt, yt)
+    return translate(im.read_region((x_,y_), z, size), (xt, yt))
+
+
+
 class Andromeda(object):
     def __init__(self, path):
         import openslide
         self.im = openslide.OpenSlide(path)
-        assert isinstance(self.im, openslide.Openslide)
+        self.tile = 256, 256
+        assert isinstance(self.im, openslide.OpenSlide)
 
     def get(self, request):
-        z=int(request.matchdict['z'])
-        x=int(request.matchdict['x'])
-        y=int(request.matchdict['y'])
+        im = self.im
+        dims = im.level_dimensions
+        dimn = len(dims) - 1
+
+
+        z = dimn - int(request.matchdict['z'])
+        x = int(request.matchdict['x'])
+        y = int(request.matchdict['y'])
+
+        print(x, y, z, dims[z])
+        mapper = map(dims[z], self.tile)
 
         with BytesIO() as out:
-            self.im.read_region((0,0), 8, (256,256)).save(out, format='png')
+            render_tile(self.im, mapper(x,y), z, self.tile).save(out, format='png')
             return Response(out.getvalue(), content_type="image/png")
 
 if __name__ == '__main__':
