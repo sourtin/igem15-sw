@@ -1,11 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import hw
+from . import hw
 from math import ceil
 from time import time
 from threading import Thread, Event, Lock
 
+import cv2
+import numpy as np
+import PIL
+
 class Image(object):
+    def cv2pil(im):
+        return PIL.Image.fromarray(cv2.cvtColor(im, cv2.COLOR_BGR2RGB))
+    def pil2cv(im):
+        return np.array(im.convert("RGB"))[:,:,::-1]
+
     def __init__(self, rectangle, data, stamp=None):
         if stamp is None:
             stamp = time()

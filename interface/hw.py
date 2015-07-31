@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from abc import ABCMeta, abstractmethod
-from vector import Vector
+from .vector import Vector
 import threading
 
 class HardwareException(Exception):
@@ -9,15 +9,20 @@ class HardwareException(Exception):
 
 class Status(object):
     def __init__(self, ready, idle, calibrated, position, **kwargs):
-        kwargs.ready = ready
-        kwargs.idle = idle
-        kwargs.calibrated = calibrated
-        kwargs.position = position
+        kwargs['ready'] = ready
+        kwargs['idle'] = idle
+        kwargs['calibrated'] = calibrated
+        kwargs['position'] = position
         self.__dict__ = kwargs
 
 
 class Head:
     __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def imprint(self, parent):
+        # be adopted by parent
+        pass
 
     @abstractmethod
     def calibrate(self):
@@ -69,7 +74,9 @@ class Stage:
 
     def __init__(self, *args, **kwargs):
         self._garcon = threading.Event()
-        self._initialise(*arg, **kwargs)
+        thread = threading.Thread(target=self._initialise, args=args, kwargs=kwargs)
+        thread.daemon = True
+        thread.start()
 
     @abstractmethod
     def _initialise(self, *args, **kwargs):
@@ -100,18 +107,20 @@ class Stage:
 
     @abstractmethod
     def list(self):
-        """return a list of registered heads"""
-        return []
+        """return a set of registered heads"""
+        return {}
 
     @abstractmethod
     def bounds(self):
         """return bounding polygon, ideally a rectangle"""
         return Rectangle(Vector(0,0), Vector(1,0), 1, 1)
 
+    @abstractmethod
     def select(self, head):
         """select a head, make sure not to reselect an already selected head"""
         pass
 
+    @abstractmethod
     def move(self, coord):
         """move head to coord"""
         pass
