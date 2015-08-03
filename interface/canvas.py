@@ -3,7 +3,7 @@
 from . import hw
 from .vector import Vector
 
-from math import ceil
+from math import ceil, pi
 from time import time
 from threading import Thread, Event, Lock
 import subprocess
@@ -96,15 +96,18 @@ class Canvas(object):
 
     def generate_rects(self):
         _, camera = self.backend
-        stitch = self.min_stitch
         prec = camera.precision()
+        stitch = self.min_stitch * prec
+
         width, height = camera.resolution()
+        width *= prec
+        height *= prec
         wid = width - 2*stitch
         hei = height - 2*stitch
 
         bounding = self.polygon.rectangle(camera.orientation())
-        cols = int(ceil(bounding.width / (wid * prec)))
-        rows = int(ceil(bounding.height / (hei * prec)))
+        cols = int(ceil(bounding.width / wid))
+        rows = int(ceil(bounding.height / hei))
 
         return [i for s in [[((i,j), Rectangle(Vector(j*wid-stitch, i*hei-stitch), 0, width, height), None)
             for j in (reversed(range(cols)) if i%2 else range(cols))] for i in range(rows)] for i in s]
@@ -213,9 +216,9 @@ class Rectangle(Polygon):
     def polygon(self):
         """return a polygon object"""
         a = self.origin
-        b = a + Vector.from_polar(lenAB, self.angle)
-        c = b + Vector.from_polar(lenAD, self.angle + 0.5*math.pi)
-        d = a + Vector.from_polar(lenAD, self.angle + 0.5*math.pi)
+        b = a + Vector.from_polar(self.width, self.angle)
+        c = b + Vector.from_polar(self.height, self.angle + 0.5*pi)
+        d = a + Vector.from_polar(self.height, self.angle + 0.5*pi)
 
         return Polygon(a, b, c, d)
 
