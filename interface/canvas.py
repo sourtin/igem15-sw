@@ -3,7 +3,7 @@
 from . import hw
 from .vector import Vector
 
-from math import ceil, pi, isinf
+from math import ceil, pi
 from time import time
 from threading import Thread, Event, Lock
 import subprocess
@@ -120,7 +120,6 @@ class Canvas(object):
     def worker(self):
         while True:
             self.flags['invalidate'].clear()
-            next = float('inf')
             expiry = self.max_age
             workspace, camera = self.backend
             timeout = self.timeout
