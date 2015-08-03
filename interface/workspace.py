@@ -17,12 +17,12 @@ class Workspace(object):
         self.thread.daemon = True
         self.thread.start()
 
-    def enqueue(self, head, coords, cb, config, options):
+    def enqueue(self, head, coords, cb, config, options, condition=lambda:True):
         """head is a HW head, coords are a list of important coordinates passed,
         especially the start and end, so that the queue order can be optimised,
         cb is a callback function, config is the head config for config order
         optimisation, and options are for this particular action"""
-        self.queue.put((head, coords, cb, config, options))
+        self.queue.put((head, coords, cb, config, options, condition))
 
     def optimise_queue(self, setting=None):
         """optimisation of the queue reorders the order of actions to minimise
@@ -53,21 +53,23 @@ class Workspace(object):
 
         def do(item):
             self.playing.wait()
-            head, coords, cb, config, options = item
-            self.stage.select(head)
+            head, coords, cb, config, options, condition = item
 
-            if len(coords):
-                self.stage.move(coords[0])
+            if condition():
+                self.stage.select(head)
 
-            print(head)
-            head.config(**config)
-            head.act(cb, coords, **options)
+                if len(coords):
+                    self.stage.move(coords[0])
+
+                head.config(**config)
+                head.act(cb, coords, **options)
+
             self.queue.task_done()
 
         def sortkey(item):
             try:
-                lh, lp, _, lc, _ = last
-                ih, ip, _, ic, _ = item
+                lh, lp, _, lc, *_ = last
+                ih, ip, _, ic, *_ = item
                 return (lh != ih, lc != ic, abs(lp[-1] - ip[0]))
             except TypeError:
                 return True
