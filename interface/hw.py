@@ -113,6 +113,7 @@ class Stage:
     @abstractmethod
     def bounds(self):
         """return bounding polygon, ideally a rectangle"""
+        from .canvas import Rectangle
         return Rectangle(Vector(0,0), Vector(1,0), 1, 1)
 
     @abstractmethod
@@ -124,85 +125,5 @@ class Stage:
     def move(self, coord):
         """move head to coord"""
         pass
-
-
-class Polygon(object):
-    """a bounding pointinate polygon specified in metres"""
-    def __init__(self, *points):
-        self.points = points
-
-    def polygon(self):
-        return Polygon(*self.points)
-
-    def to_bench(self, point):
-        return point
-
-    def from_bench(self, point):
-        return point
-
-    def subdivide(self, *points):
-        return Polygon(*points)
-
-    def rectangle(self, angle):
-        """return bounding rectangle with specified angle"""
-        points = [point.rotate(angle) for point in self.points]
-        x_max = max(x for x,_ in points)
-        x_min = min(x for x,_ in points)
-        y_max = max(y for _,y in points)
-        y_min = min(y for _,y in points)
-
-        origin = Vector(x_min, y_min).rotate(-angle)
-        width = x_max - x_min
-        height = y_max - y_min
-        return Rectangle(origin, -angle, width, height)
-
-    def centroid(self):
-        origin = Vector(0,0)
-        return sum(self.points, origin) / len(self.points)
-
-
-
-class Rectangle(Polygon):
-    """bounding polygon, guaranteed rectangular, metres; supports rotation"""
-
-    def __init__(self, origin, dirnAB, lenAB, lenAD):
-        """create a rectangle from origin with width lenAB in the dirnAB direction and height lenAD"""
-        self.origin = origin
-        try:
-            self.angle = dirnAB.θ()
-        except AttributeError:
-            self.angle = dirnAB
-        self.width = lenAB
-        self.height = lenAD
-
-    def polygon(self):
-        """return a polygon object"""
-        a = self.origin
-        b = a + Vector.from_polar(lenAB, self.angle)
-        c = b + Vector.from_polar(lenAD, self.angle + 0.5*math.pi)
-        d = a + Vector.from_polar(lenAD, self.angle + 0.5*math.pi)
-
-        return Polygon(a, b, c, d)
-
-    def to_bench(self, point):
-        return origin + point.rotate(self.angle)
-
-    def from_bench(self, point):
-        return (point - origin).rotate(-self.angle)
-
-    def subdivide(self, origin, dirnAB, lenAB, lenAD):
-        origin += self.origin
-        angle = self.angle + dirnAB.θ()
-        return Rectangle(origin + self.origin, self.angle + dirnAB.θ(), lenAB, lenAD)
-
-    def rotate(self, angle):
-        return Rectangle(origin, self.angle + angle, self.width, self.height)
-
-    def rectangle(self):
-        return self.rotate(0)
-
-    def centroid(self):
-        return self.polygon().centroid()
-
 
 
