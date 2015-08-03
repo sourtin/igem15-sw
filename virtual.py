@@ -8,7 +8,7 @@ import numpy as np
 class XY(Stage):
     def _initialise(self, w, h):
         self.stati = {'ready': False, 'idle': False, 'calibrated': False}
-        self.pos = (0,0)
+        self.pos = Vector(0,0)
         self.dims = w, h
         self.heads = set()
         self.head = None
@@ -156,10 +156,10 @@ class Μ(Camera):
         self.parent.move(coord)
         δ = coord - self.parent.position()
         print("μ: Actuating servos... translating by Δx=%.2em, Δy=%.2em" % δ)
-        cb(self.capture(coord))
+        cb(self.capture(*coord))
 
-    def capture(self, coord):
-        im = self.backend.get(*(coord + self.shape))
+    def capture(self, x, y):
+        im = self.backend.get(x, y, *self.shape)
         if self.calibration is not None:
             _, mat, coe, *_ = self.calibration
             im = cv2.undistort(im, mat, coe)
@@ -233,7 +233,6 @@ class Layer(object):
 
     def get(self, x, y, w, h):
         x, y = map(lambda v: int(v*self.factor0), (x, y))
-        w, h = map(lambda v: int(v*self.factorz), (w, h))
         return Image.pil2cv(self.im.read_region((x, y), self.z, (w, h)))
 
 if __name__ == '__main__':
