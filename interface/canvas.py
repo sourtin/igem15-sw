@@ -84,11 +84,9 @@ class Canvas(object):
         self.images = self.generate_rects()
         self.config = config
 
-        return
-
         self.flags = {}
-        self.flags.invalidate = Event()
-        self.flags.image = Event()
+        self.flags['invalidate'] = Event()
+        self.flags['image'] = Event()
         self.lock = Lock()
         self.thread = Thread(target=self.worker)
         self.thread.daemon = True
@@ -106,27 +104,29 @@ class Canvas(object):
         hei = height - 2*stitch
 
         bounding = self.polygon.rectangle(camera.orientation())
+        o = bounding.origin
         cols = int(ceil(bounding.width / wid))
         rows = int(ceil(bounding.height / hei))
 
-        return [i for s in [[((i,j), Rectangle(Vector(j*wid-stitch, i*hei-stitch), 0, width, height), None)
+        return [i for s in [[((i,j), Rectangle(o + Vector(j*wid-stitch, i*hei-stitch), 0, width, height), None)
             for j in (reversed(range(cols)) if i%2 else range(cols))] for i in range(rows)] for i in s]
 
     def worker(self):
         while True:
-            self.flags.invalidate.clear()
+            self.flags['invalidate'].clear()
             next = time()
             expiry = self.max_age
             workspace, camera = self.backend
             with self.lock:
                 for (i, j), rect, image in self.images:
+                    print ((i,j),rect,image)
                     if image is None or time() - image.stamp >= expiry:
                         cb = lambda image: self.update(i, j, image)
-                        workspace.enqueue(camera, rect.centroid(), cb, self.config, {})
+                        workspace.enqueue(camera, [rect.centroid()], cb, self.config, {})
                     elif image is not None:
                         next = min(next, image.stamp + expiry)
             if next > time():
-                self.flags.invalidate.wait(next - time())
+                self.flags['invalidate'].wait(next - time())
 
     def update(self, i, j, image):
         def replace(el):
@@ -134,7 +134,8 @@ class Canvas(object):
             return ((i,j), rect, image) if (a,b)==(i,j) else el
         with self.lock:
             self.images = [replace(el) for el in self.images]
-            self.flags.image.set()
+            self.flags['image'].set()
+            print("Updated %r\n\n" % ((i,j),))
 
     def status(self):
         expiry = self.max_age
@@ -152,12 +153,12 @@ class Canvas(object):
 
         with self.lock:
             self.images = [replace(el) for el in self.images]
-            self.flags.invalidate.set()
+            self.flags['invalidate'].set()
 
     def get(self):
         image = None
         while not all(im is not None for _,_,im in self.images):
-            self.flags.image.wait()
+            self.flags['image'].wait()
         # construct image
         return image
 

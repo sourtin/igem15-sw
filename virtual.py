@@ -49,6 +49,7 @@ class XY(Stage):
         print("Actuating servos... translating by Δx=%.2em, Δy=%.2em" % δ)
         self.pos += δ
         self.pos = round(self.pos, 3)
+        print("\t%r, %r" % (coord, self.pos))
 
     def position(self):
         return self.pos
@@ -105,6 +106,7 @@ class Μ(Camera):
         self.stati = {'ready': False, 'idle': False, 'calibrated': False}
         self.parent = None
         self.calibration = None
+        self.μpos = Vector(0, 0)
 
     def imprint(self, parent):
         self.parent = parent
@@ -155,8 +157,9 @@ class Μ(Camera):
         coord = coords[0]
         self.parent.select(self)
         self.parent.move(coord)
-        δ = coord - self.parent.position()
+        δ = coord - self.parent.position() - self.μpos
         print("μ: Actuating servos... translating by Δx=%.2em, Δy=%.2em" % δ)
+        self.μpos += δ
         cb(self.capture(*coord))
 
     def capture(self, x, y):
