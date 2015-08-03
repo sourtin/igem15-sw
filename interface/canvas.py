@@ -8,6 +8,7 @@ from threading import Thread, Event, Lock
 import cv2
 import numpy as np
 import PIL
+import subprocess
 
 class Image(object):
     def cv2pil(im):
@@ -38,6 +39,20 @@ class Image(object):
         return self.rectangle.to_bench(Vector(
             x * self.rectangle.width / self.data.cols,
             y * self.rectangle.height / self.data.rows))
+
+    def cv(self):
+        return self.data
+
+    def pil(self):
+        return Image.cv2pil(self.data)
+
+    def show(self):
+        im = self.pil()
+        p = subprocess.Popen(['feh', '-'], stdin=subprocess.PIPE)
+        im.save(p.stdin, "png")
+        p.stdin.close()
+        p.wait()
+
 
 
 class Canvas(object):
