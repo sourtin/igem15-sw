@@ -132,13 +132,14 @@ class Canvas(object):
                     except (KeyError, AssertionError):
                         if image is None or time() - image.stamp >= expiry:
                             self.enqueue(i, j, rect)
-                        elif image is not None:
-                            next = min(next, image.stamp + expiry)
-                        self.qstamps[i,j] = time()
-                    next = min(next, self.qstamps[i,j] + timeout)
+                            self.qstamps[i,j] = time()
 
-            if not isinf(next) and next > time():
+            next = min(time() + timeout, *(self.expiry_time(x,im) for x,_,im in self.images))
+            if next > time():
                 self.flags['invalidate'].wait(next - time())
+                self.flags['invalidate'].clear()
+            else:
+                print ('here we go again')
 
     def update(self, i, j, image):
         def replace(el):
@@ -164,6 +165,11 @@ class Canvas(object):
                 return el
 
         with self.lock:
+            try:
+                del self.qstamps[i,j]
+            except KeyError:
+                pass
+
             self.images = [replace(el) for el in self.images]
             self.flags['invalidate'].set()
 
@@ -177,9 +183,18 @@ class Canvas(object):
     def expired(self, i, j):
         for x, _, im in self.images:
             if x == (i, j) and im is not None:
-                if time() - image.stamp < expiry:
+                if time() - im.stamp < self.max_age:
                     return False
         return True
+
+    def expiry_time(self, x, im):
+        try:
+            return self.qstamps[x] + self.timeout
+        except:
+            if im is not None:
+                return im.stamp + self.max_age
+            else:
+                return time() + self.timeout
 
     def enqueue(self, i, j, rect):
         cb = lambda image: self.update(i, j, image)
