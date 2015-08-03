@@ -3,7 +3,7 @@
 from . import hw
 from .vector import Vector
 
-from math import ceil, pi
+from math import ceil, pi, isinf
 from time import time
 from threading import Thread, Event, Lock
 import subprocess
@@ -58,7 +58,7 @@ class Image(object):
 
 
 class Canvas(object):
-    def __init__(self, workspace, config, polygon, min_precision, max_age, min_stitch):
+    def __init__(self, workspace, config, polygon, min_precision, max_age, min_stitch, timeout=None):
         """max_age in seconds, but up to microsec resolution"""
 
         candidates = sorted(h for h in map(
@@ -81,8 +81,14 @@ class Canvas(object):
         self.max_age = max_age
         self.min_stitch = min_stitch
         self.polygon = polygon
-        self.images = self.generate_rects()
         self.config = config
+        self.timeout = timeout if timeout is not None else max_age
+
+        # qstamps remember enqueuement of image updates
+        # so that if an update takes too long (e.g. failure)
+        # it can be requeued after self.timeout
+        self.qstamps = {}
+        self.images = self.generate_rects()
 
         self.flags = {}
         self.flags['invalidate'] = Event()
@@ -114,18 +120,24 @@ class Canvas(object):
     def worker(self):
         while True:
             self.flags['invalidate'].clear()
-            next = time()
+            next = float('inf')
             expiry = self.max_age
             workspace, camera = self.backend
+            timeout = self.timeout
+
             with self.lock:
                 for (i, j), rect, image in self.images:
-                    print ((i,j),rect,image)
-                    if image is None or time() - image.stamp >= expiry:
-                        cb = lambda image: self.update(i, j, image)
-                        workspace.enqueue(camera, [rect.centroid()], cb, self.config, {})
-                    elif image is not None:
-                        next = min(next, image.stamp + expiry)
-            if next > time():
+                    try:
+                        assert time() - self.qstamps[i,j] < timeout
+                    except (KeyError, AssertionError):
+                        if image is None or time() - image.stamp >= expiry:
+                            self.enqueue(i, j, rect)
+                        elif image is not None:
+                            next = min(next, image.stamp + expiry)
+                        self.qstamps[i,j] = time()
+                    next = min(next, self.qstamps[i,j] + timeout)
+
+            if not isinf(next) and next > time():
                 self.flags['invalidate'].wait(next - time())
 
     def update(self, i, j, image):
@@ -134,8 +146,8 @@ class Canvas(object):
             return ((i,j), rect, image) if (a,b)==(i,j) else el
         with self.lock:
             self.images = [replace(el) for el in self.images]
+            del self.qstamps[i,j] # reset timeout
             self.flags['image'].set()
-            print("Updated %r\n\n" % ((i,j),))
 
     def status(self):
         expiry = self.max_age
@@ -161,6 +173,19 @@ class Canvas(object):
             self.flags['image'].wait()
         # construct image
         return image
+
+    def expired(self, i, j):
+        for x, _, im in self.images:
+            if x == (i, j) and im is not None:
+                if time() - image.stamp < expiry:
+                    return False
+        return True
+
+    def enqueue(self, i, j, rect):
+        cb = lambda image: self.update(i, j, image)
+        cond = lambda: self.expired(i, j)
+        ws, cam = self.backend
+        ws.enqueue(cam, [rect.centroid()], cb, self.config, {}, cond)
 
 
 class Polygon(object):

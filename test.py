@@ -38,7 +38,7 @@ if __name__ == '__main__':
     """
 
     poly = Rectangle(Vector(0.05,0.05), Vector(0,1), 0.15, 0.1)
-    canvas = Canvas(ws, {'a':1}, poly, 5e-6, 0.15, 0.1)
+    canvas = Canvas(ws, {'a':1}, poly, 5e-6, 900, 100)
 
     import pprint
     pp = pprint.PrettyPrinter(indent=4).pprint
