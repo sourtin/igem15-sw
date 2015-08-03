@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from interface.canvas import Image
-from interface.hw import Stage, Head, Camera, Status, Rectangle, Vector
+from interface.canvas import Image, Rectangle
+from interface.hw import Stage, Head, Camera, Status, Vector
 import cv2
 import numpy as np
 
@@ -48,6 +48,7 @@ class XY(Stage):
         δ = coord - self.pos
         print("Actuating servos... translating by Δx=%.2em, Δy=%.2em" % δ)
         self.pos += δ
+        self.pos = round(self.pos, 3)
 
     def position(self):
         return self.pos
@@ -75,8 +76,8 @@ class Σ(Camera):
         w, h = self.parent.dims
         return Status(position=(w/2, h/2), **self.stati)
 
-    def config(self):
-        pass
+    def config(self, **config):
+        print("Configuring", self, ":", config)
 
     def act(self, cb, coords, **kwargs):
         cb(self.capture())
@@ -147,8 +148,8 @@ class Μ(Camera):
         attached = (self == self.parent.head) if self.parent is not None else None
         return Status(position=pos, attached=attached, **self.stati)
 
-    def config(self):
-        pass
+    def config(self, **config):
+        print("Configuring", self, ":", config)
 
     def act(self, cb, coords, **kwargs):
         coord = coords[0]
@@ -234,24 +235,4 @@ class Layer(object):
     def get(self, x, y, w, h):
         x, y = map(lambda v: int(v*self.factor0), (x, y))
         return Image.pil2cv(self.im.read_region((x, y), self.z, (w, h)))
-
-if __name__ == '__main__':
-    import openslide
-    im = openslide.OpenSlide('/tmp/andromeda.tif')
-
-    # coordinate system
-    side = 1.
-    iw, ih = im.dimensions
-    factor = max(iw, ih) / side
-    w, h = map(lambda v: v/factor, im.dimensions)
-
-    # zoom levels
-    z_σ = im.level_count // 2
-    z_μ = 0
-
-    virtual = XY(w, h)
-    σ = virtual.register(Σ(Layer(im, z_σ, side)))
-    μ = virtual.register(Μ(Layer(im, z_μ, side), (2592,1944)))
-    p = virtual.register(Pen())
-    assert {σ, μ, p} <= set(virtual.list())
 

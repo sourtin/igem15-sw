@@ -40,6 +40,10 @@ class Vector(tuple):
         x, y = self
         return sqrt(x*x + y*y)
 
+    def __round__(self, n):
+        x, y = self
+        return Vector(round(x, n), round(y, n))
+
     def cartesian(self):
         x, y = self
         return (x, y)

@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from queue import Queue
-from threading import Thread
+from queue import Queue, Empty
+from threading import Thread, Event
 
 class Workspace(object):
     def __init__(self, stage):
         self.stage = stage
         self.stage.wait()
+
         self.queue = Queue()
         self.queue_optimisation = False
+        self.playing = Event()
+        self.playing.set()
+        
         self.thread = Thread(target=self.worker)
         self.thread.daemon = True
         self.thread.start()
@@ -30,11 +34,17 @@ class Workspace(object):
 
     def apparati(self):
         """list apparati"""
-        return []
+        return list(self.stage.list())
 
     def bounds(self):
         """return bounding polygon"""
         return self.stage.bounds()
+
+    def pause(self):
+        self.playing.clear()
+
+    def play(self):
+        self.playing.set()
 
     def worker(self):
         optimisation = False
@@ -42,17 +52,25 @@ class Workspace(object):
         items = []
 
         def do(item):
+            self.playing.wait()
             head, coords, cb, config, options = item
             self.stage.select(head)
-            self.stage.move(coords[0])
+
+            if len(coords):
+                self.stage.move(coords[0])
+
+            print(head)
             head.config(**config)
             head.act(cb, coords, **options)
             self.queue.task_done()
 
         def sortkey(item):
-            lh, lp, _, lc, _ = last
-            ih, ip, _, ic, _ = item
-            return (lh != ih, lc != ic, abs(lp[-1] - ip[0]))
+            try:
+                lh, lp, _, lc, _ = last
+                ih, ip, _, ic, _ = item
+                return (lh != ih, lc != ic, abs(lp[-1] - ip[0]))
+            except TypeError:
+                return True
 
         while True:
             self.queue_optimisation = optimisation
@@ -70,7 +88,7 @@ class Workspace(object):
                 except Empty:
                     pass
 
-                sort(items, key=sortkey)
+                items.sort(key=sortkey)
                 last = items.pop(0)
                 do(last)
 
