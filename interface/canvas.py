@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from . import hw
+from .vector import Vector
+
 from math import ceil
 from time import time
 from threading import Thread, Event, Lock
+import subprocess
 
 import cv2
 import numpy as np
 import PIL
-import subprocess
 
 class Image(object):
     def cv2pil(im):
@@ -56,18 +58,24 @@ class Image(object):
 
 
 class Canvas(object):
-    def __init__(self, workspace, camera, config, polygon, min_precision, max_age, min_stitch):
+    def __init__(self, workspace, config, polygon, min_precision, max_age, min_stitch):
         """max_age in seconds, but up to microsec resolution"""
+
+        candidates = sorted(h for h in map(
+            lambda head: (head.precision(), head) if isinstance(head, hw.Camera) else None,
+            workspace.apparati()) if h is not None)
+
         try:
-            precision, camera = sorted(h for h in map(
-                lambda head: (head.precision(), head) if isinstance(head, hw.Camera) else None,
-                workspace.apparati) if h is not None)[0]
+            precision, camera = candidates[0]
+            for cp, cc in candidates:
+                if cp <= min_precision:
+                    precision, camera = cp, cc
         except IndexError:
             raise hw.HardwareException("No cameras installed!!!!!!")
 
         if precision > min_precision:
             print("Warning, camera used for canvas of insufficient resolution -- camera has" +
-                    "resolution %fm but a resolution of %fm was requested" % (precision, min_precision))
+                    "resolution %.2em but a resolution of %.2em was requested" % (precision, min_precision))
 
         self.backend = workspace, camera
         self.max_age = max_age
@@ -75,6 +83,8 @@ class Canvas(object):
         self.polygon = polygon
         self.images = self.generate_rects()
         self.config = config
+
+        return
 
         self.flags = {}
         self.flags.invalidate = Event()
@@ -183,6 +193,9 @@ class Polygon(object):
         origin = Vector(0,0)
         return sum(self.points, origin) / len(self.points)
 
+    def __repr__(self):
+        return "Polygon(%r)" % self.points
+
 
 class Rectangle(Polygon):
     """bounding polygon, guaranteed rectangular, metres; supports rotation"""
@@ -218,13 +231,16 @@ class Rectangle(Polygon):
         return Rectangle(origin + self.origin, self.angle + dirnAB.θ(), lenAB, lenAD)
 
     def rotate(self, angle):
-        return Rectangle(origin, self.angle + angle, self.width, self.height)
+        return Rectangle(self.origin, self.angle + angle, self.width, self.height)
 
-    def rectangle(self):
-        return self.rotate(0)
+    def rectangle(self, angle=0):
+        return self.rotate(0) if angle == 0 else self.polygon().rectangle(angle)
 
     def centroid(self):
         return self.polygon().centroid()
+
+    def __repr__(self):
+        return "Rectangle(%r, %r, %r, %r)" % (self.origin, self.angle, self.width, self.height)
 
 
 
