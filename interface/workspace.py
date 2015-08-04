@@ -90,9 +90,10 @@ class Workspace(object):
                 except Empty:
                     pass
 
-                items.sort(key=sortkey)
-                last = items.pop(0)
-                do(last)
+                while len(items):
+                    items.sort(key=sortkey)
+                    last = items.pop(0)
+                    do(last)
 
             else:
                 last = self.queue.get()
