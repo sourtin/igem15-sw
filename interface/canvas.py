@@ -98,6 +98,47 @@ class Canvas(object):
         self.thread.daemon = True
         self.thread.start()
 
+    def status(self):
+        expiry = self.max_age
+        return all(image is not None and time() - image.stamp < expiry for _,_,image in self.images)
+
+    def invalidate(self, i, j):
+        expiry = self.max_age
+        def replace(el):
+            (a, b), r, im = el
+            if (a, b) == (i, j):
+                im.stamp = time() - 2*expiry
+                return (i, j), r, im
+            else:
+                return el
+
+        with self.lock:
+            try:
+                del self.qstamps[i,j]
+            except KeyError:
+                pass
+
+            self.images = [replace(el) for el in self.images]
+            self.flags['invalidate'].set()
+
+    def get(self):
+        self.wait(False)
+
+        # construct image
+        image = None
+        return image
+
+    def wait(self, alive=True):
+        # alive -- require no images to have expired
+        while not all(im is not None for _,_,im in self.images):
+            self.flags['image'].wait()
+            self.flags['image'].clear()
+
+        if alive:
+            while any(expired(*x) for x,_,_ in self.images):
+                self.flags['image'].wait()
+                self.flags['image'].clear()
+
     def generate_rects(self):
         _, camera = self.backend
         prec = camera.precision()
@@ -140,45 +181,6 @@ class Canvas(object):
             else:
                 print ('here we go again')
 
-    def update(self, i, j, image):
-        def replace(el):
-            (a, b), rect, _ = el
-            return ((i,j), rect, image) if (a,b)==(i,j) else el
-        with self.lock:
-            self.images = [replace(el) for el in self.images]
-            del self.qstamps[i,j] # reset timeout
-            self.flags['image'].set()
-
-    def status(self):
-        expiry = self.max_age
-        return all(image is not None and time() - image.stamp < expiry for _,_,image in self.images)
-
-    def invalidate(self, i, j):
-        expiry = self.max_age
-        def replace(el):
-            (a, b), r, im = el
-            if (a, b) == (i, j):
-                im.stamp = time() - 2*expiry
-                return (i, j), r, im
-            else:
-                return el
-
-        with self.lock:
-            try:
-                del self.qstamps[i,j]
-            except KeyError:
-                pass
-
-            self.images = [replace(el) for el in self.images]
-            self.flags['invalidate'].set()
-
-    def get(self):
-        image = None
-        while not all(im is not None for _,_,im in self.images):
-            self.flags['image'].wait()
-        # construct image
-        return image
-
     def expired(self, i, j):
         for x, _, im in self.images:
             if x == (i, j) and im is not None:
@@ -194,6 +196,15 @@ class Canvas(object):
                 return im.stamp + self.max_age
             else:
                 return time() + self.timeout
+
+    def update(self, i, j, image):
+        def replace(el):
+            (a, b), rect, _ = el
+            return ((i,j), rect, image) if (a,b)==(i,j) else el
+        with self.lock:
+            self.images = [replace(el) for el in self.images]
+            del self.qstamps[i,j] # reset timeout
+            self.flags['image'].set()
 
     def enqueue(self, i, j, rect):
         cb = lambda image: self.update(i, j, image)

@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-from virtual import XY, Σ, Μ, Pen, Layer, Vector
+from hw.virtual import XY, Σ, Μ, Pen, Layer, Vector
 from interface.canvas import Rectangle, Polygon, Canvas
 from interface.workspace import Workspace
 
 if __name__ == '__main__':
+    import pprint
+    pp = pprint.PrettyPrinter(indent=4).pprint
+
     import openslide
     im = openslide.OpenSlide('/tmp/andromeda.tif')
 
@@ -17,14 +20,15 @@ if __name__ == '__main__':
     z_σ = im.level_count // 2
     z_μ = 0
 
+    # hardware
     virtual = XY(w, h)
     σ = virtual.register(Σ(Layer(im, z_σ, side)))
     μ = virtual.register(Μ(Layer(im, z_μ, side), (2592,1944)))
     p = virtual.register(Pen())
     ws = Workspace(virtual)
-    ws.optimise_queue(True)
 
-    """
+    # test queuing
+    ws.optimise_queue(True)
     ws.pause()
     imcb = lambda im:im.show()
     ws.enqueue(σ, [Vector(0,0)], lambda _:print(0), {}, {})
@@ -35,12 +39,19 @@ if __name__ == '__main__':
     ws.enqueue(μ, [Vector(0.2789,0.2809)], lambda _:print(5), {'a':1}, {})
     ws.enqueue(μ, [Vector(0.1012,0.2544)], lambda _:print(6), {'a':1}, {})
     ws.play()
-    """
 
+    # test canvas
+    μ.calibrate()
+    ws.optimise_queue(False)
     poly = Rectangle(Vector(0.05,0.05), Vector(0,1), 0.15, 0.1)
-    canvas = Canvas(ws, {'a':1}, poly, 5e-6, 30, 100)
+    canvas = Canvas(ws, {'a':1}, poly, 5e-6, 900, 100)
+    canvas.wait(False)
+    ws.optimise_queue(True)
 
-    import pprint
-    pp = pprint.PrettyPrinter(indent=4).pprint
+    # print images
+    print()
+    for x,r,im in canvas.images:
+        print("Image %r at %r:" % (x,r))
+        im.show()
 
 
