@@ -12,11 +12,15 @@ class Shapeoko:
     """Python bindings to communicate to the Shapeoko via GCode"""
 
     def __init__(self, port):
-        """ Start a serial comm channel with the shapeoko, pass it the device file as a string to connect to"""
+        """ Start a serial comm channel with the shapeoko.
+            Pass it the device file as a string to connect to"""
         self.ser = serial.Serial(port, 115200)
 
     def move(self, vector):
-        """Move the head in a vector all at once - vector should be a list [x,y,z]. Negative values indicate reverse movement"""
+        """ Move the head in a vector all at once.
+                vector should be a list [x,y,z].
+            Negative values indicate reverse movement"""
+
         send = "G0 "
         if(vector[0] is not None):
             send += "X"+str(vector[0])+" "
@@ -28,7 +32,9 @@ class Shapeoko:
         self.ser.flush()
 
     def home(self, ax):
-        """ Home the head in a certain number of axes. ax should be a list of enums of type Axes. If multiple axes are to be calibrated, the X axis is calibrated first, then Y, then Z."""
+        """ Home the head in a certain number of axes.
+                ax should be a list of enums of type Axes.
+            If multiple axes are to be calibrated, the X axis is calibrated first, then Y, then Z."""
         for a in ax:
             # abscissa
             if(a == Axes.AXIS_X):
