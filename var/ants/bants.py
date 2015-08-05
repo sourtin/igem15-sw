@@ -14,6 +14,9 @@ from vector import Vector
 def pil2cv(pil):
     return np.array(pil.convert("RGB"))[:,:,::-1]
 
+def cv2pil(cv):
+    return Image.fromarray(cv2.cvtColor(cv, cv2.COLOR_BGR2RGB))
+
 class GIF(object):
     def __init__(self, path):
         im = Image.open(path)
@@ -126,15 +129,23 @@ if __name__ == "__main__":
 
     # cli options
     parser = OptionParser()
-    parser.add_option("-r", "--rebuild", action="store_true",
+    parser.add_option("-r", "--rebuild", action="store_true", default=False,
             dest="reload", help="rebuild cache of trajectories")
+    parser.add_option("-l", action="store", type="int", default=25,
+            dest="limit", help="set the iteration limit (default 25)")
+    parser.add_option("-i", "--interactive", action="store_true", default=False,
+            dest="interactive", help="control the bants interactively")
+    parser.add_option("-o", action="store", dest="file", help="save frames to a gif")
+    parser.add_option("-b", action="store", default=100, dest="start", help="first frame to save")
+    parser.add_option("-e", action="store", default=-300, dest="end", help="last frame to save")
     opts, _ = parser.parse_args()
 
     # get trajectories
     cache = 'cache.p'
     if opts.reload or not os.path.isfile(cache):
+        limit = opts.limit
         def worker(origin):
-            return grow_unique(origin, frames, ants.width, ants.height, limit=100)
+            return grow_unique(origin, frames, ants.width, ants.height, limit=limit)
         nest = Pool(4).map(worker, frames[0].coords)
         trajectories = [traj for trajs in nest for traj in trajs]
         with open(cache, "wb") as cache_fd:
@@ -143,7 +154,7 @@ if __name__ == "__main__":
         with open(cache, "rb") as cache_fd:
             trajectories = pickle.load(cache_fd)
 
-    # gui
+    # rendering
     def render(ants, trajectories, t):
         if 0 <= t < len(ants):
             im = ants.cv(t)
@@ -159,33 +170,59 @@ if __name__ == "__main__":
 
         return im
 
-    cv2.namedWindow('frame', cv2.WINDOW_NORMAL)
-    t = 0
-    print("<< H < h | q | l > L >>");
-    print("    [[ j | Δ | k ]]")
-    while True:
-        print("t = %+ 3d  Δ=%+2.1f" % (t, Trajectory.comp), end='\r')
-        cv2.imshow('frame', render(ants, trajectories, t))
-        k = cv2.waitKey(0) & 0xff
+    # save gif
+    if opts.file:
+        import tempfile
+        import subprocess
 
-        if k == ord('h'):
-            t -= 1
-        elif k == ord('H'):
-            t -= 20
-        elif k == ord('l'):
-            t += 1
-        elif k == ord('L'):
-            t += 20
-        elif k == ord('j'):
-            Trajectory.comp -= 0.2
-        elif k == ord('k'):
-            Trajectory.comp += 0.2
-        elif k == ord('q'):
-            break
+        dir = tempfile.mkdtemp()
+        gif = opts.file
+        start = opts.start
+        end = opts.end
+        sign = 1 if end - start >= 0 else -1
 
-    cv2.destroyAllWindows()
-    print()
+        frames = [cv2pil(render(ants, trajectories, t)) for t in range(start, end, sign)]
+        fnames = []
+        for i in range(len(frames)):
+            fname = "%s/frame%07d.png" % (dir, i)
+            frames[i].save(fname)
+            fnames.append(fname)
+
+        try:
+            subprocess.call(["convert", "-delay", "10", "-loop", "0"]  + fnames + [gif])
+        except:
+            print("Failed to generate gif! Do you have convert installed?")
+            print("Individual frames have been saved as .pngs to %s" % dir)
+            print()
 
 
+    # gui
+    if opts.interactive:
+        cv2.namedWindow('frame', cv2.WINDOW_NORMAL)
+        t = 0
+        print("<< H < h | q | l > L >>");
+        print("    [[ j | Δ | k ]]")
+        while True:
+            print("t = %+ 3d  Δ=%+2.1f" % (t, Trajectory.comp), end='\r')
+            cv2.imshow('frame', render(ants, trajectories, t))
+            k = cv2.waitKey(0) & 0xff
+
+            if k == ord('h'):
+                t -= 1
+            elif k == ord('H'):
+                t -= 20
+            elif k == ord('l'):
+                t += 1
+            elif k == ord('L'):
+                t += 20
+            elif k == ord('j'):
+                Trajectory.comp -= 0.2
+            elif k == ord('k'):
+                Trajectory.comp += 0.2
+            elif k == ord('q'):
+                break
+
+        cv2.destroyAllWindows()
+        print()
 
 
