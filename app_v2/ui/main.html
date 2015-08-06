@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>MicroMaps</title>
+<script src="assets/js/jquery-1.11.2.min.js"></script>
+<link rel="stylesheet" href="assets/css/bootstrap.min.css">
+<script src="assets/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="assets/css/ol.css" type="text/css">
+<script src="assets/js/ol.js"></script>
+
+</head>
+<body>
+<div class="container-fluid">
+
+<div class="row-fluid">
+  <div class="span12">
+    <div id="map" class="map"></div>
+  </div>
+</div>
+
+</div>
+<script>
+var map = new ol.Map({
+  interactions: ol.interaction.defaults().extend([
+    new ol.interaction.DragRotateAndZoom()
+  ]),
+  layers: [
+    new ol.layer.Tile({
+      source: new ol.source.MapQuest({layer: 'sat'})
+    })
+  ],
+  target: 'map',
+  view: new ol.View({
+    center: [0, 0],
+    zoom: 2
+  })
+});
+
+</script>
+</body>
+</html>
