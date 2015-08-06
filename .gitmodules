@@ -1,3 +1,3 @@
 [submodule "Marlin"]
-	path = Marlin
+	path = marlin
 	url = https://github.com/moosd/Marlin
