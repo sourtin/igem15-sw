@@ -113,6 +113,7 @@ def grow_prunes(paths, frames, w, h, limit, timeout=20, start=None):
                     paths_seed.add(path + (leaf,))
                 if expired():
                     print("!", end="")
+                    sys.stdout.flush()
                     return paths
 
     return paths_harvest | grow_prunes(paths_seed, frames, w, h, limit, timeout, start)
