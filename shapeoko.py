@@ -66,6 +66,9 @@ if __name__ == "__main__":
             self.shap = None
 
         def do_load(self, port):
+            """  load [X]
+                     Load a shapeoko.
+                         [X] - Connect to the file /dev/ttyACMX """
             self.do_close()
             try:
                 self.shap = Shapeoko("/dev/ttyACM"+str(port))
@@ -74,6 +77,8 @@ if __name__ == "__main__":
                 print("*** Error opening device: %s" % e)
 
         def do_close(self, *args):
+            """  close
+                     Close the comm channel with the shapeoko"""
             if self.shap is not None:
                 self.shap.close()
                 self.shap = None
@@ -86,6 +91,15 @@ if __name__ == "__main__":
                     return
                 return method(self, *args)
             return checked_cmd
+
+        def help_home(self):
+            print("home [xyz]\n\
+    Home the axes passed as an argument.\n\
+        Usage: home x - Home x axis\n\
+            home xy - Home x axis and y axis\n\
+            home yz - Home y axis and z axis\n\
+            home xyz - Home all axes\n\
+            home zy - Home y axis and z axis")
 
         @serial_cmd
         def do_home(self, axes):
@@ -105,6 +119,15 @@ if __name__ == "__main__":
                 return
             print("Homing ", args)
             self.shap.home(args)
+
+        def help_move(self):
+            print("move x y z\n\
+    Move the head simultaneously in [x,y,z].\n\
+    Must pass all three arguments, leave as 0 for no movement\n\
+        Usage: move 100 0 0 - move 100 in x direction\n\
+               move 100 100 0 - move 100 in x and y direction\n\
+               move -100 0 100 - move -100 in x and 100 in z direction\n\
+        The firmware should prevent overdriving the motors.")
 
         @serial_cmd
         def do_move(self, mov):
