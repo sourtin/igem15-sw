@@ -15,11 +15,18 @@ class Shapeoko:
         """ Start a serial comm channel with the shapeoko.
             Pass it the device file as a string to connect to"""
         self.ser = serial.Serial(port, 115200)
+        self.speed = 5000
+
+    def gcode(self, code):
+        self.ser.write((code+"\r\n").encode())
+        self.ser.flush()
+
+    def speed(self, set):
+        self.speed = set
 
     def move(self, vector):
-        """ Move the head in a vector all at once.
-                vector should be a list [x,y,z].
-            Negative values indicate reverse movement"""
+        """ Move the head to a position.
+                vector should be a list [x,y,z]."""
 
         send = "G0 "
         if(vector[0] is not None):
@@ -28,7 +35,7 @@ class Shapeoko:
             send += "Y"+str(vector[1])+" "
         if(vector[2] is not None):
             send += "Z"+str(vector[2])+" "
-        self.ser.write((send+"\r\n").encode())
+        self.ser.write((send+" F"+str(self.speed)+"\r\n").encode())
         self.ser.flush()
 
     def home(self, ax):
@@ -121,21 +128,36 @@ if __name__ == "__main__":
         def help_move(self):
             print("move x y z\n\
     Move the head simultaneously in [x,y,z].\n\
-    Must pass all three arguments, leave as 0 for no movement\n\
-        Usage: move 100 0 0 - move 100 in x direction\n\
-               move 100 100 0 - move 100 in x and y direction\n\
-               move -100 0 100 - move -100 in x and 100 in z direction\n\
+    Must pass all three arguments, use - for no movement\n\
+        Usage: move 100 0 0 = move to (100,0,0)\n\
+               move 100 100 - = move to (100,100) in x and y direction\n\
         The firmware should prevent overdriving the motors.")
 
         @serial_cmd
         def do_move(self, mov):
             l = mov.split()
             if(len(l) < 3):
-                print("*** Usage: move x y z (Use 0 for no movement on an axis)")
+                print("*** Usage: move x y z (Use - for no movement on an axis)")
                 return
-            l = [(a if a is not "0" else None) for a in l]
+            l = [(a if a is not "-" else None) for a in l]
             print("Moving x=",l[0],", y=",l[1], ", z=", l[2])
             self.shap.move([ l[0] , l[1], l[2] ])
+
+        @serial_cmd
+        def do_send(self, code):
+            if code.strip() is "":
+                print("*** Usage: send [g-code]")
+                return
+            print("Sending ", code)
+            self.shap.gcode(code)
+
+        @serial_cmd
+        def do_speed(self, set):
+            if code.strip() is "":
+                print("*** Usage: speed [speed in mm/sec]")
+                return
+            print("Set speed to ", set)
+            self.shap.speed(set)
 
         def do_EOF(self, line):
             self.do_close()
