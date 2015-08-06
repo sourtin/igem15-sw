@@ -48,8 +48,6 @@ class Shapeoko:
             elif(a == Axes.AXIS_Z):
                 self.ser.write("G28 Z\r\n".encode())
                 self.ser.flush()
-            self.ser.write(send.encode())
-            self.ser.flush()
 
     def close(self):
         self.ser.close()
