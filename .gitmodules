@@ -1,3 +1,8 @@
 [submodule "Marlin"]
-	path = marlin
+	path = contrib/marlin
 	url = https://github.com/moosd/Marlin
+
+[submodule "Printrun"]
+	path = contrib/printrun
+    url = https://github.com/kliment/Printrun
+
