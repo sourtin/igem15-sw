@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from hw.virtual import XY, Σ, Μ, Pen, Layer, Vector
-from interface.canvas import Rectangle, Polygon, Canvas
-from interface.workspace import Workspace
+from lib.canvas import Rectangle, Polygon, Canvas
+from lib.workspace import Workspace
 
 if __name__ == '__main__':
     import pprint

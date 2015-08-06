@@ -1,6 +1,6 @@
 #!/usr/bin/env
 from hw.shapeoko import Shapeoko, Axes
-from interface.vector import Vector
+from lib.vector import Vector
 from math import pi
 import time
 import glob
@@ -17,14 +17,10 @@ if __name__ == '__main__':
     d2r = lambda deg: deg * pi / 180
     move = lambda v: stage.move([v.x(), v.y(), None])
 
-    time.sleep(15)
-    
     move(origin)
     for deg in range(0, 360, 15):
         point = origin + Vector.from_polar(radius, d2r(deg))
         move(point)
-        time.sleep(4)
 
     stage.close()
-    time.sleep(60)
 
