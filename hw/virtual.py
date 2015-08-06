@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from interface.canvas import Image, Rectangle
-from interface.hw import Stage, Head, Camera, Status, Vector
+from lib.canvas import Image, Rectangle
+from lib.hw import Stage, Head, Camera, Status, Vector
 import cv2
 import numpy as np
 

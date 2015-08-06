@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from . import hw
-from .vector import Vector
+from lib import hw
+from lib.vector import Vector
 
 from math import ceil, pi
 from time import time

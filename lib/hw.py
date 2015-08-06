@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from abc import ABCMeta, abstractmethod
-from .vector import Vector
+from lib.vector import Vector
 import threading
 
 class HardwareException(Exception):
