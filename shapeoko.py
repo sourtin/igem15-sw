@@ -15,14 +15,14 @@ class Shapeoko:
         """ Start a serial comm channel with the shapeoko.
             Pass it the device file as a string to connect to"""
         self.ser = serial.Serial(port, 115200)
-        self.speed = 5000
+        self._speed = 5000
 
     def gcode(self, code):
         self.ser.write((code+"\r\n").encode())
         self.ser.flush()
 
     def speed(self, set):
-        self.speed = set
+        self._speed = int(set)
 
     def move(self, vector):
         """ Move the head to a position.
@@ -35,7 +35,7 @@ class Shapeoko:
             send += "Y"+str(vector[1])+" "
         if(vector[2] is not None):
             send += "Z"+str(vector[2])+" "
-        self.ser.write((send+" F"+str(self.speed)+"\r\n").encode())
+        self.ser.write((send+" F"+str(self._speed)+"\r\n").encode())
         self.ser.flush()
 
     def home(self, ax):
@@ -148,16 +148,16 @@ if __name__ == "__main__":
             if code.strip() is "":
                 print("*** Usage: send [g-code]")
                 return
-            print("Sending ", code)
             self.shap.gcode(code)
+            print("Sent ", code)
 
         @serial_cmd
         def do_speed(self, set):
             if set.strip() is "":
                 print("*** Usage: speed [speed in mm/sec]")
                 return
-            print("Set speed to ", set)
             self.shap.speed(set)
+            print("Set speed to ", set)
 
         def do_EOF(self, line):
             self.do_close()
