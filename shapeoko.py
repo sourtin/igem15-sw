@@ -34,7 +34,7 @@ class Shapeoko:
 
         send = "G0 "+' '.join(sv)
 
-        print(send+"F"+str(self._speed)+"\r\n")
+        print(send+" F"+str(self._speed)+"\r\n")
         self.ser.write((send+" F"+str(self._speed)+"\r\n").encode())
         self.ser.flush()
 
@@ -121,7 +121,10 @@ if __name__ == "__main__":
                 print("*** Usage: home [xyz]")
                 return
             print("Homing ", args)
-            self.shap.home(args)
+            try:
+                self.shap.home(args)
+            except:
+                print("*** Error sending homing command")
 
         def help_move(self):
             print("move x y z\n\
@@ -139,15 +142,21 @@ if __name__ == "__main__":
                 return
             l = [(a if a is not "-" else None) for a in l]
             print("Moving x=",l[0],", y=",l[1], ", z=", l[2])
-            self.shap.move([ l[0] , l[1], l[2] ])
+            try:
+                self.shap.move([ l[0] , l[1], l[2] ])
+            except:
+                print("*** Error sending move command")
 
         @serial_cmd
         def do_send(self, code):
             if code.strip() is "":
                 print("*** Usage: send [g-code]")
                 return
-            self.shap.gcode(code)
-            print("Sent ", code)
+            try:
+                self.shap.gcode(code)
+                print("Sent ", code)
+            except:
+                print("*** Error sending g-code")
 
         @serial_cmd
         def do_speed(self, set):
