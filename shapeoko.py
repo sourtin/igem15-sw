@@ -51,6 +51,11 @@ class Shapeoko:
             self.ser.write(send.encode())
             self.ser.flush()
 
+    def close(self):
+        self.ser.close()
+        self.ser = None
+
+
 # Launch a command interpreter to test out shapeoku api
 if __name__ == "__main__":
     import cmd
@@ -61,15 +66,28 @@ if __name__ == "__main__":
             self.shap = None
 
         def do_load(self, port):
-            if self.shap is not None:
-                self.shap.close()
-                print("Closed already open comm channel...")
+            self.do_close()
             try:
                 self.shap = Shapeoko("/dev/ttyACM"+str(port))
                 print("Opened comm channel")
-            except:
-                print("*** Error opening device")
+            except Exception as e:
+                print("*** Error opening device: %s" % e)
 
+        def do_close(self, *args):
+            if self.shap is not None:
+                self.shap.close()
+                self.shap = None
+                print("Closed already open comm channel...")
+
+        def serial_cmd(method):
+            def checked_cmd(self, *args):
+                if self.shap is None:
+                    print("*** Load a shapeoko first! [load <n>] where n is the ttyACM number")
+                    return
+                return method(self, *args)
+            return checked_cmd
+
+        @serial_cmd
         def do_home(self, axes):
             handled = 0
             args = []
@@ -85,25 +103,22 @@ if __name__ == "__main__":
             if handled is 0:
                 print("*** Usage: home [xyz]")
                 return
-            if self.shap is None:
-                print("*** Load a shapeoko first! [load <n>] where n is the ttyACM number")
-                return
             print("Homing ", args)
             self.shap.home(args)
 
+        @serial_cmd
         def do_move(self, mov):
             l = mov.split()
             if(len(l) < 3):
                 print("*** Usage: move x y z (Use 0 for no movement on an axis)")
-                return
-            if self.shap is None:
-                print("*** Load a shapeoko comm channel first! [load <n>] where n is the ttyACM number")
                 return
             l = [(a if a is not "0" else None) for a in l]
             print("Moving x=",l[0],", y=",l[1], ", z=", l[2])
             self.shap.move([ l[0] , l[1], l[2] ])
 
         def do_EOF(self, line):
+            self.do_close()
+            print("*** Bye!")
             return True
 
     ShapeokoInterpreter().cmdloop()
