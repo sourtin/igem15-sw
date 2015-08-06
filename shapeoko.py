@@ -15,7 +15,7 @@ class Shapeoko:
         """ Start a serial comm channel with the shapeoko.
             Pass it the device file as a string to connect to"""
         self.ser = serial.Serial(port, 115200)
-        self._speed = 5000
+        self._speed = 10000
 
     def gcode(self, code):
         self.ser.write((code+"\r\n").encode())
@@ -35,6 +35,7 @@ class Shapeoko:
             send += "Y"+str(vector[1])+" "
         if(vector[2] is not None):
             send += "Z"+str(vector[2])+" "
+        print(send+"F"+str(self._speed)+"\r\n")
         self.ser.write((send+" F"+str(self._speed)+"\r\n").encode())
         self.ser.flush()
 
@@ -64,22 +65,27 @@ class Shapeoko:
 # Launch a command interpreter to test out shapeoku api
 if __name__ == "__main__":
     import cmd
+    import glob
+
     class ShapeokoInterpreter(cmd.Cmd):
-        prompt = 'Shapeoku# '
+        prompt = 'Shapeoko# '
         def __init__(self):
             cmd.Cmd.__init__(self)
             self.shap = None
 
         def do_load(self, port):
-            """  load [X]
+            """  load [ttydev]
                      Load a shapeoko.
-                         [X] - Connect to the file /dev/ttyACMX """
+                         [ttydev] - Connect to the file /dev/ttydev """
             self.do_close()
             try:
-                self.shap = Shapeoko("/dev/ttyACM"+str(port))
+                self.shap = Shapeoko("/dev/"+str(port))
                 print("Opened comm channel")
             except Exception as e:
                 print("*** Error opening device: %s" % e)
+
+        def complete_load(self, text, line, begidx, endidx):
+            return [a[begidx:] for a in glob.glob("/dev/ttyACM*")]
 
         def do_close(self, *args):
             """  close
