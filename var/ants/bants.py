@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import pickle
 import math
+import time
 import sys
 import cv2
 import numpy as np
@@ -85,32 +86,40 @@ def prune(path, leaf, w, h):
             for t in range(1, len(path)))
 
 # expects paths[][0] to be from t=0
-def grow_prunes(paths, frames, w, h, limit):
+def grow_prunes(paths, frames, w, h, limit, timeout=20, start=None):
+    if start is None:
+        start = time.time()
+    expired = lambda: time.time() - start > timeout
+
     limit = min(limit, len(frames))
     maxr = min(w,h)/2-20
 
-    if not len(paths):
+    if not len(paths) or expired():
         print(".", end="")
         sys.stdout.flush()
-        return []
+        return paths
 
-    paths_harvest = []
-    paths_seed = []
+    paths_harvest = set()
+    paths_seed = set()
 
     for path in paths:
         length = distance2(path[0], path[-1], w, h)
         if len(path) >= limit or length > maxr * maxr:
-            paths_harvest.append(path)
+            paths_harvest.add(path)
         else:
             stock = frames[len(path)].coords
             for leaf in nearest(path[-1], stock, w, h):
                 if not prune(path, leaf, w, h):
-                    paths_seed.append(path + [leaf])
+                    paths_seed.add(path + (leaf,))
+                if expired():
+                    print("!", end="")
+                    sys.stdout.flush()
+                    return paths
 
-    return paths_harvest + grow_prunes(paths_seed, frames, w, h, limit)
+    return paths_harvest | grow_prunes(paths_seed, frames, w, h, limit, timeout, start)
 
 def grow_unique(origin, frames, w, h, limit=25):
-    prunes = grow_prunes([[origin]], frames, w, h, limit)
+    prunes = grow_prunes({(origin,)}, frames, w, h, limit)
     harvest = set((prune[-1], len(prune)) for prune in prunes)
     return [Trajectory(origin, leaf, t) for leaf,t in harvest]
 
@@ -146,13 +155,15 @@ if __name__ == "__main__":
         limit = opts.limit
         def worker(origin):
             return grow_unique(origin, frames, ants.width, ants.height, limit=limit)
-        nest = Pool(4).map(worker, frames[0].coords)
+        nest = Pool(16).map(worker, frames[0].coords)
+        print()
         trajectories = [traj for trajs in nest for traj in trajs]
         with open(cache, "wb") as cache_fd:
             pickle.dump(trajectories, cache_fd)
     else:
         with open(cache, "rb") as cache_fd:
             trajectories = pickle.load(cache_fd)
+    print(len(trajectories), "trajectories found")
 
     # rendering
     def render(ants, trajectories, t):
