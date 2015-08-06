@@ -44,7 +44,7 @@ class Shapeoko:
             If multiple axes are to be calibrated, the X axis is calibrated first, then Y, then Z."""
         for a in ax:
             self.ser.write(("G28 "+a.name+"\r\n").encode())
-        self.ser.write("G0 X0 Y0 Z0")
+        self.ser.write("G0 X0 Y0 Z0".encode())
         self.ser.flush()
 
     def close(self):
