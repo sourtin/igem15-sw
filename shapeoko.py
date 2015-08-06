@@ -153,7 +153,7 @@ if __name__ == "__main__":
 
         @serial_cmd
         def do_speed(self, set):
-            if code.strip() is "":
+            if set.strip() is "":
                 print("*** Usage: speed [speed in mm/sec]")
                 return
             print("Set speed to ", set)
