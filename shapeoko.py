@@ -4,9 +4,9 @@ import enum
 
 class Axes(enum.Enum):
     """An enum that defines the three axes that can be moved in"""
-    AXIS_X=0
-    AXIS_Y=1
-    AXIS_Z=2
+    X=0 # abscissa
+    Y=1 # ordinate
+    Z=2 # applicate
 
 class Shapeoko:
     """Python bindings to communicate to the Shapeoko via GCode"""
@@ -18,7 +18,7 @@ class Shapeoko:
         self._speed = 10000
 
     def gcode(self, code):
-        self.ser.write((code+"\r\n").encode())
+        self.ser.write((str(code)+"\r\n").encode())
         self.ser.flush()
 
     def speed(self, set):
@@ -28,13 +28,12 @@ class Shapeoko:
         """ Move the head to a position.
                 vector should be a list [x,y,z]."""
 
-        send = "G0 "
-        if(vector[0] is not None):
-            send += "X"+str(vector[0])+" "
-        if(vector[1] is not None):
-            send += "Y"+str(vector[1])+" "
-        if(vector[2] is not None):
-            send += "Z"+str(vector[2])+" "
+        names = ["X", "Y", "Z"]
+
+        sv = [(names[i]+str(int(a)) if a is not None else "") for i, a in enumerate(vector)]
+
+        send = "G0 "+' '.join(sv)
+
         print(send+"F"+str(self._speed)+"\r\n")
         self.ser.write((send+" F"+str(self._speed)+"\r\n").encode())
         self.ser.flush()
@@ -44,18 +43,8 @@ class Shapeoko:
                 ax should be a list of enums of type Axes.
             If multiple axes are to be calibrated, the X axis is calibrated first, then Y, then Z."""
         for a in ax:
-            # abscissa
-            if(a == Axes.AXIS_X):
-                self.ser.write("G28 X\r\n".encode())
-                self.ser.flush()
-            # ordinate
-            elif(a == Axes.AXIS_Y):
-                self.ser.write("G28 Y\r\n".encode())
-                self.ser.flush()
-            # applicate
-            elif(a == Axes.AXIS_Z):
-                self.ser.write("G28 Z\r\n".encode())
-                self.ser.flush()
+            self.ser.write(("G28 "+a.name+"\r\n").encode())
+        self.ser.flush()
 
     def close(self):
         self.ser.close()
@@ -72,6 +61,9 @@ if __name__ == "__main__":
         def __init__(self):
             cmd.Cmd.__init__(self)
             self.shap = None
+
+        def emptyline(self):
+            pass
 
         def do_load(self, port):
             """  load [ttydev]
@@ -117,13 +109,13 @@ if __name__ == "__main__":
             handled = 0
             args = []
             if "x" in axes:
-                args.append(Axes.AXIS_X)
+                args.append(Axes.X)
                 handled = 1
             if "y" in axes:
-                args.append(Axes.AXIS_Y)
+                args.append(Axes.Y)
                 handled = 1
             if "z" in axes:
-                args.append(Axes.AXIS_Z)
+                args.append(Axes.Z)
                 handled = 1
             if handled is 0:
                 print("*** Usage: home [xyz]")
