@@ -32,7 +32,7 @@ class Shapeoko:
 
         sv = [(names[i]+str(int(a)) if a is not None else "") for i, a in enumerate(vector)]
 
-        send = "G0 "+' '.join(sv)
+        send = "G1 "+' '.join(sv)
 
         print(send+" F"+str(self._speed)+"\r\n")
         self.ser.write((send+" F"+str(self._speed)+"\r\n").encode())
@@ -44,7 +44,6 @@ class Shapeoko:
             If multiple axes are to be calibrated, the X axis is calibrated first, then Y, then Z."""
         for a in ax:
             self.ser.write(("G28 "+a.name+"\r\n").encode())
-        self.ser.write("G0 X0 Y0 Z0".encode())
         self.ser.flush()
 
     def close(self):
