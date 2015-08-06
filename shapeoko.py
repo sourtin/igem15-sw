@@ -15,11 +15,18 @@ class Shapeoko:
         """ Start a serial comm channel with the shapeoko.
             Pass it the device file as a string to connect to"""
         self.ser = serial.Serial(port, 115200)
+        self._speed = 5000
+
+    def gcode(self, code):
+        self.ser.write((code+"\r\n").encode())
+        self.ser.flush()
+
+    def speed(self, set):
+        self._speed = int(set)
 
     def move(self, vector):
-        """ Move the head in a vector all at once.
-                vector should be a list [x,y,z].
-            Negative values indicate reverse movement"""
+        """ Move the head to a position.
+                vector should be a list [x,y,z]."""
 
         send = "G0 "
         if(vector[0] is not None):
@@ -28,7 +35,7 @@ class Shapeoko:
             send += "Y"+str(vector[1])+" "
         if(vector[2] is not None):
             send += "Z"+str(vector[2])+" "
-        self.ser.write((send+"\r\n").encode())
+        self.ser.write((send+" F"+str(self._speed)+"\r\n").encode())
         self.ser.flush()
 
     def home(self, ax):
@@ -48,8 +55,6 @@ class Shapeoko:
             elif(a == Axes.AXIS_Z):
                 self.ser.write("G28 Z\r\n".encode())
                 self.ser.flush()
-            self.ser.write(send.encode())
-            self.ser.flush()
 
     def close(self):
         self.ser.close()
@@ -66,6 +71,9 @@ if __name__ == "__main__":
             self.shap = None
 
         def do_load(self, port):
+            """  load [X]
+                     Load a shapeoko.
+                         [X] - Connect to the file /dev/ttyACMX """
             self.do_close()
             try:
                 self.shap = Shapeoko("/dev/ttyACM"+str(port))
@@ -74,6 +82,8 @@ if __name__ == "__main__":
                 print("*** Error opening device: %s" % e)
 
         def do_close(self, *args):
+            """  close
+                     Close the comm channel with the shapeoko"""
             if self.shap is not None:
                 self.shap.close()
                 self.shap = None
@@ -86,6 +96,15 @@ if __name__ == "__main__":
                     return
                 return method(self, *args)
             return checked_cmd
+
+        def help_home(self):
+            print("home [xyz]\n\
+    Home the axes passed as an argument.\n\
+        Usage: home x - Home x axis\n\
+            home xy - Home x axis and y axis\n\
+            home yz - Home y axis and z axis\n\
+            home xyz - Home all axes\n\
+            home zy - Home y axis and z axis")
 
         @serial_cmd
         def do_home(self, axes):
@@ -106,15 +125,39 @@ if __name__ == "__main__":
             print("Homing ", args)
             self.shap.home(args)
 
+        def help_move(self):
+            print("move x y z\n\
+    Move the head simultaneously in [x,y,z].\n\
+    Must pass all three arguments, use - for no movement\n\
+        Usage: move 100 0 0 = move to (100,0,0)\n\
+               move 100 100 - = move to (100,100) in x and y direction\n\
+        The firmware should prevent overdriving the motors.")
+
         @serial_cmd
         def do_move(self, mov):
             l = mov.split()
             if(len(l) < 3):
-                print("*** Usage: move x y z (Use 0 for no movement on an axis)")
+                print("*** Usage: move x y z (Use - for no movement on an axis)")
                 return
-            l = [(a if a is not "0" else None) for a in l]
+            l = [(a if a is not "-" else None) for a in l]
             print("Moving x=",l[0],", y=",l[1], ", z=", l[2])
             self.shap.move([ l[0] , l[1], l[2] ])
+
+        @serial_cmd
+        def do_send(self, code):
+            if code.strip() is "":
+                print("*** Usage: send [g-code]")
+                return
+            self.shap.gcode(code)
+            print("Sent ", code)
+
+        @serial_cmd
+        def do_speed(self, set):
+            if set.strip() is "":
+                print("*** Usage: speed [speed in mm/sec]")
+                return
+            self.shap.speed(set)
+            print("Set speed to ", set)
 
         def do_EOF(self, line):
             self.do_close()
