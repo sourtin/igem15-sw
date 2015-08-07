@@ -31,3 +31,5 @@ to run a test, do `python3 -m var.tests.$test`, where `$test` is the name of a t
 * `virtual` -- virtual shapeoko; place `andromeda.tif` ([a gigapixel image of andromeda](https://www.spacetelescope.org/images/heic1502a/), make sure to convert to a pyramidal tif using `vips tiffsave /path/to/original.tif /tmp/andromeda.tif --tile --tile-width=256 --tile-height=256 --pyramid`; you may use the 40K tif rather than the proprietary psb version) in `/tmp`
 * `circles` -- home the shapeoko (connected to a `/dev/ttyACM*`) and then move the head in a circle of radius 80 and origin (100,100)
 
+to interact with the shapeoko directly, `python -m hw.shapeoko.driver`
+

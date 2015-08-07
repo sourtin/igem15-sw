@@ -46,6 +46,10 @@ class Shapeoko:
             self.ser.write(("G28 "+a.name+"\r\n").encode())
         self.ser.flush()
 
+    def wait(self):
+        """ wait on the last command """
+        raise NotImplementedError
+
     def close(self):
         self.ser.close()
         self.ser = None
