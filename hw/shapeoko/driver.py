@@ -127,6 +127,10 @@ class Shapeoko(object):
                     # command complete
                     if line[:2] == b'ok':
                         status[0] = True
+                        # quick fix for issues #3 - homing borks movement, reinit fixes it
+                        if cmd.startswith("G28"):
+                            self._com.close()
+                            self._com = serial.Serial(self.device, self.rate, timeout=1)
                         break
 
                     # command timed out
