@@ -14,9 +14,8 @@ void loop() {
   last = val;
   delay(100);
 
-  if(Serial.available()) {
+  if(Serial.available())
     mode=(Serial.read())%outsz;
-  }
 
   for(int i = 0; i < outsz; i++)
     digitalWrite(outpins[i], LOW);
