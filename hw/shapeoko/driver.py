@@ -136,9 +136,10 @@ if __name__ == '__main__':
 
         def complete_load(self, text, line, begidx, endidx):
             prefix = "/dev/serial/by-id/"
-            devices = [a[len(prefix):] for a in glob.glob(preifx + "*")]
-            print(devices)
-            return [a[begidx:] for a in devices]
+            devices = [a[len(prefix):] for a in glob.glob(prefix + "*")]
+            beg = line.partition(' ')[2].strip()
+            off = len(beg) - len(text)
+            return [a[off:] for a in devices if a.startswith(beg)]
 
         def do_close(self, *args):
             """  close
