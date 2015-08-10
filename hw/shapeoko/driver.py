@@ -1,62 +1,117 @@
 #!/usr/bin/env python3
+import os
 import serial
-import enum
+import threading
+import queue
+import traceback
+import time
 
-class Axes(enum.Enum):
-    """An enum that defines the three axes that can be moved in"""
-    X=0 # abscissa
-    Y=1 # ordinate
-    Z=2 # applicate
+class Shapeoko(object):
+    class Axes:
+        x='X'
+        y='Y'
+        z='Z'
 
-class Shapeoko:
-    """Python bindings to communicate to the Shapeoko via GCode"""
+    def __init__(self, device, rate=115200, speed=9000, verbose=False):
+        self.device = device
+        self.rate = rate
+        self._speed = speed
+        self.verbose = verbose
+        self.queue = queue.Queue()
+        self.thread = threading.Thread(target=self.main)
+        self.thread.daemon = True
+        self.thread.start()
 
-    def __init__(self, port):
-        """ Start a serial comm channel with the shapeoko.
-            Pass it the device file as a string to connect to"""
-        self.ser = serial.Serial(port, 115200)
-        self._speed = 10000
+    def main(self):
+        SerialException = serial.serialutil.SerialException
+        while True:
+            try:
+                with serial.Serial(self.device, self.rate, timeout=1) as com:
+                    self.loop(com)
+            except (FileNotFoundError, TypeError, SerialException):
+                print("Shapeoko connection error...")
+                time.sleep(1)
+            except Exception as e:
+                print("Unknown error whilst trying to connect to the Shapeoko...")
+                print(traceback.format_exc())
+                print()
+                time.sleep(10)
 
-    def gcode(self, code):
-        self.ser.write((str(code)+"\r\n").encode())
-        self.ser.flush()
+    def loop(self, com):
+        time.sleep(1) # allow to startup
+        print("Connected to Shapeoko")
+        while com.isOpen():
+            cmd, event, status, timeout = self.queue.get()
+            try:
+                com.write(("%s\r\n" % cmd).encode())
+                com.flush()
+                if self.verbose:
+                    print("Sent: %s" % cmd)
 
-    def speed(self, set):
-        self._speed = int(set)
+                beginning = time.time()
+                while True:
+                    line = com.readline()
 
-    def move(self, vector):
-        """ Move the head to a position.
-                vector should be a list [x,y,z]."""
+                    # verbose logging
+                    if len(line) and self.verbose:
+                        print(line[:-1].decode())
 
-        names = ["X", "Y", "Z"]
+                    # command complete
+                    if line[:2] == b'ok':
+                        status[0] = True
+                        break
 
-        sv = [(names[i]+str(int(a)) if a is not None else "") for i, a in enumerate(vector)]
+                    # command timed out
+                    if time.time() > beginning + timeout:
+                        break
+            finally:
+                self.queue.task_done()
+                event.set()
 
-        send = "G1 "+' '.join(sv)
+    # do command and block until ok
+    def do(self, cmd, timeout=30):
+        status = [False]
+        event = threading.Event()
+        self.queue.put((cmd, event, status, timeout))
+        event.wait(timeout)
+        return status[0]
 
-        print(send+" F"+str(self._speed)+"\r\n")
-        self.ser.write((send+" F"+str(self._speed)+"\r\n").encode())
-        self.ser.flush()
+    # block on command until complete
+    def do_wait(self, cmd, timeout=30):
+        beginning = time.time()
+        status = self.do(cmd, timeout)
+        self.do("M400", beginning + timeout - time.time())
+        return status
 
-    def home(self, ax):
-        """ Home the head in a certain number of axes.
-                ax should be a list of enums of type Axes.
-            If multiple axes are to be calibrated, the X axis is calibrated first, then Y, then Z."""
-        for a in ax:
-            self.ser.write(("G28 "+a.name+"\r\n").encode())
-        self.ser.flush()
+    # block on a sequence of commands until all complete
+    def do_seq(self, *cmds, timeout=30):
+        status = True
+        for cmd in ("M400",) + cmds + ("M400",):
+            status &= self.do(cmd, timeout)
+            if not status:
+                break
+        return status
 
-    def wait(self):
-        """ wait on the last command """
-        raise NotImplementedError
+    # change speed (mm min^-1)
+    def speed(self, value):
+        # shapeoko doesn't like it when the
+        # speed is over 9000! (no, really)
+        self._speed = min(9000, value)
 
-    def close(self):
-        self.ser.close()
-        self.ser = None
+    # calibrate axes
+    def home(self, *axes, timeout=30):
+        cmd = "G28 %s" % ''.join(axes)
+        return self.do(cmd, timeout)
 
+    # move head
+    def move(self, x=None, y=None, z=None, timeout=30):
+        symbols = ['X', 'Y', 'Z', 'F']
+        params = [x, y, z, self._speed]
+        args = ' '.join('%c%f' % (symbol,param) for symbol,param in
+                    zip(symbols,params) if param is not None)
+        return self.do_wait("G1 %s" % args, timeout)
 
-# Launch a command interpreter to test out shapeoku api
-if __name__ == "__main__":
+if __name__ == '__main__':
     import cmd
     import glob
 
@@ -70,24 +125,26 @@ if __name__ == "__main__":
             pass
 
         def do_load(self, port):
-            """  load [ttydev]
+            """  load [serial]
                      Load a shapeoko.
-                         [ttydev] - Connect to the file /dev/ttydev """
+                         [serial] - Connect to the file /dev/serial/by-id/[serial] """
             self.do_close()
             try:
-                self.shap = Shapeoko("/dev/"+str(port))
-                print("Opened comm channel")
+                self.shap = Shapeoko("/dev/serial/by-id/"+str(port), verbose=True)
             except Exception as e:
                 print("*** Error opening device: %s" % e)
 
         def complete_load(self, text, line, begidx, endidx):
-            return [a[begidx:] for a in glob.glob("/dev/ttyACM*")]
+            prefix = "/dev/serial/by-id/"
+            devices = [a[len(prefix):] for a in glob.glob(preifx + "*")]
+            print(devices)
+            return [a[begidx:] for a in devices]
 
         def do_close(self, *args):
             """  close
                      Close the comm channel with the shapeoko"""
             if self.shap is not None:
-                self.shap.close()
+                del self.shap
                 self.shap = None
                 print("Closed already open comm channel...")
 
@@ -110,23 +167,24 @@ if __name__ == "__main__":
 
         @serial_cmd
         def do_home(self, axes):
+            Axes = Shapeoko.Axes
             handled = 0
             args = []
             if "x" in axes:
-                args.append(Axes.X)
+                args.append(Axes.x)
                 handled = 1
             if "y" in axes:
-                args.append(Axes.Y)
+                args.append(Axes.y)
                 handled = 1
             if "z" in axes:
-                args.append(Axes.Z)
+                args.append(Axes.z)
                 handled = 1
             if handled is 0:
                 print("*** Usage: home [xyz]")
                 return
             print("Homing ", args)
             try:
-                self.shap.home(args)
+                self.shap.home(*args)
             except:
                 print("*** Error sending homing command")
 
@@ -144,10 +202,10 @@ if __name__ == "__main__":
             if(len(l) < 3):
                 print("*** Usage: move x y z (Use - for no movement on an axis)")
                 return
-            l = [(a if a is not "-" else None) for a in l]
+            l = [(float(a) if a is not "-" else None) for a in l]
             print("Moving x=",l[0],", y=",l[1], ", z=", l[2])
             try:
-                self.shap.move([ l[0] , l[1], l[2] ])
+                self.shap.move(l[0] , l[1], l[2])
             except:
                 print("*** Error sending move command")
 
@@ -157,17 +215,16 @@ if __name__ == "__main__":
                 print("*** Usage: send [g-code]")
                 return
             try:
-                self.shap.gcode(code)
-                print("Sent ", code)
+                self.shap.do(code)
             except:
                 print("*** Error sending g-code")
 
         @serial_cmd
         def do_speed(self, set):
             if set.strip() is "":
-                print("*** Usage: speed [speed in mm/sec]")
+                print("*** Usage: speed [speed in mm min^-1]")
                 return
-            self.shap.speed(set)
+            self.shap.speed(float(set))
             print("Set speed to ", set)
 
         def do_EOF(self, line):
@@ -175,4 +232,13 @@ if __name__ == "__main__":
             print("*** Bye!")
             return True
 
+        @serial_cmd
+        def do_figure(self, *args):
+            self.shap.do_seq("G28 XY", "G1 Y40 F%d"%self.shap._speed, "G3 X80 I40", "G2 I40", "G3 X0 I-40")
+
+        def help_figure(self):
+            print("figure\n\
+    Draw a figure of 8 in an 80x160 box.")
+
     ShapeokoInterpreter().cmdloop()
+ 
