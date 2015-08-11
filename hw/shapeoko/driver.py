@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import re
 import os
 import serial
 import threading
@@ -12,21 +13,26 @@ class Shapeoko(object):
         y='Y'
         z='Z'
 
-    def __init__(self, device, rate=115200, speed=9000, verbose=False):
+    def __init__(self, device, rate=115200, speed=9000, verbose=False, autocalibrate=False):
         self.device = device
         self.rate = rate
         self._speed = speed
         self.verbose = verbose
+        self.autocalibrate = autocalibrate
+        self.last = None
+
         self.queue = queue.Queue()
         self.thread = threading.Thread(target=self.main)
         self.thread.daemon = True
         self.thread.start()
+        self._com = None
 
     def main(self):
         SerialException = serial.serialutil.SerialException
         while True:
             try:
                 with serial.Serial(self.device, self.rate, timeout=1) as com:
+                    self._com = com
                     self.loop(com)
             except (FileNotFoundError, TypeError, SerialException):
                 print("Shapeoko connection error...")
@@ -40,8 +46,31 @@ class Shapeoko(object):
     def loop(self, com):
         time.sleep(1) # allow to startup
         print("Connected to Shapeoko")
+
+        prequeue = queue.Queue()
+        if self.autocalibrate:
+            prequeue.put(("G28 XYZ", threading.Event(), [False], 30))
+            if self.last:
+                pos = "X{x:f} Y{y:f} Z{z:f} F8000".format(**self.last)
+                prequeue.put(("G1 %s" % pos, threading.Event(), [False], 30))
+
         while com.isOpen():
-            cmd, event, status, timeout = self.queue.get()
+            q = self.queue if prequeue.empty() else prequeue
+
+            try:
+                cmd, event, status, timeout = q.get(True, 1)
+            except queue.Empty:
+                while True:
+                    line = com.readline()
+                    try:
+                        if len(line) and self.verbose:
+                            print(line[:-1].decode())
+                        elif not len(line):
+                            break
+                    except:
+                        pass
+                continue
+
             try:
                 com.write(("%s\r\n" % cmd).encode())
                 com.flush()
@@ -52,9 +81,14 @@ class Shapeoko(object):
                 while True:
                     line = com.readline()
 
-                    # verbose logging
-                    if len(line) and self.verbose:
-                        print(line[:-1].decode())
+                    # verbose logging and command stati
+                    try:
+                        msg = line[:-1].decode()
+                        if len(msg) and self.verbose:
+                            print(msg)
+                        status[1].append(msg)
+                    except:
+                        pass
 
                     # command complete
                     if line[:2] == b'ok':
@@ -65,23 +99,40 @@ class Shapeoko(object):
                     if time.time() > beginning + timeout:
                         break
             finally:
-                self.queue.task_done()
+                q.task_done()
                 event.set()
 
     # do command and block until ok
-    def do(self, cmd, timeout=30):
+    def do(self, cmd, timeout=30, nopos=False):
         status = [False]
         event = threading.Event()
         self.queue.put((cmd, event, status, timeout))
         event.wait(timeout)
+
+        if not nopos and self.autocalibrate:
+            self.last = self.position()
+
         return status[0]
 
     # block on command until complete
-    def do_wait(self, cmd, timeout=30):
+    def do_wait(self, cmd, timeout=30, nopos=False):
         beginning = time.time()
-        status = self.do(cmd, timeout)
-        self.do("M400", beginning + timeout - time.time())
+        status = self.do(cmd, timeout, nopos=nopos)
+        self.wait(beginning + timeout - time.time())
         return status
+
+    # return command information
+    def do_get(self, cmd, timeout=30, nopos=False):
+        status = [False, []]
+        event = threading.Event()
+        self.queue.put((cmd, event, status, timeout))
+        event.wait(timeout)
+        self.wait(timeout)
+
+        if not nopos and self.autocalibrate:
+            self.last = self.position()
+
+        return status[0], status[1]
 
     # block on a sequence of commands until all complete
     def do_seq(self, *cmds, timeout=30):
@@ -111,15 +162,45 @@ class Shapeoko(object):
                     zip(symbols,params) if param is not None)
         return self.do_wait("G1 %s" % args, timeout)
 
+    # read current stepper-estimated position
+    def position(self, timeout=30, count=False):
+        status, data = self.do_get("M114", timeout, nopos=True)
+        def parse(line):
+            try:
+                a, b = line.lower().split('count')
+                pattern = re.compile(r"([a-z]):\s*([-+]?[0-9]+\.[0-9]+)")
+                matches = re.findall(pattern, b if count else a)
+                return dict((axis, float(pos)) for axis,pos in matches)
+            except:
+                return None
+        parsed = [p for p in map(parse, data) if p is not None]
+        return parsed[-1] if len(parsed) else {}
+
+    def wait(self, timeout=30):
+        return self.do("M400", nopos=True)
+
+    def kill(self):
+        try:
+            for _ in range(3):
+                print("EMERGENCY STOP!!!")
+                self._com.write(b'M112\r\n')
+                self._com.flush()
+                time.sleep(1)
+        finally:
+            os._exit(1)
+
+
 if __name__ == '__main__':
     import cmd
     import glob
+    import signal
 
     class ShapeokoInterpreter(cmd.Cmd):
         prompt = 'Shapeoko# '
         def __init__(self):
             cmd.Cmd.__init__(self)
             self.shap = None
+            signal.signal(signal.SIGINT, self.do_kill)
 
         def emptyline(self):
             pass
@@ -227,6 +308,15 @@ if __name__ == '__main__':
                 return
             self.shap.speed(float(set))
             print("Set speed to ", set)
+
+        @serial_cmd
+        def do_pos(self, *args):
+            pos = self.shap.position()
+            print(pos)
+
+        @serial_cmd
+        def do_kill(self, *args):
+            self.shap.kill()
 
         def do_EOF(self, line):
             self.do_close()
