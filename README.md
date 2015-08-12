@@ -37,5 +37,5 @@ to run a test, do `./test.py $test`, where `$test` is the name of a test:
 
 alternatively, `./test.py` to list tests
 
-to interact with the shapeoko directly, `python -m hw.shapeoko.driver`
+to interact with the shapeoko directly, use `python -m hw.shapeoko.driver` for a wrapped shell or run the `serial` test and connect to the shapeoko's serial port
 
