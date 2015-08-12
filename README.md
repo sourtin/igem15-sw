@@ -34,6 +34,7 @@ to run a test, do `./test.py $test`, where `$test` is the name of a test:
 * `circles` -- home the shapeoko (connected to a `/dev/ttyACM*`) and then move the head in a circle of radius 80 and origin (100,100)
 * `serial` -- interact directly with a serial device (e.g. the SO1's marlin firmware via gcode)
 * `shapeoko` -- interact with the shapeoko hardware interface, first calibrates the head and moves it a bit
+* `needle` -- test shapeoko position consistency by punching some paper with a needle at defined points repeatedly
 
 alternatively, `./test.py` to list tests
 
