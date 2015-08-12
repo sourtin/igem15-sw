@@ -36,5 +36,6 @@ to run a test, do `./test.py $test`, where `$test` is the name of a test:
 * `shapeoko` -- interact with the shapeoko hardware interface, first calibrates the head and moves it a bit
 
 alternatively, `./test.py` to list tests
+
 to interact with the shapeoko directly, `python -m hw.shapeoko.driver`
 
