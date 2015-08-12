@@ -35,6 +35,7 @@ to run a test, do `./test.py $test`, where `$test` is the name of a test:
 * `serial` -- interact directly with a serial device (e.g. the SO1's marlin firmware via gcode)
 * `shapeoko` -- interact with the shapeoko hardware interface, first calibrates the head and moves it a bit
 * `needle` -- test shapeoko position consistency by punching some paper with a needle at defined points repeatedly
+* `rectangle` -- test shapeoko position consistency by tracing a rectangle repeatedly
 
 alternatively, `./test.py` to list tests
 
