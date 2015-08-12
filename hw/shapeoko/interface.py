@@ -1,9 +1,39 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from lib.hw import Stage, Status, Vector, HardwareException
+from lib.hw import Stage, Head, Status, Vector, HardwareException
+from lib.canvas import Rectangle
 from .driver import Shapeoko
 
 class XY(Stage):
+    class Empty(Head):
+        def __init__(self):
+            self.stati = {'ready': False, 'idle': False, 'calibrated': True}
+            self.parent = None
+
+        def imprint(self, parent):
+            self.parent = parent
+            pstat = parent.status()
+            if pstat.ready and pstat.calibrated:
+                self.stati['ready'] = True
+                self.stati['idle'] = True
+
+        def calibrate(self):
+            pass
+
+        def status(self):
+            pos = self.parent.position() if self.parent is not None else None
+            attached = (self == self.parent.head) if self.parent is not None else None
+            return Status(position=pos, attached=attached, **self.stati)
+
+        def config(self):
+            pass
+
+        def act(self, cb, coords, **kwargs):
+            self.parent.select(self)
+            for coord in coords:
+                self.parent.move(coord)
+            cb(True)
+
     def _initialise(self, device, bounds, **options):
         self.stati = {'ready': False, 'calibrated': False}
         self.pos = Vector(0, 0)
@@ -14,6 +44,7 @@ class XY(Stage):
         self.shapeoko = Shapeoko(device, **options)
         self.calibrate(bounds)
         self.stati['ready'] = True
+
         self._garcon.set()
 
     def calibrate(self, bounds):
@@ -24,30 +55,41 @@ class XY(Stage):
         )
         self.pos = Vector(0, 0)
 
-        (xx, xr), (yy, yr), z = bounds
-        self._conversions = (xx / xr, yy / yr)
-        self._bounds = bounds[:2]
-        self._boundz = z
+        self._conversions = tuple((max-min)/real for min,max,real in bounds)
+        self._bounds = bounds
+
+    def check_bounds(self, x=None, y=None, z=None):
+        check = all(min <= v <= max for (v,(min,max,_)) in zip([x, y, z], self._bounds) if v is not None)
+        if not check:
+            print("Warning: coordinate (%r,%r,%r) outside bounds" % (x,y,z))
+        return check
+
+    def bounded(self, x=None, y=None, z=None):
+        values = zip(['x','y','z'], [x,y,z])
+        return dict((axis, sorted([min, v, max])[1]) for ((axis,v),(min,max,_)) in
+                zip(values, self._bounds) if v is not None)
+
+    def bounds(self):
+        (_, _, xm), (_, _, ym), _ = self._bounds
+        return Rectangle(Vector(0, 0), Vector(1, 0), xm, ym)
 
     def real2xy(self, coord):
         self.wait()
-        (_, xm), (_, ym) = self._bounds
-        xf, yf = self._conversions
         x, y = coord
-
-        if x < 0 or x > xm or y < 0 or y > ym:
-            print("Warning[Shapeoko:XY.real2xy]: coordinate outside bounds")
-        return Vector(x * xf, y * yf)
+        xf, yf, _ = self._conversions
+        (xo,_,_), (yo,_,_), _ = self._bounds
+        vec = Vector(x * xf + xo, y * yf + yo)
+        self.check_bounds(*vec)
+        return vec
 
     def xy2real(self, coord):
         self.wait()
-        (xm, _), (ym, _) = self._bounds
-        xf, yf = self._conversions
         x, y = coord
-
-        if x < 0 or x > xm or y < 0 or y > ym:
-            print("Warning[Shapeoko:XY.xy2real]: coordinate outside bounds")
-        return Vector(x / xf, y / yf)
+        self.check_bounds(x, y)
+        xf, yf, _ = self._conversions
+        (xo,_,_), (yo,_,_), _ = self._bounds
+        vec = Vector((x - xo) / xf, (y - yo) / yf)
+        return vec
 
     def status(self):
         self.wait()
@@ -58,8 +100,7 @@ class XY(Stage):
             return Status(position=coord, height=pos['z'],
                     attachment=self.head, idle=idle, **self.stati)
         except:
-            bounds = self._bounds + [self._boundz]
-            self.calibrate(bounds)
+            self.calibrate(self._bounds)
             return Status(position=Vector(0, 0), height=pos['z'],
                     attachment=self.head, idle=True, **self.stati)
 
@@ -71,66 +112,21 @@ class XY(Stage):
     def list(self):
         return list(self.heads)
 
-    def bounds(self):
-        (_, xm), (_, ym) = self._bounds
-        return Rectangle(Vector(0, 0), Vector(1, 0), xm, ym)
-
-    def boundz(self):
-        return self._boundz
-
-    def bounded(self, coord):
-        (xm, _), (ym, _) = self._bounds
-        x, y = coord
-        x = sorted([0, x, xm])[1]
-        y = sorted([0, y, ym])[1]
-        return Vector(x, y)
-
-    def boundedz(self, z):
-        zn, zx = self._boundz
-        return sorted([zn, z, zx])[1]
-
     def select(self, head):
+        if head == self.head:
+            return
+
         print("Please load the following head and type done when ready:")
         print("    %r" % head)
-        answer = input("... [done/FAILURE]: ").strip().lower()
-        if answer != "done":
+        if  input("... [done/FAILURE]: ").strip().lower() != "done":
             raise HardwareException("User failed to load head %r" % head)
+        self.head = head
 
     def move(self, coord):
-        coord = self.bounded(self.real2xy(coord))
-        print(coord)
-        self.shapeoko.move(coord.x(), coord.y())
+        coord = self.bounded(*self.real2xy(coord))
+        self.shapeoko.move(coord['x'], coord['y'])
 
     def movez(self, z):
-        z = self.boundedz(z)
+        z = self.bounded(z=z)['z']
         self.shapeoko.move(z=z)
-
-if __name__ == '__main__':
-    import os
-    import glob
-
-    s = None
-    bounds = [(190, 0.17), (190, 0.17), (-400, 0)]
-    while True:
-        print("Please pick a serial device, enter to refresh, or q to exit:")
-        devs = glob.glob('/dev/serial/by-id/*')
-        for i in range(len(devs)):
-            print(" %2d) %s" % (i, devs[i]))
-        choice = input("# ").strip()
-        print()
-
-        if 'q' in choice.lower():
-            print("goodbye.")
-            os._exit(0)
-        else:
-            try:
-                dev = devs[int(choice)]
-            except:
-                continue
-
-            s = XY(dev, bounds)
-            break
-    print(s.status())
-
-        
 
