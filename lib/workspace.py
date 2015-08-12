@@ -4,11 +4,11 @@ from queue import Queue, Empty
 from threading import Thread, Event
 
 class Workspace(object):
-    def __init__(self, stage):
+    def __init__(self, stage, qsize=500):
         self.stage = stage
         self.stage.wait()
 
-        self.queue = Queue()
+        self.queue = Queue(qsize)
         self.queue_optimisation = False
         self.playing = Event()
         self.playing.set()
