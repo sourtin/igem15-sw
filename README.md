@@ -2,6 +2,8 @@
 ## Microscopy software
 The software is modular and consists of the following layers:
 * `hw` -- implements the hardware drivers with python bindings for both the xy translation stage and any heads used
+    * `virtual` -- a virtual example and testing XY stage with overhead camera, microscope and pen
+    * `shapeoko` -- interface to the shapeoko allowing abstract control and some recovery from disconnection
 * `lib` -- provides an interface to the hardware drivers and some nice features:
     * `workspace` -- the `Workspace` class is the primary interface and allows querying the underlying hardware for state and available heads; also provides for enqueuement of head actions and smart (optimised) queueing where a run of head actions can be sorted for reduced time
     * `vector` -- a basic 2d vector library with many useful functions
@@ -27,9 +29,12 @@ Note: units to be furlongs, fortnights and firkins
 * `printrun` -- gui interface for controlling `gcode` hardware
 
 ## Tests
-to run a test, do `python3 -m var.tests.$test`, where `$test` is the name of a test:
+to run a test, do `./test.py $test`, where `$test` is the name of a test:
 * `virtual` -- virtual shapeoko; place `andromeda.tif` ([a gigapixel image of andromeda](https://www.spacetelescope.org/images/heic1502a/), make sure to convert to a pyramidal tif using `vips tiffsave /path/to/original.tif /tmp/andromeda.tif --tile --tile-width=256 --tile-height=256 --pyramid`; you may use the 40K tif rather than the proprietary psb version) in `/tmp`
 * `circles` -- home the shapeoko (connected to a `/dev/ttyACM*`) and then move the head in a circle of radius 80 and origin (100,100)
+* `serial` -- interact directly with a serial device (e.g. the SO1's marlin firmware via gcode)
+* `shapeoko` -- interact with the shapeoko hardware interface, first calibrates the head and moves it a bit
 
+alternatively, `./test.py` to list tests
 to interact with the shapeoko directly, `python -m hw.shapeoko.driver`
 
