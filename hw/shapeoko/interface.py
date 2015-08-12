@@ -35,6 +35,9 @@ class XY(Stage):
             cb(True)
 
     def _initialise(self, device, bounds, **options):
+        """bounds: [(xmin, xmax, xreal), (y...), (z...)]
+              where xmin,xmax are the shapeoko coordinate bounds
+              and xreal is the real length in meters between xmin and xmax"""
         self.stati = {'ready': False, 'calibrated': False}
         self.pos = Vector(0, 0)
         self.heads = set()
