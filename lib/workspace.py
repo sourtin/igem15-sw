@@ -12,6 +12,7 @@ class Workspace(object):
         self.queue_optimisation = False
         self.playing = Event()
         self.playing.set()
+        self.idle = Event()
         
         self.thread = Thread(target=self.worker)
         self.thread.daemon = True
@@ -46,12 +47,16 @@ class Workspace(object):
     def play(self):
         self.playing.set()
 
+    def wait(self):
+        self.idle.wait()
+
     def worker(self):
         optimisation = False
         last = None
         items = []
 
         def do(item):
+            self.idle.clear()
             self.playing.wait()
             head, coords, cb, config, options, condition = item
 
@@ -75,6 +80,9 @@ class Workspace(object):
                 return True
 
         while True:
+            if self.queue.empty():
+                self.idle.set()
+
             self.queue_optimisation = optimisation
             if optimisation:
                 try:
