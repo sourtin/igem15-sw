@@ -58,6 +58,8 @@ if __name__ == '__main__':
     random.seed()
     uni = random.uniform
     rcoord = lambda:Vector(uni(0,0.1), uni(0,0.1))
-    ws.enqueue(ε, [rcoord() for i in range(int(num))], lambda _:None, {}, {})
+    for i in range(int(num) // 2):
+        ws.enqueue(ε, [rcoord()], lambda _:None, {}, {})
+    ws.enqueue(ε, [rcoord() for i in range(int(num) // 2)], lambda _:None, {}, {})
 
 
