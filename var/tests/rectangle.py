@@ -36,15 +36,12 @@ class Needle(Head):
         down, up = self.zs
 
         self.parent.movez(up)
-        print("Needle up")
         for coord in coords:
             self.parent.move(coord)
 
         down, up = self.zs
         self.parent.movez(down)
-        print("Needle down")
         self.parent.movez(up)
-        print("Needle up")
 
         cb(True)
 
@@ -88,6 +85,7 @@ if __name__ == '__main__':
     ws = Workspace(shapeoko)
     ws.optimise_queue(False)
 
+    down = -400
     up = -385
     done = threading.Event()
     ws.enqueue(ν, [Vector(0,0)], lambda _:done.set(), {'down': up, 'up': up}, {})
@@ -95,8 +93,7 @@ if __name__ == '__main__':
     input("Ready? ")
 
     while True:
-        ws.enqueue(ν, [Vector(0,0)], lambda _:None, {'down': -400, 'up': up}, {})
-        ws.enqueue(ν, [Vector(0.05,0.05)], lambda _:None, {'down': -400, 'up': up}, {})
+        ws.enqueue(ν, [Vector(0,0), Vector(0,0.05), Vector(0.05,0.05), Vector(0.05,0)], lambda _:None, {'down': down, 'up': down}, {})
 
 
 

@@ -13,7 +13,7 @@ if __name__ == '__main__':
     pp = pprint.PrettyPrinter(indent=4).pprint
 
     shapeoko = None
-    bounds = [(0, 190, 0.17), (0, 190, 0.17), (-400, 0, 0.1)]
+    bounds = [(0, 190, 0.1717), (0, 190, 0.1717), (-400, 0, 0.1)]
     while True:
         print("Please pick a serial device, enter to refresh, or q to exit:")
         devs = glob.glob('/dev/serial/by-id/*')
