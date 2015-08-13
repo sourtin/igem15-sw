@@ -29,7 +29,7 @@ class XY(Stage):
             return Status(position=pos, attached=attached, **self.stati)
 
         def config(self):
-            pass
+            return {}
 
         def act(self, cb, coords, **kwargs):
             self.parent.select(self)

@@ -30,6 +30,7 @@ class Needle(Head):
     def config(self, down=None, up=None):
         if down and up:
             self.zs = down, up
+        return dict(zip(['down', 'up'], self.zs))
 
     def act(self, cb, coords, **kwargs):
         self.parent.select(self)
