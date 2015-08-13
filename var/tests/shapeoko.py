@@ -62,4 +62,7 @@ if __name__ == '__main__':
         ws.enqueue(ε, [rcoord()], lambda _:None, {}, {})
     ws.enqueue(ε, [rcoord() for i in range(int(num) // 2)], lambda _:None, {}, {})
 
+    ws.optimise_queue(False)
+    ws.enqueue(ε, [Vector(0, 0)], lambda _:None, {}, {})
+
 

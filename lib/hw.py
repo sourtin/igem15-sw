@@ -73,14 +73,14 @@ class Stage:
     __metaclass__ = ABCMeta
 
     def __init__(self, *args, **kwargs):
-        self._garcon = threading.Event()
+        self._garçon = threading.Event()
         thread = threading.Thread(target=self._initialise, args=args, kwargs=kwargs)
         thread.daemon = True
         thread.start()
 
     @abstractmethod
     def _initialise(self, *args, **kwargs):
-        self._garcon.set()
+        self._garçon.set()
 
     @abstractmethod
     def calibrate(self):
@@ -98,7 +98,7 @@ class Stage:
         return Status(ready=False, idle=False, calibrated=False, position=Vector(0,0), attachment=None)
 
     def wait(self):
-        self._garcon.wait()
+        self._garçon.wait()
 
     @abstractmethod
     def register(self, head, **kwargs):
