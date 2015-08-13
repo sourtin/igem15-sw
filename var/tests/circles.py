@@ -6,6 +6,11 @@ import time
 import glob
 
 if __name__ == '__main__':
+    """very simple circle drawing test (should instead use
+       G2/G3 to draw arcs); connects to the first serial
+       port it finds, calibrates it and then moves in a
+       full circle with 1deg resolution"""
+
     com = glob.glob('/dev/ttyACM*')[0]
     print(com)
     stage = Shapeoko(com)
@@ -18,7 +23,7 @@ if __name__ == '__main__':
     move = lambda v: stage.move([v.x(), v.y(), None])
 
     move(origin)
-    for deg in range(0, 360, 15):
+    for deg in range(0, 360, 1):
         point = origin + Vector.from_polar(radius, d2r(deg))
         move(point)
 

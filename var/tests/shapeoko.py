@@ -4,6 +4,16 @@ from lib.vector import Vector
 from lib.canvas import Rectangle, Polygon, Canvas
 from lib.workspace import Workspace
 
+"""similar to the virtual test, except no imaging equipment is attached
+   to the shapeoko as of currently. instantiates the shapeoko class defined
+   in hw.shapeoko with current calibration estimates, then requests you to
+   choose a serial device (by name! this allows hotplugging too :P)
+
+   it will then initialise and calibrate it, choose an empty head for simple
+   movement testing, and enqueue 6 arbitrary points with queue optimisation
+
+   you may then enter any number of random points to be enqueued"""
+
 if __name__ == '__main__':
     import os
     import glob
@@ -60,9 +70,9 @@ if __name__ == '__main__':
     rcoord = lambda:Vector(uni(0,0.1), uni(0,0.1))
     for i in range(int(num) // 2):
         ws.enqueue(ε, [rcoord()], lambda _:None, {}, {})
-    ws.enqueue(ε, [rcoord() for i in range(int(num) // 2)], lambda _:None, {}, {})
 
     ws.optimise_queue(False)
+    ws.enqueue(ε, [rcoord() for i in range(int(num) - (int(num) // 2))], lambda _:None, {}, {})
     ws.enqueue(ε, [Vector(0, 0)], lambda _:None, {}, {})
 
 

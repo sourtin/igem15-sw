@@ -8,6 +8,38 @@ import numpy as np
 from PIL import Image, ImageSequence
 from vector import Vector
 
+"""bants
+
+   some background:
+      in the cucats puzzlehunt 2015 we received a mysterious
+      file, 'ants.gif', from a previous committee member who
+      has since graduated; the gif contained some 600 ants,
+      as small as individual pixels, moving in fixed linear
+      trajectories for a hundred frames
+
+      the gif was then assigned a title 'all you zombies',
+      a reference to a short story involving travelling back
+      in time; this indicates the task - to simulate the ants
+      back in time, upon which they will converge on a message
+
+   this seemed like an appropriate image tracking challenge to
+   write some tracking algorithms; this is my (Will Earley's)
+   entry; the name (bants) derives from backwards ants
+
+   unfortunately it does not successfully yield a readable
+   message (T-symmetry), which I am going to insist is because
+   of quantisation error during assembly of the original puzzle :P
+
+   we should be able to adapt the algorithms in this to track
+   bacteria (e.g. e. coli) over time, and also correct for
+   xy stage drift during timelapses
+
+   this was just a quick challenge so is left mostly undocumented
+   save for some sporadic comments and section headers; hopefully
+   variable and function names explain enough to understand the
+   gist of the code, though the algorithm may be a bit of a
+   mystery; there are no plans to remedy this."""
+
 #########################
 #### image functions ####
 #########################

@@ -3,6 +3,30 @@ from hw.virtual import XY, Σ, Μ, Pen, Layer, Vector
 from lib.canvas import Rectangle, Polygon, Canvas
 from lib.workspace import Workspace
 
+"""test the virtual xy stage with three heads:
+      σ, an overhead camera
+      μ, a microscope
+      p, a pen
+   the cameras are given a gigapixel image of andromeda,
+   to set this up follow these instructions from the
+   README.md:
+
+       place `andromeda.tif` ([a gigapixel image of andromeda](https://www.spacetelescope.org/images/heic1502a/), make sure to convert to a pyramidal tif using `vips tiffsave /path/to/original.tif /tmp/andromeda.tif --tile --tile-width=256 --tile-height=256 --pyramid`; you may use the 40K tif rather than the proprietary psb version) in `/tmp`
+
+   it will then load this image using openslide, setup
+   two layers -- one zoomed out for the overhead camera
+   and one intermediately zoomed in for the microscope
+   to simulate approximate camera resolution (?)
+
+   we will then enqueue 6 arbitrary points using queue
+   optimisation; then we create a canvas object and
+   display all the images using feh
+
+   finally you are free to control the stage yourself,
+   just run the test using the interactive flag
+   (this should automatically be applied if you use
+    test.py in the repository root :P)"""
+
 if __name__ == '__main__':
     import pprint
     pp = pprint.PrettyPrinter(indent=4).pprint

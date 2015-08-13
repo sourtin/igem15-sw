@@ -6,6 +6,12 @@ import os
 import sys
 import glob
 
+"""very simple serial rw interface;
+   connects to the first serial device it finds (or
+   a cli-specified one in $1) and will print every
+   line received and send any lines you enter until
+   ^D is entered."""
+
 try:
     ser = serial.Serial(sys.argv[1], 115200)
 except (FileNotFoundError, serial.serialutil.SerialException, IndexError):
@@ -16,6 +22,7 @@ except (FileNotFoundError, serial.serialutil.SerialException, IndexError):
     ser = serial.Serial(devs[0], 115200, timeout=1)
 
 def cat():
+    """this thread simply prints any lines received over com"""
     while True:
         try:
             line = ser.readline()
@@ -32,7 +39,7 @@ def cat():
     ser.close()
     os._exit(1)
 t = threading.Thread(target=cat)
-t.daemon = True
+t.daemon = True #no zombies
 t.start()
 
 while True:
