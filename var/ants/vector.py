@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 from math import sqrt, atan2, cos, sin, acos, asin, pi
 
+"""for a bit more documentation, see lib.vector"""
+
 class Vector(tuple):
     def __new__(cls, x, y):
         return tuple.__new__(cls, (x, y))

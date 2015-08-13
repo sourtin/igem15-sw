@@ -5,7 +5,20 @@ from lib.canvas import Rectangle, Polygon, Canvas
 from lib.workspace import Workspace
 from lib.hw import Head
 
+"""Based on the needle test, this actually is designed to use a pen and
+   draw the same square ad infinitum. Ideally use a very fine-tip pen
+   and some non-blotting paper (e.g. tracing???)
+
+   the square should be about a 5cm side
+
+   after calibration, the head will lift up about 4mm to let you position
+   the pen, the pen will then be lowered by 4mm whilst drawing the square
+   and lifted afterwards"""
+
 class Needle(Head):
+    """A Needle head for the shapeoko, moves through a series of
+       supplied points and then stabs at the last point"""
+
     def __init__(self):
         self.stati = {'ready': False, 'idle': False, 'calibrated': True}
         self.parent = None
@@ -18,6 +31,8 @@ class Needle(Head):
             self.stati['idle'] = True
             _, _, (z0, z1, _) = parent._bounds
             self.zs = z0, z0*0.95 + z1*0.05
+            # by default, the needle down position is the calibration
+            # point, and the up position is 5% above
 
     def calibrate(self):
         pass
@@ -28,11 +43,15 @@ class Needle(Head):
         return Status(position=pos, attached=attached, **self.stati)
 
     def config(self, down=None, up=None):
+        """change the down and up heights"""
         if down and up:
             self.zs = down, up
         return dict(zip(['down', 'up'], self.zs))
 
     def act(self, cb, coords, **kwargs):
+        """move along the path given by coords and
+           stab at the end"""
+
         self.parent.select(self)
         down, up = self.zs
 
