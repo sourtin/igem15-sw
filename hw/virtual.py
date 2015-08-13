@@ -1,5 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""Simulate an XY stage and other associated hardware
+   for testing in the context of the rest of the library.
+   
+   Use the var.tests.virtual test to setup an XY stage
+   with a view of the Andromeda galaxy; This can be used
+   to take overview pictures as well as microscopy images,
+   and to fake mark the canvas.
+   
+   XY -- xy stage
+   Σ -- overhead camera
+   Μ -- microscope (note this is capital μ!!)
+   Pen -- annotater (supposedly marks the canvas with a pen) """
+
+
 from lib.canvas import Image, Rectangle
 from lib.hw import Stage, Head, Camera, Status, Vector
 import cv2
@@ -16,7 +30,10 @@ class XY(Stage):
         self.calibrate()
         self.stati['ready'] = True
         self.stati['idle'] = True
-        self._garcon.set()
+
+        # we are in our own thread, so we need to indicate
+        # to the garçon ('waiter') that we are done
+        self._garçon.set()
 
     def calibrate(self):
         print("Calibrating the virtual stage...")
@@ -26,7 +43,8 @@ class XY(Stage):
         self.stati['calibrated'] = True
 
     def status(self):
-        self.wait()
+        self.wait() # initialisation is in a separate thread, so wait
+                    # for it to complete (self._garçon -- the 'waiter')
         return Status(position=self.pos, attachment=self.head, **self.stati)
 
     def register(self, head):
@@ -35,9 +53,10 @@ class XY(Stage):
         return head
 
     def list(self):
-        return self.heads
+        return list(self.heads)
 
     def bounds(self):
+        # origin, x-axis unit vector, width, height
         return Rectangle(Vector(0, 0), Vector(1, 0), *self.dims)
 
     def select(self, head):
@@ -48,6 +67,8 @@ class XY(Stage):
         δ = coord - self.pos
         print("Actuating servos... translating by Δx=%.2em, Δy=%.2em" % δ)
         self.pos += δ
+
+        # impose a quantisation error of 1mm :P
         self.pos = round(self.pos, 3)
         print("\t%r, %r" % (coord, self.pos))
 
@@ -55,8 +76,10 @@ class XY(Stage):
         return self.pos
 
 class Σ(Camera):
+    """The overhead camera"""
+
     def __init__(self, layer):
-        self.backend = layer
+        self.backend = layer # see the layer class later on
         self.stati = {'ready': False, 'idle': False, 'calibrated': False, 'attached': True}
         self.parent = None
         self.calibration = None
@@ -80,17 +103,20 @@ class Σ(Camera):
     def config(self, **config):
         print("Configuring", self, ":", config)
 
-    def act(self, cb, coords, **kwargs):
-        cb(self.capture())
+    def act(self, callback, coords, **kwargs):
+        callback(self.capture())
 
     def capture(self):
         im = self.backend.get(0, 0, *self.backend.shape)
         return Image(self.calibration, im)
+        # Image is defined under lib.canvas and is a
+        # wrapper over an opencv/numpy image
 
     def livefeed(self):
         return self.capture()
 
     def orientation(self):
+        # the camera is not rotated wrt the xy axes
         return 0
 
     def resolution(self):
@@ -100,8 +126,10 @@ class Σ(Camera):
         return 1 / self.backend.factorz
 
 class Μ(Camera):
+    """The microscope class, note that this is capital μ!"""
+
     def __init__(self, layer, shape):
-        self.backend = layer
+        self.backend = layer # see the layer class later on
         self.shape = shape
         self.stati = {'ready': False, 'idle': False, 'calibrated': False}
         self.parent = None
@@ -117,6 +145,8 @@ class Μ(Camera):
         self.calibrate()
 
     def uncalibrate(self):
+        """generate some fake lens distortion to simulate an uncalibrated camera"""
+
         w, h = self.shape
         x = w//8
         y = h//8
@@ -154,6 +184,8 @@ class Μ(Camera):
         print("Configuring", self, ":", config)
 
     def act(self, cb, coords, **kwargs):
+        # the xy stage has 1mm precision, we then actuate our own
+        # finer precision servos to account for this
         coord = coords[0]
         self.parent.select(self)
         self.parent.move(coord)
@@ -163,6 +195,8 @@ class Μ(Camera):
         cb(self.capture(*coord))
 
     def capture(self, x, y):
+        """capture an image and apply our calibration parameters to (un)distort it"""
+
         im = self.backend.get(x, y, *self.shape)
         if self.calibration is not None:
             _, mat, coe, *_ = self.calibration
@@ -184,6 +218,8 @@ class Μ(Camera):
         return 1 / self.backend.factorz
 
 class Pen(Head):
+    """A marker head"""
+
     def __init__(self):
         self.stati = {'ready': False, 'idle': False, 'calibrated': False}
         self.parent = None
@@ -208,9 +244,12 @@ class Pen(Head):
         return Status(position=pos, attached=attached, **self.stati)
 
     def config(self, colour):
+        """configure the marker colour"""
         self.colour = colour
 
     def act(self, cb, coords, **kwargs):
+        """draw a line defined by the specified coords"""
+
         coords = [x + self.calibration for x in coords]
         self.parent.select(self)
         self.parent.move(coords.pop(0))
@@ -223,6 +262,11 @@ class Pen(Head):
         cb(True)
 
 class Layer(object):
+    """Layer object; wraps an openslide image and
+       provides a view into one of the openslide layers
+       and translates between 'real-world' coordinates
+       and the images internal coordinates"""
+
     def __init__(self, im, z, side):
         iw, ih = im.dimensions
         lw, lh = im.level_dimensions[z]
@@ -236,6 +280,9 @@ class Layer(object):
         self.shape = lw, lh
 
     def get(self, x, y, w, h):
+        """Return a section of the layer;
+              xy are real-world coordinates
+              wh are in pixels and correspond to the 'camera' resolution"""
         x, y = map(lambda v: int(v*self.factor0), (x, y))
         return Image.pil2cv(self.im.read_region((x, y), self.z, (w, h)))
 

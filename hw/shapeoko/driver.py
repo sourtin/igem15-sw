@@ -8,19 +8,31 @@ import traceback
 import time
 
 class Shapeoko(object):
+    """Shapeoko SO1 driver -- interfaces with marlin in gcode"""
+
     class Axes:
         x='X'
         y='Y'
         z='Z'
 
     def __init__(self, device, rate=115200, speed=9000, verbose=False, autocalibrate=False):
+        """initialise parameters and start main loop;
+              device - serial port, e.g. /dev/serial/by-id/shapeoko
+              rate - serial baud rate
+              speed - initial shapeoko movement speed in mm min^-1
+              verbose - print the serial communications to stdout
+              autocalibrate - recalibrate the shapeoko after disconnections
+                              and return to the last known position"""
+           
         self.device = device
         self.rate = rate
         self._speed = speed
         self.verbose = verbose
         self.autocalibrate = autocalibrate
         self.last = None
+        self.journal = None
 
+        # action queue
         self.queue = queue.Queue()
         self.thread = threading.Thread(target=self.main)
         self.thread.daemon = True
@@ -28,6 +40,7 @@ class Shapeoko(object):
         self._com = None
 
     def main(self):
+        """main loop, supports hotplugging"""
         SerialException = serial.serialutil.SerialException
         while True:
             try:
@@ -44,22 +57,42 @@ class Shapeoko(object):
                 time.sleep(10)
 
     def loop(self, com):
-        time.sleep(1) # allow to startup
+        """loop -- a single serial session, sends commands to the
+                   shapeoko and sets events when each is complete ('ok')"""
+
+        # the shapeoko sometimes needs a second to startup
+        time.sleep(1)
         print("Connected to Shapeoko")
 
+        # recalibrate the shapeoko after hotplugging
+        # and return to the last known position
         prequeue = queue.Queue()
         if self.autocalibrate:
             prequeue.put(("G28 XYZ", threading.Event(), [False], 30))
             if self.last:
                 pos = "X{x:f} Y{y:f} Z{z:f} F8000".format(**self.last)
                 prequeue.put(("G1 %s" % pos, threading.Event(), [False], 30))
+            if self.journal:
+                prequeue.put(self.journal)
 
         while com.isOpen():
+            # run the autocalibration queue first
             q = self.queue if prequeue.empty() else prequeue
 
             try:
-                cmd, event, status, timeout = q.get(True, 1)
+                # retrueve a queued command
+                if q != prequeue:
+                    # store the command in progress
+                    # in case of cable unplugging
+                    self.journal = q.get(True, 1)
+                    cmd, event, status, timeout = self.journal
+                else:
+                    cmd, event, status, timeout = q.get(True, 1)
+
             except queue.Empty:
+                # checks if the cable is unplugged
+                # also allows verbose output even when
+                # no command is being done
                 while True:
                     line = com.readline()
                     try:
@@ -75,8 +108,9 @@ class Shapeoko(object):
                 com.write(("%s\r\n" % cmd).encode())
                 com.flush()
                 if self.verbose:
-                    print("Sent: %s" % cmd)
+                    print("$ %s" % cmd)
 
+                # timeout
                 beginning = time.time()
                 while True:
                     line = com.readline()
@@ -102,40 +136,50 @@ class Shapeoko(object):
                 q.task_done()
                 event.set()
 
-    # do command and block until ok
     def do(self, cmd, timeout=30, nopos=False):
+        """do the specified command and block until 'ok' received,
+           some commands are asynchronous (e.g. G1) and so do(...)
+           may return before completion; use do_wait(...)"""
+
         status = [False]
         event = threading.Event()
         self.queue.put((cmd, event, status, timeout))
         event.wait(timeout)
 
+        # query the current position so autocalibration can return to it
         if not nopos and self.autocalibrate:
             self.last = self.position()
 
         return status[0]
 
-    # block on command until complete
     def do_wait(self, cmd, timeout=30, nopos=False):
+        """do the specified command and block until all
+           queued commands are complete (M400)"""
+
         beginning = time.time()
-        status = self.do(cmd, timeout, nopos=nopos)
-        self.wait(beginning + timeout - time.time())
+        status = self.do(cmd, timeout, nopos=True)
+        self.wait(beginning + timeout - time.time(), nopos=nopos)
         return status
 
-    # return command information
     def do_get(self, cmd, timeout=30, nopos=False):
+        """do a command and return any status messages received,
+           e.g. for determining the current head position"""
+
         status = [False, []]
         event = threading.Event()
         self.queue.put((cmd, event, status, timeout))
         event.wait(timeout)
-        self.wait(timeout)
+        self.wait(timeout, nopos=True)
 
+        # query the current position so autocalibration can return to it
         if not nopos and self.autocalibrate:
             self.last = self.position()
 
         return status[0], status[1]
 
-    # block on a sequence of commands until all complete
     def do_seq(self, *cmds, timeout=30):
+        """do a sequence of commands and block until all finished"""
+
         status = True
         for cmd in ("M400",) + cmds + ("M400",):
             status &= self.do(cmd, timeout)
@@ -143,27 +187,30 @@ class Shapeoko(object):
                 break
         return status
 
-    # change speed (mm min^-1)
     def speed(self, value):
-        # shapeoko doesn't like it when the
-        # speed is over 9000! (no, really)
+        """change the speed, in mm min^-1
+           NB the shapeoko struggles with speed over 9000!"""
         self._speed = min(9000, value)
 
-    # calibrate axes
     def home(self, *axes, timeout=30):
+        """calibrate the axes (all of xyz if none specified),
+           axes should be a list of axes to calibrate from
+           XY.Axes.* (though can in general be given as 'X', ..."""
         cmd = "G28 %s" % ''.join(axes)
         return self.do(cmd, timeout)
 
-    # move head
     def move(self, x=None, y=None, z=None, timeout=30):
+        """move the head to a given position"""
+
         symbols = ['X', 'Y', 'Z', 'F']
         params = [x, y, z, self._speed]
         args = ' '.join('%c%f' % (symbol,param) for symbol,param in
                     zip(symbols,params) if param is not None)
         return self.do_wait("G1 %s" % args, timeout)
 
-    # read current stepper-estimated position
-    def position(self, timeout=30, count=False):
+    def position(self, timeout=30, count=True):
+        """determine the current stepper-estimated position"""
+
         status, data = self.do_get("M114", timeout, nopos=True)
         def parse(line):
             try:
@@ -176,14 +223,20 @@ class Shapeoko(object):
         parsed = [p for p in map(parse, data) if p is not None]
         return parsed[-1] if len(parsed) else {}
 
-    def wait(self, timeout=30):
-        return self.do("M400", nopos=True)
+    def wait(self, timeout=30, nopos=False):
+        """wait for all commands to complete"""
+        return self.do("M400", nopos=nopos)
 
     def kill(self):
+        """emergency stop the shapeoko"""
+
         try:
             for _ in range(3):
                 print("EMERGENCY STOP!!!")
-                self._com.write(b'M112\r\n')
+
+                # probably not thread safe, but who cares,
+                # this is an emergency!!!!
+                self._com.write(b'\r\nM112\r\n')
                 self._com.flush()
                 time.sleep(1)
         finally:
@@ -196,6 +249,8 @@ if __name__ == '__main__':
     import signal
 
     class ShapeokoInterpreter(cmd.Cmd):
+        """Nice shell for controlling the Shapeoko"""
+
         prompt = 'Shapeoko# '
         def __init__(self):
             cmd.Cmd.__init__(self)

@@ -76,7 +76,7 @@ class Workspace(object):
                 lh, lp, _, lc, *_ = last
                 ih, ip, _, ic, *_ = item
                 return (lh != ih, lc != ic, abs(lp[-1] - ip[0]))
-            except TypeError:
+            except (TypeError, IndexError):
                 return True
 
         while True:
