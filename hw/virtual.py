@@ -83,6 +83,7 @@ class Σ(Camera):
         self.stati = {'ready': False, 'idle': False, 'calibrated': False, 'attached': True}
         self.parent = None
         self.calibration = None
+        self._config = {}
 
     def imprint(self, parent):
         self.parent = parent
@@ -102,6 +103,8 @@ class Σ(Camera):
 
     def config(self, **config):
         print("Configuring", self, ":", config)
+        self._config.update(config)
+        return self._config
 
     def act(self, callback, coords, **kwargs):
         callback(self.capture())
@@ -135,6 +138,7 @@ class Μ(Camera):
         self.parent = None
         self.calibration = None
         self.μpos = Vector(0, 0)
+        self._config = {}
 
     def imprint(self, parent):
         self.parent = parent
@@ -182,6 +186,8 @@ class Μ(Camera):
 
     def config(self, **config):
         print("Configuring", self, ":", config)
+        self._config.update(config)
+        return self._config
 
     def act(self, cb, coords, **kwargs):
         # the xy stage has 1mm precision, we then actuate our own
@@ -243,9 +249,11 @@ class Pen(Head):
         attached = (self == self.parent.head) if self.parent is not None else None
         return Status(position=pos, attached=attached, **self.stati)
 
-    def config(self, colour):
+    def config(self, colour=None):
         """configure the marker colour"""
-        self.colour = colour
+        if colour is not None:
+            self.colour = colour
+        return {'colour': self.colour}
 
     def act(self, cb, coords, **kwargs):
         """draw a line defined by the specified coords"""
