@@ -2,7 +2,10 @@
 	path = contrib/marlin
 	url = https://github.com/moosd/Marlin
 
+[submodule "mjpg-streamer"]
+	path = contrib/mjpg-streamer
+	url = https://github.com/moosd/mjpg-streamer
+
 [submodule "Printrun"]
 	path = contrib/printrun
-    url = https://github.com/kliment/Printrun
-
+	url = https://github.com/kliment/Printrun
