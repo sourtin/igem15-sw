@@ -7,11 +7,11 @@ class LEDControl:
         self._ser = serial.Serial(dev, 9600)
 
     def set_mode(self, mode):
-        self._ser.write([mode])
+        self._ser.write(bytes([mode]))
         self._ser.flush()
 
     def get_mode(self):
-        self._ser.write([ord('A')])
+        self._ser.write('A'.encode())
         self._ser.flush()
         return int.from_bytes(self._ser.read(), byteorder='big')
 
