@@ -4,5 +4,8 @@
 
 [submodule "Printrun"]
 	path = contrib/printrun
-    url = https://github.com/kliment/Printrun
+	url = https://github.com/kliment/Printrun
 
+[submodule "mjpg-streamer"]
+	path = contrib/mjpg-streamer
+	url = https://github.com/moosd/mjpg-streamer
