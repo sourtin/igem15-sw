@@ -14,9 +14,15 @@ void loop() {
   last = val;
   delay(100);
 
-  if(Serial.available())
-    mode=(Serial.read())%outsz;
-
+  if(Serial.available()) {
+    char in = Serial.read();
+    if(in == 'A') {
+      Serial.write(mode);
+      Serial.flush();
+    } else
+      mode=(in)%outsz;
+  }
+  
   for(int i = 0; i < outsz; i++)
     digitalWrite(outpins[i], LOW);
   digitalWrite(outpins[mode], HIGH);
