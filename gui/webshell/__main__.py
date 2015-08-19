@@ -20,7 +20,7 @@ def control_power(onoff):
         return 'stopped'
     return 'error'
 
-@app.route("/led/<mode>/<setting>")
+@app.route("/control/led/<mode>/<setting>")
 def control_led(mode, setting):
     if mode == "get":
         return str(leds.get_mode())
@@ -29,7 +29,7 @@ def control_led(mode, setting):
         return 'Set!'
     elif mode == "toggle":
         leds.toggle()
-        return 'toggled!'
+        return str(leds.get_mode())
     return 'error'
 
 MjpgStreamer.start() # Start camera by default
