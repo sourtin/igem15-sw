@@ -1,4 +1,4 @@
-int outpins[] = {12, 13};
+int outpins[] = {12, 13, 1};
 int last = 0, mode = 1, outsz = (sizeof(outpins)/sizeof(*outpins));
 
 void setup() {
