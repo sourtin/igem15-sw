@@ -23,7 +23,7 @@ def control_power(onoff):
 @app.route("/led/<mode>/<setting>")
 def control_led(mode, setting):
     if mode == "get":
-        return leds.get_mode()
+        return str(leds.get_mode())
     elif mode == "set":
         leds.set_mode(setting)
         return 'Set!'
