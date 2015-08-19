@@ -270,6 +270,8 @@ if __name__ == '__main__':
                          [serial] - Connect to the file /dev/serial/by-id/[serial] """
             self.do_close()
             try:
+                if port == "":
+                    port = "usb-Arduino__www.arduino.cc__0042_6493633303735140D0A0-if00"
                 self.shap = Shapeoko("/dev/serial/by-id/"+str(port), verbose=True)
             except Exception as e:
                 print("*** Error opening device: %s" % e)
@@ -373,9 +375,9 @@ if __name__ == '__main__':
             pos = self.shap.position()
             print(pos)
 
-        @serial_cmd
         def do_kill(self, *args):
-            self.shap.kill()
+            if self.shap is not None:
+                self.shap.kill()
 
         def do_EOF(self, line):
             self.do_close()
