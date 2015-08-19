@@ -8,7 +8,7 @@ leds = LEDControl("/dev/serial/by-id/usb-Arduino__www.arduino.cc__0043_554343438
 
 @app.route("/")
 def root():
-    return '<meta http-equiv="refresh" content="0;URL=/webshell/main.html">'
+    return '<meta http-equiv="refresh" content="0;URL=/ui/main.html">'
 
 @app.route("/control/power/<onoff>")
 def control_power(onoff):
@@ -32,4 +32,5 @@ def control_led(mode, setting):
         return 'toggled!'
     return 'error'
 
+MjpgStreamer.start() # Start camera by default
 serve(app, host='0.0.0.0', port=9000)
