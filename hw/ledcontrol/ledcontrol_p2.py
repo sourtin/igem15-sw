@@ -1,22 +1,21 @@
-#!/usr/bin/env python3
 import serial
 import time
 
 class LEDControl:
     def __init__(self, dev):
         self._ser = serial.Serial(dev, 9600)
-        self._ser.write(bytes([1]))
+        self._ser.write(chr(1))
         self._ser.flush()
         time.sleep(1.5)
 
     def set_mode(self, mode):
-        self._ser.write(bytes([mode]))
+        self._ser.write(chr(int(mode)))
         self._ser.flush()
 
     def get_mode(self):
-        self._ser.write('A'.encode())
+        self._ser.write('A')
         self._ser.flush()
-        return int.from_bytes(self._ser.read(), byteorder='big')
+        return ord(self._ser.read())
 
     def toggle(self):
         self.set_mode(int(self.get_mode()) + 1)
