@@ -23,7 +23,7 @@ Note: units to be furlongs, fortnights and firkins
         * `opencv-python` > 3
         * `numpy`
         * `openslide` (for tests)
-  
+
 ## Contrib
 * `marlin` -- fork of `marlin`; arduino firmware for the shapeoko
 * `printrun` -- gui interface for controlling `gcode` hardware
@@ -41,3 +41,19 @@ alternatively, `./test.py` to list tests
 
 to interact with the shapeoko directly, use `python -m hw.shapeoko.driver` for a wrapped shell or run the `serial` test and connect to the shapeoko's serial port
 
+
+
+## Rants
+Python 3 is a pita on the raspberry pi because raspbian repos:
+1) Only have python 3.2
+2) Have less than a fifth of modules available in python2 available as packages for python3
+So Souradip refuses to use python 3 because it makes his life so much easier and more time is spent making code instead of head-banging and questioning why package X isn't working.
+Also, openslide should really not be a dependancy...
+
+To get python2 up and running with dependancies:
+    sudo apt-get install python-flask python-pip
+    sudo pip install waitress
+
+TODO:: Replace mjpg-streamer with custom python-based code
+TODO:: Webshell UI (+motors+led control)
+TODO:: MicroMaps
