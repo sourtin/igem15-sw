@@ -50,10 +50,21 @@ Python 3 is a pita on the raspberry pi because raspbian repos:
 So Souradip refuses to use python 3 because it makes his life so much easier and more time is spent making code instead of head-banging and questioning why package X isn't working.
 Also, openslide should really not be a dependancy...
 
-To get python2 up and running with dependancies:
-    sudo apt-get install python-flask python-pip
-    sudo pip install waitress
+Install nginx first:
+    cd /tmp/
+    wget http://nginx.org/download/nginx-1.9.4.tar.gz
+    cd nginx-1.9.4
+    sudo apt-get install build-essential libpcre3-dev
+    ./configure --with-http_ssl_module
+    make
 
-TODO:: Replace mjpg-streamer with custom python-based code
-TODO:: Webshell UI (+motors+led control)
+Or just use the one in pyenv/bin/ I prepared earlier.
+Potentially make your own certificates (TODO: document)
+Then we can start webshell.
+
+    ./start_webshell.sh should load the python environment and start webshell
+
+TODO:: HTTPS
+TODO:: Put mjpg-streamer behind nginx
+TODO:: Authentication
 TODO:: MicroMaps

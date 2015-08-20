@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+<head>
+<title>MicroMaps WebShell</title>
+<script src="jquery-1.11.3.min.js"></script>
+<script src="jquery-migrate-1.2.1.min.js"></script>
+
+<script>
+function restartCam() {
+d=new Date();
+$("#cam").html("<img src='/_stream/?action=stream&date="+d.getTime()+"' />");
+}
+
+
+$(document).ready(function(){
+restartCam();
+
+$("#camhold").on("click", function(){
+$("#cam").html("Reconnecting...");
+$.ajax({
+  url: "/_webshell/control/power/on",
+  context: document.body
+}).done(function(){setTimeout(restartCam, 1000)});
+});
+
+$("#camrel").on("click", function(){
+$.ajax({
+  url: "/_webshell/control/power/off",
+  context: document.body
+}).done(function(){});
+});
+
+$("#led1").on("click", function(){
+$.ajax({
+  url: "/_webshell/control/led/set/1",
+  context: document.body
+}).done(function(){$("#ledmode").html("1")});
+});
+
+$("#led2").on("click", function(){
+$.ajax({
+  url: "/_webshell/control/led/set/2",
+  context: document.body
+}).done(function(){$("#ledmode").html("2")});
+});
+
+$("#led0").on("click", function(){
+$.ajax({
+  url: "/_webshell/control/led/set/0",
+  context: document.body
+}).done(function(){$("#ledmode").html("0")});
+});
+
+$("#ledtog").on("click", function(){
+$.ajax({
+  url: "/_webshell/control/led/toggle/_",
+  context: document.body
+}).done(function(data){
+$("#ledmode").html(data)
+});
+});
+
+$.ajax({
+  url: "/_webshell/control/led/get/_",
+  context: document.body
+}).done(function(data){
+$("#ledmode").html(data)
+});
+
+});
+</script>
+<style>
+#controlpanel {
+float: right;
+width: 400px;
+}
+</style>
+</head>
+<body>
+<div id="controlpanel">
+Camera:<br/><a href="#" id="camhold">Hold</a> <a href="#" id="camrel">Release</a> <br /><br />
+LED Mode (current: <span id="ledmode"></span>):<br /><a href="#" id="led1">Brightfield</a> <a href="#" id="led0">Fluorescence</a> <a href="#" id="led2">Off</a> .... <a href="#" id="ledtog">Toggle</a><br /><br />
+Motors: (TODO)
+</div>
+
+<div id="cam"></div>
+</body>
+</html>

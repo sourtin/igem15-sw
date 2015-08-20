@@ -1,4 +1,4 @@
-from waitress import serve
+from werkzeug.contrib.fixers import ProxyFix
 from flask import Flask
 from mjpgstreamer import MjpgStreamer
 from hw.ledcontrol.ledcontrol_p2 import LEDControl
@@ -8,7 +8,7 @@ leds = LEDControl("/dev/serial/by-id/usb-Arduino__www.arduino.cc__0043_554343438
 
 @app.route("/")
 def root():
-    return '<meta http-equiv="refresh" content="0;URL=/ui/main.html">'
+    return '<meta http-equiv="refresh" content="0;URL=/webshell/main.html">'
 
 @app.route("/control/power/<onoff>")
 def control_power(onoff):
@@ -33,4 +33,8 @@ def control_led(mode, setting):
     return 'error'
 
 MjpgStreamer.start() # Start camera by default
-serve(app, host='0.0.0.0', port=9000)
+
+app.wsgi_app = ProxyFix(app.wsgi_app)
+
+if __name__ == '__main__':
+    app.run('0.0.0.0', 9000)
