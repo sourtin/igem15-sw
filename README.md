@@ -71,5 +71,5 @@ TODO:: MicroMaps
 
 ## How to create an ssl certificate
     cd nginx
-    openssl req -days 3600 -new -x509 -nodes -out server.crt -keyout server.key
+    openssl req -days 3600 -new -x509 -sha512 -nodes -out server.crt -keyout server.key
     cd ..
