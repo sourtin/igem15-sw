@@ -1,0 +1,3 @@
+2015/08/20 12:24:15 [emerg] 18987#0: unknown directive "ssl" in nginx/nginx.conf:28
+2015/08/20 12:29:34 [emerg] 21371#0: invalid number of arguments in "ssl_certificate" directive in nginx/nginx.conf:32
+2015/08/20 12:32:55 [emerg] 21377#0: invalid number of arguments in "ssl_certificate" directive in nginx/nginx.conf:31
