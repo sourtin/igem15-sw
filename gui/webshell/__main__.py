@@ -3,7 +3,8 @@ from flask import Flask
 from mjpgstreamer import MjpgStreamer
 from hw.ledcontrol.ledcontrol_p2 import LEDControl
 
-app = Flask(__name__, static_url_path='/ui')
+app = Flask(__name__)
+
 try:
     leds = LEDControl("/dev/serial/by-id/usb-Arduino__www.arduino.cc__0043_5543434383335181A060-if00")
 except:
