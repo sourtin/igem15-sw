@@ -1,5 +1,5 @@
-int outpins[] = {12, 13, 1};
-int last = 0, mode = 1, outsz = (sizeof(outpins)/sizeof(*outpins));
+int outpins[] = {12, 9, 10, 1};
+int last = 0, mode = 0, outsz = (sizeof(outpins)/sizeof(*outpins));
 
 void setup() {
   pinMode(11, INPUT);

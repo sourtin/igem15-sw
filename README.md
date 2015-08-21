@@ -59,7 +59,11 @@ Install nginx first:
     make
 
 Or just use the one in pyenv/bin/ I prepared earlier.
-Potentially make your own certificates (TODO: document)
+Also:
+
+    touch nginx/server.htpasswd
+    touch nginx/server.htpasswd.disabled
+
 Then we can start webshell.
 
     ./start_webshell.sh should load the python environment and start webshell
