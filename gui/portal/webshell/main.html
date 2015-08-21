@@ -44,6 +44,13 @@ $.ajax({
 }).done(function(){$("#ledmode").html("2")});
 });
 
+$("#led3").on("click", function(){
+$.ajax({
+  url: "/_webshell/control/led/set/3",
+  context: document.body
+}).done(function(){$("#ledmode").html("3")});
+});
+
 $("#led0").on("click", function(){
 $.ajax({
   url: "/_webshell/control/led/set/0",
@@ -79,7 +86,7 @@ width: 400px;
 <body>
 <div id="controlpanel">
 Camera:<br/><a href="#" id="camhold">Hold</a> <a href="#" id="camrel">Release</a> <br /><br />
-LED Mode (current: <span id="ledmode"></span>):<br /><a href="#" id="led1">Brightfield</a> <a href="#" id="led0">Fluorescence</a> <a href="#" id="led2">Off</a> .... <a href="#" id="ledtog">Toggle</a><br /><br />
+LED Mode (current: <span id="ledmode"></span>):<br /><a href="#" id="led0">Brightfield</a> <a href="#" id="led1">Fluorescence</a> <a href="#" id="led2">Darkfield</a> <a href="#" id="led3">Off</a> .... <a href="#" id="ledtog">Toggle</a><br /><br />
 Motors: (TODO)
 </div>
 
