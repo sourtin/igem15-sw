@@ -25,6 +25,13 @@ def control_power(onoff):
         return 'stopped'
     return 'error'
 
+@app.route("/control/reload")
+def reload():
+    if leds is not None:
+        leds.close()
+    leds = LEDControl("/dev/serial/by-id/usb-Arduino__www.arduino.cc__0043_5543434383335181A060-if00")
+    return 'done'
+
 @app.route("/control/led/<mode>/<setting>")
 def control_led(mode, setting):
     if leds is None:
