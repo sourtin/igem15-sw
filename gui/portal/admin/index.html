@@ -1,11 +1,98 @@
+<script src="../assets/jquery-1.11.3.min.js"></script>
+<script src="../assets/jquery-migrate-1.2.1.min.js"></script>
+
 <h2>User Access Control page</h2>
-<i>This will only work if you are logged in as admin!</i><br />
+<i>This will only work if you are logged in as admin!</i> <a href='javascript:(function(c){var a,b="You should be logged out now.";try{a=document.execCommand("ClearAuthenticationCache")}catch(d){}a||((a=window.XMLHttpRequest?new window.XMLHttpRequest:window.ActiveXObject?new ActiveXObject("Microsoft.XMLHTTP"):void 0)?(a.open("HEAD",c||location.href,!0,"logout",(new Date).getTime().toString()),a.send(""),a=1):a=void 0);a||(b="Your browser is too old or too weird to support log out functionality. Close all windows and restart the browser.");alert(b);location.reload()})(/*pass safeLocation here if you need*/);'>Logout</a><br />
+
+<div id="userlist">
+</div>
+<a href="#" id="add">Add</a> <a href="#" id="del">Remove</a>
+
+<div id="editor" style="display:none">
+<span id="usrshow">Username: <input type="text" id="usr" /><br /></span>
+Password: <input type="password" id="pass" /><br />
+Enabled? <input type="checkbox" id="enab" /><br />
+<input type="button" value="Save" id="save" />
+</div>
+
 <script>
-// fetch users
-// make table
-// fetch dis users
-// add to table
-// add and remove
-// click to ch password
-// click to enable disable
+function reloadUsers() {
+$.getJSON( "/_admin/get/", function( data ) {
+    $("#userlist").html("")
+    addData(data, 0)
+    $.getJSON( "/_admin/get_disabled/", function( data ) {
+        addData(data, 1)
+    });
+})
+}
+
+reloadUsers()
+
+$("#save").on("click", function() {
+    if(addNew == 1) {
+        selectedUser = $("#usr").attr("value")
+    }
+    $.ajax("/_admin/set/" + escape(selectedUser) + "/" + escape($("#pass").attr("value"))).done(function(){
+        if($("#enab").attr("checked") == "checked")
+            $.ajax("/_admin/enable/"+escape(selectedUser))
+        else
+            $.ajax("/_admin/disable/"+escape(selectedUser))
+        reloadUsers()
+        selectedUser = ""
+        $("#editor").hide()
+        $(".user").css("background-color", "white")
+    })
+})
+
+$("#del").on("click", function() {
+    if(selectedUser != "") {
+        $(".user").css("background-color", "white")
+        $.ajax("/_admin/del/"+escape(selectedUser)).done(function(){
+            reloadUsers()
+        })
+        selectedUser = ""
+        $("#editor").hide()
+    }
+})
+
+$("#add").on("click", function(){
+    $(".user").css("background-color", "white")
+    addNew = 1
+    selectedUser = ""
+    $("#usr").attr("value", "")
+    $("#pass").attr("value", "")
+    $("#enab").attr("checked", "checked")
+    $("#usrshow").show()
+    $("#editor").show()
+})
+
+function addData(data, dis) {
+    var items = [];
+    $.each( data, function( key, val ) {
+        items.push( "<li>" + (dis == 1 ? "(disabled) " : "") + "<a href='#' onclick='onClick(this)' class='user' data-dis='"+dis+"'>" + val + "</a></li>" );
+    });
+ 
+    $( "<ul/>", {
+        html: items.join( "" )
+    }).appendTo("#userlist");
+}
+
+var selectedUser = "", addNew = 0
+
+function onClick(item) {
+    selectedUser = $(item).html()
+    addNew = 0
+    $(".user").css("background-color", "white")
+    $(item).css("background-color", "grey")
+
+    $("#usr").attr("value", "")
+    $("#pass").attr("value", "")
+    if($(item).data("dis") == 0)
+        $("#enab").prop("checked", true);
+    else
+        $("#enab").prop("checked", false);
+    $("#editor").show()
+    $("#usrshow").hide()
+}
+
 </script>
