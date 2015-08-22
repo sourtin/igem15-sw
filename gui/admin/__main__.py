@@ -5,6 +5,7 @@ import re, json
 import string, random
 #from crypt import crypt
 import os, subprocess
+from gui.webshell.mjpgstreamer import MjpgStreamer
 
 app = Flask(__name__)
 
@@ -24,6 +25,12 @@ def root():
 @app.route("/set/<user>/")
 def set_blank(user):
     return 'Nothing changed'
+
+@app.route("/kick/")
+def kick(user):
+    MjpgStreamer.start()
+
+    return 'Kicked'
 
 @app.route("/set/<user>/<pw>")
 def set(user, pw):
