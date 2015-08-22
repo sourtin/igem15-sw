@@ -2,3 +2,15 @@
 2015/08/20 12:29:34 [emerg] 21371#0: invalid number of arguments in "ssl_certificate" directive in nginx/nginx.conf:32
 2015/08/20 12:32:55 [emerg] 21377#0: invalid number of arguments in "ssl_certificate" directive in nginx/nginx.conf:31
 2015/08/21 14:33:52 [emerg] 3038#0: invalid number of arguments in "rewrite" directive in nginx/nginx.conf:71
+2015/08/21 21:13:22 [notice] 3357#0: signal process started
+2015/08/22 09:56:40 [notice] 3288#0: signal process started
+2015/08/22 10:02:28 [notice] 3322#0: signal process started
+2015/08/22 10:05:03 [notice] 3352#0: signal process started
+2015/08/22 10:06:29 [notice] 3365#0: signal process started
+2015/08/22 10:06:37 [notice] 3371#0: signal process started
+2015/08/22 10:06:46 [notice] 3377#0: signal process started
+2015/08/22 10:12:04 [notice] 3401#0: signal process started
+2015/08/22 10:12:57 [notice] 3418#0: signal process started
+2015/08/22 10:25:49 [notice] 3450#0: signal process started
+2015/08/22 10:26:26 [notice] 3461#0: signal process started
+2015/08/22 10:27:06 [notice] 3481#0: signal process started
