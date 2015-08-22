@@ -6,7 +6,7 @@
 
 <div id="userlist">
 </div>
-<a href="#" id="add">Add</a> <a href="#" id="del">Remove</a>
+<a href="#" id="add">Add</a> <a href="#" id="del">Remove</a> <a href="#" id="kick">Kick streams from current sessions</a>
 
 <div id="editor" style="display:none">
 <span id="usrshow">Username: <input type="text" id="usr" /><br /></span>
@@ -53,6 +53,11 @@ $("#del").on("click", function() {
         selectedUser = ""
         $("#editor").hide()
     }
+})
+
+$("#kick").on("click", function() {
+    $.ajax("/_admin/kick/").done(function(){
+    })
 })
 
 $("#add").on("click", function(){
