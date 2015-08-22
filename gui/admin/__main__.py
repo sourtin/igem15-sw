@@ -1,8 +1,9 @@
 from werkzeug.contrib.fixers import ProxyFix
 from flask import Flask
+from flask import request
 import re, json
 import string, random
-from crypt import crypt
+#from crypt import crypt
 import os, subprocess
 
 app = Flask(__name__)
@@ -22,6 +23,9 @@ def root():
 
 @app.route("/set/<user>/<pw>")
 def set(user, pw):
+    if request.authorization.username != "admin":
+        return 'Not authorized'
+
     pattern = re.compile('[\W_]+')
     user = pattern.sub('', user)
     #pw = crypt(pw, ''.join(random.choice(string.ascii_letters + string.digits + '/.')for x in range(2)) )
@@ -50,6 +54,12 @@ def set(user, pw):
 
 @app.route("/del/<user>")
 def rem(user):
+    if request.authorization.username != "admin":
+        return 'Not authorized'
+
+    if user == "admin":
+        return 'Not allowed'
+
     lines = [line for line in open('nginx/server.htpasswd')]
     lines_dis = [line for line in open('nginx/server.htpasswd.disabled')]
     users = [line.split(":")[0] for line in lines]
@@ -72,6 +82,9 @@ def rem(user):
 
 @app.route("/enable/<user>")
 def enable(user):
+    if request.authorization.username != "admin":
+        return 'Not authorized'
+
     lines = [line for line in open('nginx/server.htpasswd')]
     lines_dis = [line for line in open('nginx/server.htpasswd.disabled')]
     users = [line.split(":")[0] for line in lines]
@@ -95,6 +108,9 @@ def enable(user):
 
 @app.route("/disable/<user>")
 def disable(user):
+    if request.authorization.username != "admin":
+        return 'Not authorized'
+
     lines = [line for line in open('nginx/server.htpasswd')]
     lines_dis = [line for line in open('nginx/server.htpasswd.disabled')]
     users = [line.split(":")[0] for line in lines]
@@ -116,14 +132,20 @@ def disable(user):
 
     return 'sure thang'
 
-@app.route("/get")
+@app.route("/get/")
 def get():
+    if request.authorization.username != "admin":
+        return 'Not authorized'
+
     lines = [line.rstrip('\n') for line in open('nginx/server.htpasswd')]
     lines = [line.split(":")[0] for line in lines]
     return json.dumps(lines)
 
-@app.route("/get_disabled")
+@app.route("/get_disabled/")
 def get_dis():
+    if request.authorization.username != "admin":
+        return 'Not authorized'
+
     lines = [line.rstrip('\n') for line in open('nginx/server.htpasswd.disabled')]
     lines = [line.split(":")[0] for line in lines]
     return json.dumps(lines)
