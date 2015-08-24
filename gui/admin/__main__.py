@@ -5,6 +5,10 @@ import re, json
 import string, random
 #from crypt import crypt
 import os, subprocess
+
+import sys
+sys.path.append("/home/pi/igem15-sw/")
+
 from gui.webshell.mjpgstreamer import MjpgStreamer
 
 app = Flask(__name__)
