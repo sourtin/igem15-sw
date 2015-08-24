@@ -80,7 +80,7 @@ if __name__ == '__main__':
     pp = pprint.PrettyPrinter(indent=4).pprint
 
     shapeoko = None
-    bounds = [(0, 190, 0.1717), (0, 190, 0.1717), (-400, 0, 0.1)]
+    bounds = [(0, 190, 0.1717), (0, 190, 0.1717), (0, 400, 0.1)]
     while True:
         print("Please pick a serial device, enter to refresh, or q to exit:")
         devs = glob.glob('/dev/serial/by-id/*')
@@ -108,15 +108,16 @@ if __name__ == '__main__':
     ws = Workspace(shapeoko)
     ws.optimise_queue(False)
 
-    up = -385
+    up = 15
+    down = 0
     done = threading.Event()
     ws.enqueue(ν, [Vector(0,0)], lambda _:done.set(), {'down': up, 'up': up}, {})
     done.wait()
     input("Ready? ")
 
     while True:
-        ws.enqueue(ν, [Vector(0,0)], lambda _:None, {'down': -400, 'up': up}, {})
-        ws.enqueue(ν, [Vector(0.05,0.05)], lambda _:None, {'down': -400, 'up': up}, {})
+        ws.enqueue(ν, [Vector(0,0)], lambda _:None, {'down': down, 'up': up}, {})
+        ws.enqueue(ν, [Vector(0.05,0.05)], lambda _:None, {'down': down, 'up': up}, {})
 
 
 

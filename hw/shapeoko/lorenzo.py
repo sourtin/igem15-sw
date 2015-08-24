@@ -1,4 +1,5 @@
-from driver import Shapeoko
+#!/usr/bin/env python3
+from .driver import Shapeoko
 
 shap = Shapeoko("/dev/serial/by-id/usb-Arduino__www.arduino.cc__0042_6493633303735140D0A0-if00")
 shap.home("X", "Y", "Z")
@@ -32,3 +33,4 @@ for y in range(0, 100):
 	shap.move(50, 52 ,5)
 	shap.move(50 ,50 ,20)
 # repeat like 100 times
+
