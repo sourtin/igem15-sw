@@ -11,7 +11,7 @@ sudo cp raspi_conf/interfaces /etc/network/interfaces
 
 # Install opencv (gulp)
 sudo apt-get -y install build-essential cmake git pkg-config
-sudo apt-get -y install libjpeg8-dev libtiff5-dev libjasper-dev libpng12-dev
+sudo apt-get -y install libjpeg-dev libtiff5-dev libjasper-dev libpng12-dev
 sudo apt-get -y install libgtk2.0-dev
 sudo apt-get -y install libavcodec-dev libavformat-dev libswscale-dev libv4l-dev
 sudo apt-get -y install libatlas-base-dev gfortran
