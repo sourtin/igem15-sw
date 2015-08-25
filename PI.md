@@ -10,6 +10,7 @@ Download the latest version from the raspberry pi foundation and image a microSD
 Edit `/etc/apt/sources.list` with your favourite text editor, e.g. `nano`, or `vi` (`nano /etc/apt/sources.list`) and change wheezy to jessie (or later) to get the appropriate packages. Now update the cache using `sudo apt-get update` and the distribution with `sudo apt-get dist-upgrade`. Finally let's recover some space with `sudo apt-get clean`.
 
 Now obtain our software, entering your password as needed:
+
     cd ~
     git clone https://github.com/sourtin/igem15-sw.git
     cd igem15-sw
@@ -17,8 +18,11 @@ Now obtain our software, entering your password as needed:
 For wifi access, you may need to find the right wifi driver for your dongle and edit raspi_conf/hostapd.conf - here you can also change the broadcast wifi network name and password.
 
 Now you are ready to start installing packages!
+
     sudo ./setup.sh
+
 There! Wasn't that easy? You're welcome :)
+NOTE: It may be necessary, depending on the size of your SD card, to provide some extra storage mounted on ~/tmp at this stage as opencv needs several gigabytes of space to compile.
 
 ## Arch
 ### Premade Image
@@ -30,40 +34,59 @@ Look for the device name using `lsblk`. You can do this either by looking for on
 1. Login as root, or run `su -`
 2. `fdisk /dev/sdX` to create the partitions:
    Wipe the partition table!
+
     o
+
    Create the first (1) primary (p) partition at the first sector (<enter>) and 100MB big
+
     n
     p
     1
     <enter>
     +100M
+
    Make it FAT32
+
     t
     c
+
    Create the second (2) primary (p) partition at the next aligned sector (<enter>) and running to the end (<enter>)
+
     n
     p
     2
     <enter>
     <enter>
+
    Confirm and write!
+
     w
+
 3. Create the file systems: 
+
     mkfs.vfat /dev/sdX1
     mkfs.ext4 /dev/sdX2
+
 4. Mount the filesystems:
+
     cd /tmp
     mkdir -p boot root
     mount /dev/sdX1 boot
     mount /dev/sdX2 root
+
 5. Acquire Arch:
    For the first pi (ARMv6):
+
     wget http://archlinuxarm.org/os/ArchLinuxARM-rpi-latest.tar.gz
     bsdtar -xpf ArchLinuxARM-rpi-latest.tar.gz -C root
+
    For the second (ARMv7):
+
     wget http://archlinuxarm.org/os/ArchLinuxARM-rpi-2-latest.tar.gz
     bsdtar -xpf ArchLinuxARM-rpi-2-latest.tar.gz -C root
+
 6. Bootloader
+
     sync
     mv root/boot/* boot
     sync
