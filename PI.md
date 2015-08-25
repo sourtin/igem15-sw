@@ -1,9 +1,29 @@
 # Installation instructions
 It is easiest to just use the preprepared disk image provided, however if you wish to customise the install more advanced instructions are also provided. We have provided the steps we used to construct the provided install, but feel free to deviate from the instructions as much as you wish, just remember to use an ARM-specific binaries and to obtain python 3.4+.
 
-## Premade Image
+## Raspbian
+### Premade Image
+### Operating System
+Download the latest version from the raspberry pi foundation and image a microSD card with it. Boot and expand the filesystem, change the password and enable the camera. You may at this point want to increase the `gpu_mem` from 128 (MB) to 256. This is defined in the last line of the `/boot/config.txt` file - use `nano /boot/config.txt` or your favourite text editor.
 
-## Operating System
+### Packages
+Edit `/etc/apt/sources.list` with your favourite text editor, e.g. `nano`, or `vi` (`nano /etc/apt/sources.list`) and change wheezy to jessie (or later) to get the appropriate packages. Now update the cache using `sudo apt-get update` and the distribution with `sudo apt-get dist-upgrade`.
+
+Now obtain our software, entering your password as needed:
+    sudo apt-get git
+    cd ~
+    git clone https://github.com/sourtin/igem15-sw.git
+    cd igem15-sw
+
+For wifi access, you may need to find the right wifi driver for your dongle and edit ....
+
+Now you are ready to start installing packages!
+    sudo ./setup.sh
+There! Wasn't that easy? You're welcome :)
+
+## Arch
+### Premade Image
+### Operating System
 First the installation media must be prepared. Acquire an 8GB (4GB is probably sufficient, larger is also fine) microSD card and connect it to a linux installation. Mac instructions should be similar assuming you are familiar with the terminal and can install ext4 fuse via homebrew. We wish Windows users the best of luck!
 
 Look for the device name using `lsblk`. You can do this either by looking for one with the right size or by comparing the results of `lsblk` before and after plugging in the SD card. It may be /dev/sdX where X is a letter, mmcblk, or something else entirely. Below, we use /dev/sdX, replace it with your device name!!!!
