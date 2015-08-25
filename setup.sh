@@ -1,6 +1,7 @@
 #!/bin/bash
 
-sudo apt-get -y install python3.4 python3-numpy build-essential python3-pil python3-flask fail2ban hostapd python3-pip vim
+
+sudo apt-get -y install python3.4 python3-numpy build-essential python3-pil python3-flask fail2ban hostapd python3-pip vim python3-serial
 
 # Copy config
 sudo cp raspi_conf/rc.local /etc/rc.local
@@ -11,7 +12,7 @@ sudo cp raspi_conf/interfaces /etc/network/interfaces
 
 # Install opencv (gulp)
 sudo apt-get -y install build-essential cmake git pkg-config
-sudo apt-get -y install libjpeg8-dev libtiff4-dev libjasper-dev libpng12-dev
+sudo apt-get -y install libjpeg-dev libtiff5-dev libjasper-dev libpng12-dev
 sudo apt-get -y install libgtk2.0-dev
 sudo apt-get -y install libavcodec-dev libavformat-dev libswscale-dev libv4l-dev
 sudo apt-get -y install libatlas-base-dev gfortran
