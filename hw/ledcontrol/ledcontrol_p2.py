@@ -20,6 +20,10 @@ class LEDControl:
     def toggle(self):
         self.set_mode(int(self.get_mode()) + 1)
 
+    def close(self):
+        self._ser.close()
+
+
 if __name__ == '__main__':
     import cmd
     import glob

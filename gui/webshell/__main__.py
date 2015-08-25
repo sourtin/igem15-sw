@@ -1,15 +1,22 @@
 from werkzeug.contrib.fixers import ProxyFix
 from flask import Flask
 from mjpgstreamer import MjpgStreamer
+
+import sys
+sys.path.append("/home/pi/igem15-sw/")
+
 from hw.ledcontrol.ledcontrol_p2 import LEDControl
 
 app = Flask(__name__)
+leds = None
 
-try:
-    leds = LEDControl("/dev/serial/by-id/usb-Arduino__www.arduino.cc__0043_5543434383335181A060-if00")
-except:
-    leds = None
-    pass
+def init_leds():
+    global leds
+    try:
+        leds = LEDControl("/dev/serial/by-id/usb-Arduino__www.arduino.cc__0043_5543434383335181A060-if00")
+    except:
+        leds = None
+        pass
 
 @app.route("/")
 def root():
@@ -25,15 +32,18 @@ def control_power(onoff):
         return 'stopped'
     return 'error'
 
-@app.route("/control/reload")
+@app.route("/control/reload/")
 def reload():
-    if leds is not None:
+    global leds
+    if leds != None:
         leds.close()
-    leds = LEDControl("/dev/serial/by-id/usb-Arduino__www.arduino.cc__0043_5543434383335181A060-if00")
+    init_leds()
     return 'done'
 
 @app.route("/control/led/<mode>/<setting>")
 def control_led(mode, setting):
+    global leds
+
     if leds is None:
         return 'No LED control board connected'
 
@@ -50,6 +60,7 @@ def control_led(mode, setting):
 MjpgStreamer.start() # Start camera by default
 
 app.wsgi_app = ProxyFix(app.wsgi_app)
+init_leds()
 
 if __name__ == '__main__':
-    app.run('0.0.0.0', 9000)
+    app.run('0.0.0.0', 9001, debug=True)
