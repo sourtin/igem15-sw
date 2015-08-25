@@ -10,7 +10,6 @@ Download the latest version from the raspberry pi foundation and image a microSD
 Edit `/etc/apt/sources.list` with your favourite text editor, e.g. `nano`, or `vi` (`nano /etc/apt/sources.list`) and change wheezy to jessie (or later) to get the appropriate packages. Now update the cache using `sudo apt-get update` and the distribution with `sudo apt-get dist-upgrade`.
 
 Now obtain our software, entering your password as needed:
-    sudo apt-get git
     cd ~
     git clone https://github.com/sourtin/igem15-sw.git
     cd igem15-sw
