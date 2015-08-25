@@ -7,7 +7,7 @@ It is easiest to just use the preprepared disk image provided, however if you wi
 Download the latest version from the raspberry pi foundation and image a microSD card with it. Boot and expand the filesystem, change the password and enable the camera. You may at this point want to increase the `gpu_mem` from 128 (MB) to 256. This is defined in the last line of the `/boot/config.txt` file - use `nano /boot/config.txt` or your favourite text editor.
 
 ### Packages
-Edit `/etc/apt/sources.list` with your favourite text editor, e.g. `nano`, or `vi` (`nano /etc/apt/sources.list`) and change wheezy to jessie (or later) to get the appropriate packages. Now update the cache using `sudo apt-get update` and the distribution with `sudo apt-get dist-upgrade`.
+Edit `/etc/apt/sources.list` with your favourite text editor, e.g. `nano`, or `vi` (`nano /etc/apt/sources.list`) and change wheezy to jessie (or later) to get the appropriate packages. Now update the cache using `sudo apt-get update` and the distribution with `sudo apt-get dist-upgrade`. Finally let's recover some space with `sudo apt-get clean`.
 
 Now obtain our software, entering your password as needed:
     cd ~
