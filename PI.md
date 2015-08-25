@@ -15,7 +15,7 @@ Now obtain our software, entering your password as needed:
     git clone https://github.com/sourtin/igem15-sw.git
     cd igem15-sw
 
-For wifi access, you may need to find the right wifi driver for your dongle and edit ....
+For wifi access, you may need to find the right wifi driver for your dongle and edit raspi_conf/hostapd.conf - here you can also change the broadcast wifi network name and password.
 
 Now you are ready to start installing packages!
     sudo ./setup.sh
