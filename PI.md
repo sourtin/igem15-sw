@@ -35,50 +35,50 @@ Look for the device name using `lsblk`. You can do this either by looking for on
 2. `fdisk /dev/sdX` to create the partitions:
    Wipe the partition table!
 
-       o
+        o
 
    Create the first (1) primary (p) partition at the first sector (<enter>) and 100MB big
 
-       n
-       p
-       1
-       <enter>
-       +100M
+        n
+        p
+        1
+        <enter>
+        +100M
 
    Make it FAT32
 
-       t
-       c
+        t
+        c
 
    Create the second (2) primary (p) partition at the next aligned sector (<enter>) and running to the end (<enter>)
 
-       n
-       p
-       2
-       <enter>
-       <enter>
+        n
+        p
+        2
+        <enter>
+        <enter>
 
    Confirm and write!
 
-       w
+        w
 
 3. Create the file systems: 
 
-       mkfs.vfat /dev/sdX1
-       mkfs.ext4 /dev/sdX2
+        mkfs.vfat /dev/sdX1
+        mkfs.ext4 /dev/sdX2
 
 4. Mount the filesystems:
 
-       cd /tmp
-       mkdir -p boot root
-       mount /dev/sdX1 boot
-       mount /dev/sdX2 root
+        cd /tmp
+        mkdir -p boot root
+        mount /dev/sdX1 boot
+        mount /dev/sdX2 root
 
 5. Acquire Arch:
    For the first pi (ARMv6):
 
-       wget http://archlinuxarm.org/os/ArchLinuxARM-rpi-latest.tar.gz
-       bsdtar -xpf ArchLinuxARM-rpi-latest.tar.gz -C root
+        wget http://archlinuxarm.org/os/ArchLinuxARM-rpi-latest.tar.gz
+        bsdtar -xpf ArchLinuxARM-rpi-latest.tar.gz -C root
 
    For the second (ARMv7):
 
