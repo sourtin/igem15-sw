@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo apt-get -y install python3.4 python3-numpy build-essential python3-pil python3-flask fail2ban hostapd python3-pip
+sudo apt-get -y install python3.4 python3-numpy build-essential python3-pil python3-flask fail2ban hostapd python3-pip vim
 
 # Copy config
 sudo cp raspi_conf/rc.local /etc/rc.local
