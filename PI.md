@@ -36,6 +36,8 @@ Now obtain our software, entering your password as needed:
     cd ~
     git clone https://github.com/sourtin/igem15-sw.git
     cd igem15-sw
+    git submodule init
+    git submodule update
 
 For wifi access, you may need to find the right wifi driver for your dongle (TODO: list of common drivers) and edit raspi_conf/hostapd.conf (`nano raspi_conf/hostapd.conf`) - here you can also change the broadcast wifi network name and password.
 
