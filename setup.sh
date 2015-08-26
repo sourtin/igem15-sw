@@ -1,17 +1,18 @@
 #!/bin/bash
 LOGFILE=~/igem15-sw.log
 function error {
-    shift
     echo "Error: $@"
     echo "Check the log at $LOGFILE"
     exit 1
 }
 
+set -o pipefail
 function log {
     while read l; do
        echo -n .
        echo "$l" >> $LOGFILE
     done
+    echo
 }
 
 cd "$(dirname "$0")"
