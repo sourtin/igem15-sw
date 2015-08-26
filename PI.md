@@ -82,15 +82,15 @@ Look for the device name using `lsblk`. You can do this either by looking for on
 
    For the second (ARMv7):
 
-       wget http://archlinuxarm.org/os/ArchLinuxARM-rpi-2-latest.tar.gz
-       bsdtar -xpf ArchLinuxARM-rpi-2-latest.tar.gz -C root
+        wget http://archlinuxarm.org/os/ArchLinuxARM-rpi-2-latest.tar.gz
+        bsdtar -xpf ArchLinuxARM-rpi-2-latest.tar.gz -C root
 
 6. Bootloader
 
-       sync
-       mv root/boot/* boot
-       sync
-       umount boot root
+        sync
+        mv root/boot/* boot
+        sync
+        umount boot root
 
 You should now have a blank Arch install with default user 'alarm', password 'alarm', and root password 'root'.
 
