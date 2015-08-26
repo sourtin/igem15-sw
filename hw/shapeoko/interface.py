@@ -78,6 +78,10 @@ class XY(Stage):
         self._bounds = bounds
 
         pos = self.shapeoko.position()
+        # TODO: Find weird timing bug
+        import time
+        time.sleep(0.1)
+        
         self.pos = self.xy2real(Vector(pos['x'], pos['y']), wait=False)
         self.stati['calibrated'] = True
 
