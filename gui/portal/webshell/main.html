@@ -71,16 +71,17 @@ $("#ledreload").on("click", function(){
 $.ajax({
   url: "/_webshell/control/reload/",
   context: document.body
-}).done(function(data){
-});
+}).done(function(data){});
 });
 
 $("#camcap").on("click", function(){
+//$("#cam").html("Say cheese, little cells!")
 $.ajax({
   url: "/_webshell/capture/",
   context: document.body
 }).done(function(data){
 $("#capt").html("<img src=\""+data+"\"/>")
+setTimeout(restartCam, 1000)
 });
 });
 
@@ -118,6 +119,6 @@ Motors: (TODO)
 Last captured image:
 <div id="capt"></div>
 <br />
-<a href="/captured/">More></a>
+<a href="/captured/">More captured images...</a>
 </body>
 </html>
