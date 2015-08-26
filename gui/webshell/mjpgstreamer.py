@@ -16,6 +16,7 @@ class MjpgStreamer:
     @staticmethod
     def start():
         # start mjpg-streamer
+        print("____start___")
         threading.Thread(target=MjpgStreamer._start).start()
         pass
 
