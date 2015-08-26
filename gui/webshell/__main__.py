@@ -32,6 +32,10 @@ def control_power(onoff):
         return 'stopped'
     return 'error'
 
+@app.route("/capture/")
+def capture():
+    return MjpgStreamer.captureImg()
+
 @app.route("/control/reload/")
 def reload():
     global leds
