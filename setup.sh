@@ -8,9 +8,10 @@ function error {
 }
 
 ### TODO: Append to rc.local not symlink
-### TODO: Test if opencv3 is installed, if so, skip installation step
 
 cd "$(dirname "$0")"
+
+echo "---- START INSTALL $(date) ----" >> $LOGFILE
 
 echo Installing basic packages...
 (
