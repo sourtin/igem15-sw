@@ -27,6 +27,20 @@ Now you are ready to start installing packages!
 
 There! Wasn't that easy? You're welcome :)
 
+After it has finished successfully, you can remove ~/tmp (unless you want to recompile opencv later more quickly) and reboot the pi:
+
+    rm -rf ~/tmp
+    sudo reboot
+
+And connect to the OPENSCOPE wifi network from your laptop/other computer with wifi. You can point your web browser to https://192.168.0.1:9000/ to access the microscope!
+
+You can attach an ethernet cable to the pi to connect it to your router/switch and you will be able to use the OPENSCOPE network as a wifi access point to the internet. You will then also be able to access the microscope off the internet - you can find the ip address by running:
+
+    ifconfig eth0
+
+You will see the ip address under `inet addr:192.168.1.7` or similar. Assuming the ip address is 192.168.1.7, you can then also connect to it on the local network at https://192.168.1.7:9000/
+
+You will need to see how to set up port forwarding on your router if you wish to access the microscope over the internet on a different LAN. For the hardcore enthusiasts, you can google how to set up ssh port forwarding to tunnel port 9000 elsewhere securely ;)
 
 ## Arch
 ### Premade Image

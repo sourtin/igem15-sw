@@ -152,8 +152,8 @@ class Canvas(object):
                  (i.e. if canvas.get() is ready to return an image)
               ii. whether the image is complete has not expired"""
         expiry = self.max_age
-        return all(image is not None for _,_,image in self.images).
-               all(image is not None and time() - image.stamp < expiry for _,_,image in self.images)
+        return (all(image is not None for _,_,image in self.images),
+                all(image is not None and time() - image.stamp < expiry for _,_,image in self.images))
 
     def invalidate(self, i, j):
         """manually invalidate/expire an individual tile of the image"""
