@@ -61,7 +61,8 @@ def control_led(mode, setting):
         return str(leds.get_mode())
     return 'error'
 
-MjpgStreamer.start() # Start camera by default
+if MjpgStreamer._started is not True:
+    MjpgStreamer.start() # Start camera by default
 
 app.wsgi_app = ProxyFix(app.wsgi_app)
 init_leds()

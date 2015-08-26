@@ -32,7 +32,7 @@ class MjpgStreamer:
     def captureImg():
         MjpgStreamer.stop()
         os.chdir("/home/pi/igem15-sw/captured")
-        fname = str(datetime.now())
+        fname = str(datetime.datetime.now())
         with picamera.PiCamera() as camera:
             camera.resolution = (1024, 768)
             camera.start_preview()
