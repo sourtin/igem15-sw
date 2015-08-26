@@ -78,7 +78,7 @@ class XY(Stage):
         self._bounds = bounds
 
         pos = self.shapeoko.position()
-        self.pos = self.xy2real(Vector(pos['x'], pos['y']))
+        self.pos = self.xy2real(Vector(pos['x'], pos['y']), wait=False)
         self.stati['calibrated'] = True
 
     def check_bounds(self, x=None, y=None, z=None, verbose=True):
@@ -117,11 +117,12 @@ class XY(Stage):
         self.check_bounds(*vec)
         return vec
 
-    def xy2real(self, coord):
+    def xy2real(self, coord, wait=True):
         """convert shapeoko internal coordinates (supposedly mm
            but not really) into real-world (in metres); only xy"""
 
-        self.wait()
+        if wait:
+            self.wait()
         x, y = coord
         self.check_bounds(x, y)
         xf, yf, _ = self._conversions
