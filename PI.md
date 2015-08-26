@@ -1,4 +1,24 @@
 # Installation instructions
+The easiest way to install the pi software is to download our pre-prepared disk image at .... and image a microSD card with it following the instructions at ....
+
+Once this is done, you will need to insert the microSD card and supply power to the raspberry pi. Assuming you have a ralink wifi adapter plugged in, you should be able to connect to the wifi network OPENSCOPE with the password PASSWORD and access the microscope at <https://192.168.0.1:9000/>.
+
+If you do not have a wifi adapter, you can connect an ethernet cable. Once you find out the ip address of the microscope (e.g. from your router's web admin page or through `nmap`).
+
+If you have a different wifi adapter (we used an Edimax wifi dongle), you may need to edit /etc/hostapd/hostapd.conf (see below) to work with the wifi adapter.
+
+And connect to the OPENSCOPE wifi network from your laptop/other computer with wifi. You can point your web browser to <https://192.168.0.1:9000/> to access the microscope!
+
+Once you access the right url, you will be prompted for a username and password. The default username is *admin* and the default password is *test* - you can add other user accounts and revoke access/change passwords from the admin interface at <https://192.168.0.1:9000/admin/>
+
+If you have attached an ethernet cable to the pi, you will be able to use the OPENSCOPE network as a wifi access point to the internet. You will then also be able to access the microscope off the internet - you can find the ip address by running:
+
+    ifconfig eth0
+
+You will see the ip address under `inet addr:192.168.1.7` or similar. Assuming the ip address is `192.168.1.7`, you can then also connect to it on the local network at `https://192.168.1.7:9000/`
+
+You will need to see how to set up port forwarding on your router if you wish to access the microscope over the internet on a different LAN. For the hardcore enthusiasts, you can google how to set up ssh port forwarding to tunnel port 9000 elsewhere securely ;)
+
 It is easiest to just use the preprepared disk image provided, however if you wish to customise the install more advanced instructions are also provided. We have provided the steps we used to construct the provided install, but feel free to deviate from the instructions as much as you wish, just remember to use an ARM-specific binaries and to obtain python 3.4+.
 
 ## Raspbian
@@ -31,18 +51,6 @@ After it has finished successfully, you can remove ~/tmp (unless you want to rec
 
     rm -rf ~/tmp
     sudo reboot
-
-And connect to the OPENSCOPE wifi network from your laptop/other computer with wifi. You can point your web browser to <https://192.168.0.1:9000/> to access the microscope!
-
-The default username is *admin* and the default password is *test* - you can add other user accounts and revoke access/change passwords from the admin interface at <https://192.168.0.1:9000/admin/>
-
-You can attach an ethernet cable to the pi to connect it to your router/switch and you will be able to use the OPENSCOPE network as a wifi access point to the internet. You will then also be able to access the microscope off the internet - you can find the ip address by running:
-
-    ifconfig eth0
-
-You will see the ip address under `inet addr:192.168.1.7` or similar. Assuming the ip address is `192.168.1.7`, you can then also connect to it on the local network at `https://192.168.1.7:9000/`
-
-You will need to see how to set up port forwarding on your router if you wish to access the microscope over the internet on a different LAN. For the hardcore enthusiasts, you can google how to set up ssh port forwarding to tunnel port 9000 elsewhere securely ;)
 
 ## Arch
 ### Premade Image
