@@ -3,7 +3,7 @@
 cd "$(dirname "$0")"
 
 echo Installing basic packages...
-sudo apt-get -y install python3.4 python3-numpy build-essential python3-pil python3-flask fail2ban hostapd python3-pip vim python3-serial udhcpd python3-pip virtualenv || exit 1
+sudo apt-get -y install python3.4 python3-numpy build-essential python3-pil fail2ban hostapd python3-pip vim python3-serial python3-flask udhcpd python3-pip virtualenv || exit 1
 
 echo Copying config...
 # Copy config
@@ -18,6 +18,7 @@ sudo cp raspi_conf/interfaces /etc/network/interfaces
 # Setup ssl cert and htpasswd
 cd nginx
 echo 'admin:$apr1$JD.wDERI$pNHlC/e4eUu7acirb4LW/.' > server.htpasswd
+touch server.htpasswd.disabled
 unset OPENSSL_CONF
 openssl req -days 3600 -new -x509 -sha512 -subj "/C=GB/ST=Cambridgeshire/L=Cambridge/O=Cambridge-JIC iGEM 2015/CN=OpenScope" -nodes -out server.crt -keyout server.key
 cd ..
@@ -25,6 +26,10 @@ cd ..
 # Setup gunicorn
 sudo apt-get remove -y gunicorn
 sudo pip3 install gunicorn
+
+# Compile mjpg-streamer
+cd contrib/mjpg-streamer/mjpg-streamer-experimental
+make
 
 # Finish setting up hostapd
 echo Setting up hostapd
