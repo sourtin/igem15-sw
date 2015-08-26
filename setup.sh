@@ -13,6 +13,10 @@ sudo cp raspi_conf/udhcpd.conf /etc/udhcpd.conf
 sudo cp raspi_conf/hostapd.conf /etc/hostapd/hostapd.conf
 sudo cp raspi_conf/interfaces /etc/network/interfaces
 
+# Setup ssl cert and htpasswd
+cd nginx
+echo 'admin:$apr1$JD.wDERI$pNHlC/e4eUu7acirb4LW/.' > server.htpasswd
+
 # Finish setting up hostapd
 echo Setting up hostapd
 cd ~/tmp
