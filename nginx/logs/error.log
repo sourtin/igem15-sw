@@ -27,3 +27,6 @@
 2015/08/22 15:03:59 [notice] 4415#0: signal process started
 2015/08/22 15:46:06 [notice] 4732#0: signal process started
 2015/08/22 15:48:42 [notice] 4836#0: signal process started
+2015/08/26 09:34:38 [emerg] 1865#0: BIO_new_file("nginx/server.crt") failed (SSL: error:02001002:system library:fopen:No such file or directory:fopen('nginx/server.crt','r') error:2006D080:BIO routines:BIO_new_file:no such file)
+2015/08/26 09:39:31 [emerg] 2108#0: BIO_new_file("nginx/server.crt") failed (SSL: error:02001002:system library:fopen:No such file or directory:fopen('nginx/server.crt','r') error:2006D080:BIO routines:BIO_new_file:no such file)
+2015/08/26 10:41:50 [emerg] 1749#0: BIO_new_file("nginx/server.crt") failed (SSL: error:02001002:system library:fopen:No such file or directory:fopen('nginx/server.crt','r') error:2006D080:BIO routines:BIO_new_file:no such file)
