@@ -3,7 +3,7 @@
 cd "$(dirname "$0")"
 
 echo Installing basic packages...
-sudo apt-get -y install python3.4 python3-numpy build-essential python3-pil python3-flask fail2ban hostapd python3-pip vim python3-serial udhcpd || exit
+sudo apt-get -y install python3.4 python3-numpy build-essential python3-pil python3-flask fail2ban hostapd python3-pip vim python3-serial udhcpd gunicorn || exit 1
 
 echo Copying config...
 # Copy config

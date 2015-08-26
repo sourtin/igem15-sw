@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """CLI helper file for running tests;
       Searches through and displays the list of
       available tests or runs the test specified

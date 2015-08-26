@@ -65,7 +65,7 @@ class XY(Stage):
 
         if not bounds:
             bounds = self._bounds
-        if not shapeoko.autocalibrate or self.stati['calibrated']:
+        if not self.shapeoko.autocalibrate or self.stati['calibrated']:
             # first time, calibrate iff not autocalibrated
             # subsequent times, calibrate anyway
             self.shapeoko.home(
