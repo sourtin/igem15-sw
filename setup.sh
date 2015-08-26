@@ -13,6 +13,15 @@ sudo cp raspi_conf/udhcpd.conf /etc/udhcpd.conf
 sudo cp raspi_conf/hostapd.conf /etc/hostapd/hostapd.conf
 sudo cp raspi_conf/interfaces /etc/network/interfaces
 
+# Finish setting up hostapd
+echo Setting up hostapd
+cd ~/tmp
+wget http://www.adafruit.com/downloads/adafruit_hostapd.zip
+unzip adafruit_hostapd.zip
+sudo mv /usr/sbin/hostapd /usr/sbin/hostapd.ORIG
+sudo mv hostapd /usr/sbin
+sudo chmod 755 /usr/sbin/hostapd
+
 echo Installing opencv3....
 # Install opencv (gulp)
 sudo apt-get -y install build-essential cmake git pkg-config || exit 1
@@ -49,4 +58,3 @@ echo Actually making now...
 make -j4
 sudo make install
 sudo ldconfig
-
