@@ -17,7 +17,8 @@ sudo cp raspi_conf/interfaces /etc/network/interfaces
 cd nginx
 echo 'admin:$apr1$JD.wDERI$pNHlC/e4eUu7acirb4LW/.' > server.htpasswd
 unset OPENSSL_CONF
-
+openssl req -days 3600 -new -x509 -sha512 -subj "/C=GB/ST=Cambridgeshire/L=Cambridge/O=Cambridge-JIC iGEM 2015/CN=OpenScope" -nodes -out server.crt -keyout server.key
+cd ..
 
 # Finish setting up hostapd
 echo Setting up hostapd
