@@ -75,6 +75,15 @@ $.ajax({
 });
 });
 
+$("#camcap").on("click", function(){
+$.ajax({
+  url: "/_webshell/capture/",
+  context: document.body
+}).done(function(data){
+$("#capt").html("<img src=\""+data+"\"/>")
+});
+});
+
 $.ajax({
   url: "/_webshell/control/led/get/_",
   context: document.body
@@ -95,13 +104,20 @@ width: 400px;
 <a href="/">Back</a><br />
 
 <div id="controlpanel">
-Camera:<br/><a href="#" id="camhold">Hold</a> <a href="#" id="camrel">Release</a> <br /><br />
+Camera:<br/><a href="#" id="camhold">Hold</a> <a href="#" id="camrel">Release</a> <br />
+<a href="#" id="camcap">Capture</a><br /><br />
 LED Mode (current: <span id="ledmode"></span>):<br /><a href="#" id="led0">Brightfield</a> <a href="#" id="led1">Fluorescence</a> <a href="#" id="led2">Darkfield</a> <a href="#" id="led3">Off</a> .... <a href="#" id="ledtog">Toggle</a><br /><br />
 <a href="#" id="ledreload">Reload LED control</a><br /><br />
-<a href="/_webshell/capture/">Capture</a><br /><br />
 Motors: (TODO)
 </div>
 
 <div id="cam"></div>
+
+<br />
+
+Last captured image:
+<div id="capt"></div>
+<br />
+<a href="/captured/">More></a>
 </body>
 </html>
