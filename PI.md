@@ -51,7 +51,7 @@ There! Wasn't that easy? You're welcome :)
 
 After it has finished successfully, you can remove ~/tmp (unless you want to recompile opencv later more quickly) and reboot the pi:
 
-    rm -rf ~/tmp
+    rm -rf ~/tmp/*
     sudo reboot
 
 ## Arch
