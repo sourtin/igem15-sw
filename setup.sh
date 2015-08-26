@@ -7,6 +7,13 @@ function error {
     exit 1
 }
 
+function log {
+    while read l; do
+       echo -n .
+       echo "$l" >> $LOGFILE
+    done
+}
+
 cd "$(dirname "$0")"
 
 echo "---- START INSTALL $(date) ----" >> $LOGFILE
@@ -14,27 +21,24 @@ echo "---- START INSTALL $(date) ----" >> $LOGFILE
 echo Installing basic packages...
 (
     sudo apt-get -y install python3.4 python3-numpy build-essential python3-pil fail2ban hostapd python3-pip vim python3-serial python3-flask udhcpd python3-pip virtualenv || exit 1
-) >> $LOGFILE 2>> $LOGFILE || error 'Installing python, fail2ban and hostapd'
+) 2>&1 | log || error 'Installing python, fail2ban and hostapd'
 
 echo Copying config...
 (
     # Copy config
     dir=~/igem15-sw
 
-
     sudo touch /etc/udhcpd.conf /etc/hostapd/hostapd.conf
     sudo rm /etc/udhcpd.conf /etc/hostapd/hostapd.conf || exit 1
 
     # add to rc.local
-    cd $dir/raspi_conf
-    rscript="$(pwd)/rc.local"
-    grep "$rscript" /etc/rc.local || sed -ri "s|#.\/bin.bash|#.\/bin\/sbash\n$rscript|g" /etc/rc.local
-    cd ..
+    rscript="$(pwd)/raspi_conf/rc.local"
+    grep "$rscript" /etc/rc.local || sed -ri "s|#\!\/bin.bash|#\!\/bin\/bash\n$rscript|g" /etc/rc.local
 
     sudo ln -s $dir/raspi_conf/udhcpd.conf /etc/udhcpd.conf || exit 1
     sudo ln -s $dir/raspi_conf/hostapd.conf /etc/hostapd/hostapd.conf || exit 1
     sudo cp raspi_conf/interfaces /etc/network/interfaces || exit 1
-) >> $LOGFILE 2>> $LOGFILE || error 'Setting up configuration files'
+) 2>&1 | log || error 'Setting up configuration files'
 
 (
     # Setup ssl cert and htpasswd
@@ -44,7 +48,7 @@ echo Copying config...
     unset OPENSSL_CONF
     openssl req -days 3600 -new -x509 -sha512 -subj "/C=GB/ST=Cambridgeshire/L=Cambridge/O=Cambridge-JIC iGEM 2015/CN=OpenScope" -nodes -out server.crt -keyout server.key
     cd ..
-) >> $LOGFILE 2>> $LOGFILE || error 'Setting up SSL certificates and nginx'
+) 2>&1 | log || error 'Setting up SSL certificates and nginx'
 
 (
     # Setup gunicorn
@@ -54,7 +58,7 @@ echo Copying config...
     # Compile mjpg-streamer
     cd contrib/mjpg-streamer/mjpg-streamer-experimental || exit 1
     make || exit 1
-) >> $LOGFILE 2>> $LOGFILE || error 'Installing gunicorn and mjpeg-streamer'
+) 2>&1 | log || error 'Installing gunicorn and mjpeg-streamer'
 
 
 # Finish setting up hostapd
@@ -67,7 +71,7 @@ echo Setting up hostapd
     sudo mv /usr/sbin/hostapd /usr/sbin/hostapd.ORIG || exit 1
     sudo mv hostapd /usr/sbin || exit 1
     sudo chmod 755 /usr/sbin/hostapd || exit 1
-) >> $LOGFILE 2>> $LOGFILE || error 'Installing hostapd'
+) 2>&1 | log || error 'Installing hostapd'
 
 if python3 -c "import cv2"; then
     echo "OpenCV3 Installed"
@@ -82,7 +86,7 @@ else
         sudo apt-get -y install libavcodec-dev libavformat-dev libswscale-dev libv4l-dev || exit 1
         sudo apt-get -y install libatlas-base-dev gfortran || exit 1
         sudo apt-get -y install python3.4-dev || exit 1
-    ) >> $LOGFILE 2>>$LOGFILE || error 'Installing opencv dependencies'
+    ) 2>&1 | log || error 'Installing opencv dependencies'
 
     echo I hope you have enough space...
 
@@ -107,15 +111,14 @@ else
                   -D BUILD_EXAMPLES=ON .. || exit 1
         fi
         touch configured || exit 72
-    ) >> $LOGFILE 2>>$LOGFILE || error 'Downloading and configuring opencv'
+    ) 2>&1 | log || error 'Downloading and configuring opencv'
 
     echo Actually making now...
- 
     (
         make -j4 || exit 4
         sudo make install || exit 5
         sudo ldconfig || exit 6
-    ) >> $LOGFILE 2>>$LOGFILE || error 'Making and installing opencv'
+    ) 2>&1 | log || error 'Making and installing opencv'
 fi
 
 echo SUCCESS
