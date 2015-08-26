@@ -11,7 +11,7 @@ iptables -A FORWARD -i wlan0 -o eth0 -j ACCEPT
 #ntpd -gq&
 
 cd /home/pi/igem15-sw/
-#sudo -u pi ./start_webshell.sh &
+sudo -u pi ./start.sh &
 
 exit 0
 
