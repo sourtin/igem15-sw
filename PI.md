@@ -4,10 +4,12 @@ It is easiest to just use the preprepared disk image provided, however if you wi
 ## Raspbian
 ### Premade Image
 ### Operating System
-Download the latest version from the raspberry pi foundation and image a microSD card with it. Boot and expand the filesystem, change the password and enable the camera. You may at this point want to increase the `gpu_mem` from 128 (MB) to 256. This is defined in the last line of the `/boot/config.txt` file - use `nano /boot/config.txt` or your favourite text editor.
+First the installation media must be prepared. Acquire a 16GB+ microSD card (8GB is also sufficient, but at one point you will require a blank 4GB+ USB storage device) and follow the instructions for installing raspbian at <https://www.raspberrypi.org/documentation/installation/installing-images/README.md>.
+
+After downloading the latest version from the raspberry pi foundation and imaging a microSD card with it, boot the raspberrry pi from it by inserting the microSD card into it and supplying power. Now you will be provided with a menu. You should expand the filesystem, change the password and enable the camera. You may at this point want to increase the graphics memory split from 128 (MB) to 256. You can do this within Advanced Options, under Memory Split.
 
 ### Packages
-Edit `/etc/apt/sources.list` with your favourite text editor, e.g. `nano`, or `vi` (`nano /etc/apt/sources.list`) and change wheezy to jessie (or later) to get the appropriate packages. Now update the cache using `sudo apt-get update` and the distribution with `sudo apt-get dist-upgrade`. Finally let's recover some space with `sudo apt-get clean`.
+Edit `/etc/apt/sources.list` with your favourite text editor, e.g. `nano`, or `vi` (`sudo nano /etc/apt/sources.list`) and change `wheezy` to `jessie` (or later) to get the appropriate packages. Now update the cache using `sudo apt-get update` and the distribution with `sudo apt-get dist-upgrade`. Finally let's recover some space with `sudo apt-get clean`.
 
 Now obtain our software, entering your password as needed:
 
@@ -15,14 +17,16 @@ Now obtain our software, entering your password as needed:
     git clone https://github.com/sourtin/igem15-sw.git
     cd igem15-sw
 
-For wifi access, you may need to find the right wifi driver for your dongle and edit raspi_conf/hostapd.conf - here you can also change the broadcast wifi network name and password.
+For wifi access, you may need to find the right wifi driver for your dongle (TODO: list of common drivers) and edit raspi_conf/hostapd.conf (`nano raspi_conf/hostapd.conf`) - here you can also change the broadcast wifi network name and password.
+
+_NOTE: At this point, if you have opted for a smaller microSD card, it may be necessary to provide some extra storage until after setup.sh has been run (after which you may remove the extra storage). Plug in a USB stick of at least 4GB capacity and make sure it is formatted to ext2+. Mount this partition on ~/tmp and follow the next steps as usual._
 
 Now you are ready to start installing packages!
 
     sudo ./setup.sh
 
 There! Wasn't that easy? You're welcome :)
-NOTE: It may be necessary, depending on the size of your SD card, to provide some extra storage mounted on ~/tmp at this stage as opencv needs several gigabytes of space to compile.
+
 
 ## Arch
 ### Premade Image
