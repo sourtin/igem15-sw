@@ -2,7 +2,8 @@ import os
 import threading
 import subprocess
 import picamera
-import time
+import time, datetime
+#import traceback
 
 class MjpgStreamer:
     _started = False
@@ -18,7 +19,7 @@ class MjpgStreamer:
     @staticmethod
     def start():
         # start mjpg-streamer
-        print("____start___")
+        #traceback.print_stack()
         threading.Thread(target=MjpgStreamer._start).start()
 
     @staticmethod
@@ -31,11 +32,12 @@ class MjpgStreamer:
     def captureImg():
         MjpgStreamer.stop()
         os.chdir("/home/pi/igem15-sw/captured")
+        fname = str(datetime.now())
         with picamera.PiCamera() as camera:
             camera.resolution = (1024, 768)
             camera.start_preview()
             time.sleep(0.1)
-            camera.capture('foo.jpg')
+            camera.capture('%s.jpg' % fname)
         MjpgStreamer.start()
-        return '<img src="/captured/foo.jpg">'
+        return '/captured/%s.jpg' % fname
 
