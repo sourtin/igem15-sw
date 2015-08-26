@@ -3,11 +3,9 @@ LOGFILE=~/igem15-sw.log
 function error {
     shift
     echo "Error: $@"
-    echo "Check the log at $$LOGFILE"
+    echo "Check the log at $LOGFILE"
     exit 1
 }
-
-### TODO: Append to rc.local not symlink
 
 cd "$(dirname "$0")"
 
@@ -23,11 +21,16 @@ echo Copying config...
     # Copy config
     dir=~/igem15-sw
 
-    sudo touch /etc/rc.local /etc/udhcpd.conf /etc/hostapd/hostapd.conf
-    sudo rm /etc/rc.local /etc/udhcpd.conf /etc/hostapd/hostapd.conf || exit 1
 
-    sudo ln -s $dir/raspi_conf/rc.local /etc/rc.local || exit 1
-    sudo chmod +x $dir/raspi_conf/rc.local || exit 1
+    sudo touch /etc/udhcpd.conf /etc/hostapd/hostapd.conf
+    sudo rm /etc/udhcpd.conf /etc/hostapd/hostapd.conf || exit 1
+
+    # add to rc.local
+    cd $dir/raspi_conf
+    rscript="$(pwd)/rc.local"
+    grep "$rscript" /etc/rc.local || sed -ri "s|#.\/bin.bash|#.\/bin\/sbash\n$rscript|g" /etc/rc.local
+    cd ..
+
     sudo ln -s $dir/raspi_conf/udhcpd.conf /etc/udhcpd.conf || exit 1
     sudo ln -s $dir/raspi_conf/hostapd.conf /etc/hostapd/hostapd.conf || exit 1
     sudo cp raspi_conf/interfaces /etc/network/interfaces || exit 1
@@ -59,7 +62,7 @@ echo Setting up hostapd
 (
     mkdir -p ~/tmp || exit 1
     cd ~/tmp || exit 1
-    wget http://www.adafruit.com/downloads/adafruit_hostapd.zip || exit 1
+    wget http://www.adafruit.com/downloads/adafruit_hostapd.zip -O adafruit_hostapd.zip || exit 1
     unzip adafruit_hostapd.zip || exit 1
     sudo mv /usr/sbin/hostapd /usr/sbin/hostapd.ORIG || exit 1
     sudo mv hostapd /usr/sbin || exit 1
