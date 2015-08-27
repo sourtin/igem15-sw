@@ -41,6 +41,21 @@ echo Copying config...
     sudo cp raspi_conf/interfaces /etc/network/interfaces || exit 1
 ) 2>&1 | log || error 'Setting up configuration files'
 
+echo Checking if nginx needs recompiling...
+(
+    nginx/nginx -h && exit 0
+    cd ~/tmp
+    wget http://nginx.org/download/nginx-1.9.4.tar.gz -O nginx.tar.gz
+    tar zxvf nginx.tar.gz
+    cd nginx-1.9.4
+    sudo apt-get -y install libpcre3-dev
+    ./configure --with-http_ssl_module
+    make
+    cp objs/nginx ~/igem15-sw/nginx/nginx
+    cd ~/igem15-sw/
+) 2&>1 | log || error 'Compiling nginx'
+
+echo nginx ok. Now setting up ssl certs and nginx config...
 (
     # Setup ssl cert and htpasswd
     cd nginx
@@ -51,6 +66,7 @@ echo Copying config...
     cd ..
 ) 2>&1 | log || error 'Setting up SSL certificates and nginx'
 
+echo Installing and configuring gunicorn...
 (
     # Setup gunicorn
     sudo apt-get remove -y gunicorn
@@ -75,7 +91,7 @@ echo Setting up hostapd
 ) 2>&1 | log || error 'Installing hostapd'
 
 if python3 -c "import cv2"; then
-    echo "OpenCV3 Installed"
+    echo "OpenCV3 Installed, skipping compile..."
 else
     echo Installing opencv3....
     # Install opencv (gulp)
@@ -122,5 +138,5 @@ else
     ) 2>&1 | log || error 'Making and installing opencv'
 fi
 
-echo SUCCESS
+echo SUCCESS, install completed
 
