@@ -13,7 +13,8 @@ $("#cam").html("<img src='/_stream/?action=stream&date="+d.getTime()+"' />");
 
 
 $(document).ready(function(){
-restartCam();
+$("#cam").html("Connecting...")
+setTimeout(restartCam, 1000)
 
 $("#camhold").on("click", function(){
 $("#cam").html("Reconnecting...");
