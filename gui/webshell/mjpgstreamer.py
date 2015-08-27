@@ -3,10 +3,19 @@ import threading
 import subprocess
 import picamera
 import time, datetime
-#import traceback
+import traceback
+import re
 
 class MjpgStreamer:
     _started = False
+
+    @staticmethod
+    def is_running(process):
+        s = subprocess.Popen(["ps", "axw"], stdout=subprocess.PIPE, universal_newlines=True)
+        for x in s.stdout:
+            if re.search(process, x):
+                return True
+        return False
 
     @staticmethod
     def _start():
@@ -19,8 +28,8 @@ class MjpgStreamer:
     @staticmethod
     def start():
         # start mjpg-streamer
-        #traceback.print_stack()
-        threading.Thread(target=MjpgStreamer._start).start()
+        if MjpgStreamer.is_running("mjpg_streamer") is False:
+            threading.Thread(target=MjpgStreamer._start).start()
 
     @staticmethod
     def stop():
