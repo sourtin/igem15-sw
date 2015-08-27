@@ -92,6 +92,11 @@ $.ajax({
 $("#ledmode").html(data)
 });
 
+$.ajax({
+  url: "/_webshell/control/power/on",
+  context: document.body
+})
+
 });
 </script>
 <style>

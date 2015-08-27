@@ -5,6 +5,7 @@ import picamera
 import time, datetime
 import traceback
 import re
+import uuid
 
 class MjpgStreamer:
     _started = False
@@ -19,7 +20,7 @@ class MjpgStreamer:
 
     @staticmethod
     def _start():
-        os.system("killall mjpg_streamer")
+        #os.system("killall mjpg_streamer") # no need if we only run this if it is not running already
         os.chdir("/home/pi/igem15-sw/contrib/mjpg-streamer/mjpg-streamer-experimental/")
         MjpgStreamer._started = True
         os.system('/home/pi/igem15-sw/contrib/mjpg-streamer/mjpg-streamer-experimental/run.sh')
@@ -28,7 +29,7 @@ class MjpgStreamer:
     @staticmethod
     def start():
         # start mjpg-streamer
-        if MjpgStreamer.is_running("mjpg_streamer") is False:
+        if not MjpgStreamer.is_running("mjpg_streamer"):
             threading.Thread(target=MjpgStreamer._start).start()
 
     @staticmethod
@@ -42,11 +43,12 @@ class MjpgStreamer:
         MjpgStreamer.stop()
         os.chdir("/home/pi/igem15-sw/captured")
         fname = str(datetime.datetime.now())
+        uid = str(uuid.uuid4())
         with picamera.PiCamera() as camera:
             camera.resolution = (1024, 768)
             camera.start_preview()
             time.sleep(0.1)
-            camera.capture('%s.jpg' % fname)
+            camera.capture('%s.%s.jpg' % fname, uid)
         MjpgStreamer.start()
-        return '/captured/%s.jpg' % fname
+        return '/captured/%s.%s.jpg' % fname, uid
 
