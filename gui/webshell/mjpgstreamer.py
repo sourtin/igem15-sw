@@ -20,7 +20,6 @@ class MjpgStreamer:
 
     @staticmethod
     def _start():
-        #os.system("killall mjpg_streamer") # no need if we only run this if it is not running already
         os.chdir("/home/pi/igem15-sw/contrib/mjpg-streamer/mjpg-streamer-experimental/")
         MjpgStreamer._started = True
         os.system('/home/pi/igem15-sw/contrib/mjpg-streamer/mjpg-streamer-experimental/run.sh')
