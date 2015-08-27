@@ -47,7 +47,7 @@ class MjpgStreamer:
             camera.resolution = (1024, 768)
             camera.start_preview()
             time.sleep(0.1)
-            camera.capture('%s.%s.jpg' % fname, uid)
+            camera.capture('%s.%s.jpg' % (fname, uid))
         MjpgStreamer.start()
-        return '/captured/%s.%s.jpg' % fname, uid
+        return '/captured/%s.%s.jpg' % (fname, uid)
 
