@@ -37,6 +37,17 @@ def control_power(onoff):
 def capture():
     return MjpgStreamer.captureImg(request.authorization.username)
 
+@app.route("/prune/")
+def prune():
+    return MjpgStreamer.prunedir("/home/pi/igem15-sw/captured/%s" % request.authorization.username)
+
+@app.route("/pruneall/")
+def pruneall():
+    if request.authorization.username == "admin":
+        return MjpgStreamer.prunedir("/home/pi/igem15-sw/captured/", 524288000)
+    else:
+        return "Error - cannot delete other user's data unless you are admin"
+
 @app.route("/control/reload/")
 def reload():
     global leds

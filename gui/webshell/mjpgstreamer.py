@@ -6,6 +6,7 @@ import time, datetime
 import traceback
 import re
 import uuid
+import fnmatch
 
 class MjpgStreamer:
     @staticmethod
@@ -20,6 +21,27 @@ class MjpgStreamer:
             if re.search(process, x):
                 return True
         return False
+
+    @staticmethod
+    def prunedir(dir, level = 52428800): # level = 50M by default
+        files = MjpgStreamer.returnold(dir)
+        size = 0
+        rm = []
+        for f in files:
+            size += os.path.getsize(f)
+            #print("%s - %s / %s" % (f, size, level))
+            if(size > level):
+                rm.append(f)
+                os.remove(f)
+        return "Removed: %s" % rm
+
+    @staticmethod
+    def returnold(folder):
+        matches = []
+        for root, dirnames, filenames in os.walk(folder):
+            for filename in fnmatch.filter(filenames, '*'):
+                matches.append(os.path.join(root, filename))
+        return sorted(matches, key=os.path.getmtime)
 
     @staticmethod
     def _start():
