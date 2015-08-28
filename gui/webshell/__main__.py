@@ -1,5 +1,6 @@
 from werkzeug.contrib.fixers import ProxyFix
 from flask import Flask
+from flask import request
 
 import sys
 sys.path.append("/home/pi/igem15-sw/")
@@ -34,7 +35,7 @@ def control_power(onoff):
 
 @app.route("/capture/")
 def capture():
-    return MjpgStreamer.captureImg()
+    return MjpgStreamer.captureImg(request.authorization.username)
 
 @app.route("/control/reload/")
 def reload():

@@ -38,18 +38,19 @@ class MjpgStreamer:
         subprocess.call(["killall", "mjpg_streamer"])
 
     @staticmethod
-    def captureImg():
+    def captureImg(user):
         MjpgStreamer.touch("/tmp/igemcam-lock")
         MjpgStreamer.stop()
         os.chdir("/home/pi/igem15-sw/captured")
+        os.makedirs(user, exist_ok=True)
         fname = str(datetime.datetime.now())
         uid = str(uuid.uuid4())
         with picamera.PiCamera() as camera:
             camera.resolution = (1024, 768)
             camera.start_preview()
             time.sleep(0.1)
-            camera.capture('%s.%s.jpg' % (fname, uid))
+            camera.capture('%s/%s.%s.jpg' % (user, fname, uid))
         os.remove("/tmp/igemcam-lock")
         MjpgStreamer.start()
-        return '/captured/%s.%s.jpg' % (fname, uid)
+        return '/captured/%s/%s.%s.jpg' % (user, fname, uid)
 
