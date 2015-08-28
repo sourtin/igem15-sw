@@ -8,7 +8,10 @@ import re
 import uuid
 
 class MjpgStreamer:
-    _started = False
+    @staticmethod
+    def touch(fname, times=None):
+        with open(fname, 'a'):
+            os.utime(fname, times)
 
     @staticmethod
     def is_running(process):
@@ -21,24 +24,22 @@ class MjpgStreamer:
     @staticmethod
     def _start():
         os.chdir("/home/pi/igem15-sw/contrib/mjpg-streamer/mjpg-streamer-experimental/")
-        MjpgStreamer._started = True
-        os.system('/home/pi/igem15-sw/contrib/mjpg-streamer/mjpg-streamer-experimental/run.sh')
-        MjpgStreamer._started = False
+        subprocess.call('/home/pi/igem15-sw/contrib/mjpg-streamer/mjpg-streamer-experimental/run.sh', shell=True)
 
     @staticmethod
     def start():
         # start mjpg-streamer
-        if not MjpgStreamer.is_running("mjpg_streamer"):
+        if not MjpgStreamer.is_running("mjpg_streamer") and not os.path.isfile("/tmp/igemcam-lock"):
             threading.Thread(target=MjpgStreamer._start).start()
 
     @staticmethod
     def stop():
         # stop mjpg-streamer
-        os.system("killall mjpg_streamer")
-        MjpgStreamer._started = False
+        subprocess.call(["killall", "mjpg_streamer"])
 
     @staticmethod
     def captureImg():
+        MjpgStreamer.touch("/tmp/igemcam-lock")
         MjpgStreamer.stop()
         os.chdir("/home/pi/igem15-sw/captured")
         fname = str(datetime.datetime.now())
@@ -49,5 +50,6 @@ class MjpgStreamer:
             time.sleep(0.1)
             camera.capture('%s.%s.jpg' % (fname, uid))
         MjpgStreamer.start()
+        os.remove("/tmp/igemcam-lock")
         return '/captured/%s.%s.jpg' % (fname, uid)
 
