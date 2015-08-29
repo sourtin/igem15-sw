@@ -1,6 +1,6 @@
 #!/bin/bash
 
-dhclient eth0
+dhclient eth0 &
 hostapd /etc/hostapd/hostapd.conf &
 udhcpd &
 
