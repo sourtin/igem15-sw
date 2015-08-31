@@ -1,5 +1,6 @@
 from werkzeug.contrib.fixers import ProxyFix
 from flask import Flask
+from flask import request
 
 import sys
 sys.path.append("/home/pi/igem15-sw/")
@@ -32,6 +33,21 @@ def control_power(onoff):
         return 'stopped'
     return 'error'
 
+@app.route("/capture/")
+def capture():
+    return MjpgStreamer.captureImg(request.authorization.username)
+
+@app.route("/prune/")
+def prune():
+    return MjpgStreamer.prunedir("/home/pi/igem15-sw/captured/%s" % request.authorization.username)
+
+@app.route("/pruneall/")
+def pruneall():
+    if request.authorization.username == "admin":
+        return MjpgStreamer.prunedir("/home/pi/igem15-sw/captured/", 524288000)
+    else:
+        return "Error - cannot delete other user's data unless you are admin"
+
 @app.route("/control/reload/")
 def reload():
     global leds
@@ -57,7 +73,7 @@ def control_led(mode, setting):
         return str(leds.get_mode())
     return 'error'
 
-MjpgStreamer.start() # Start camera by default
+#MjpgStreamer.start() # Start camera by default
 
 app.wsgi_app = ProxyFix(app.wsgi_app)
 init_leds()
