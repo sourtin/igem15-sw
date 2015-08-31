@@ -79,6 +79,7 @@ echo Installing and configuring gunicorn...
 
 
 # Finish setting up hostapd
+# only if chipset requires it
 echo Setting up hostapd
 (
     mkdir -p ~/tmp || exit 1
