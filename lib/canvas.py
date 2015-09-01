@@ -10,7 +10,7 @@ import subprocess
 
 import cv2
 import numpy as np
-import PIL
+import PIL.Image
 
 class Image(object):
     """Image wrapper with helper functions for conversion between cv/numpy and PIL formats;
