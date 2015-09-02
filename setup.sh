@@ -85,7 +85,7 @@ echo Setting up hostapd
     mkdir -p ~/tmp || exit 1
     cd ~/tmp || exit 1
     if lsusb|grep RTL8188CUS; then
-        if [ -f adafruit_hostapd.zip ]; then
+        if which hostapd.ORIG; then
             echo Already downloaded hostapd
         else
            wget http://www.adafruit.com/downloads/adafruit_hostapd.zip -O adafruit_hostapd.zip || exit 1
