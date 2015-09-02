@@ -133,6 +133,7 @@ else
 
     echo Actually making now...
     (
+        cd ~/tmp/opencv/build
         make -j4 || exit 4
         sudo make install || exit 5
         sudo ldconfig || exit 6
