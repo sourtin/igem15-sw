@@ -71,8 +71,8 @@ class MjpgStreamer:
             camera.resolution = (1024, 768)
             camera.start_preview()
             time.sleep(0.1)
-            camera.capture('%s/%s.%s.jpg' % (user, fname, uid))
+            camera.capture('%s/%s.%s.jpg' % (user.replace('/', ''), fname, uid))
         os.remove("/tmp/igemcam-lock")
         MjpgStreamer.start()
-        return '/captured/%s/%s.%s.jpg' % (user, fname, uid)
+        return '/captured/%s/%s.%s.jpg' % (user.replace('/', ''), fname, uid)
 
