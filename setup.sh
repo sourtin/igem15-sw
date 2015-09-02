@@ -53,7 +53,7 @@ echo Checking if nginx needs recompiling...
     make
     cp objs/nginx ~/igem15-sw/nginx/nginx
     cd ~/igem15-sw/
-) 2&>1 | log || error 'Compiling nginx'
+) 2>&1 | log || error 'Compiling nginx'
 
 echo nginx ok. Now setting up ssl certs and nginx config...
 (
