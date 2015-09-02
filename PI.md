@@ -1,3 +1,5 @@
+TODO: HOW TO GET THE INTERNETS
+
 # Installation instructions
 The easiest way to install the pi software is to download our pre-prepared disk image at .... and image a microSD card with it following the instructions at ....
 
