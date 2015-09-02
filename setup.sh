@@ -129,7 +129,7 @@ else
         cd opencv_contrib || exit 1
         git checkout 3.0.0 || exit 1
         cd ../opencv || exit 1
-        mkdir build || exit 1
+        mkdir -p build || exit 1
         cd build || exit 1
         if [ ! -f configured ]; then
             cmake -D CMAKE_BUILD_TYPE=RELEASE \
