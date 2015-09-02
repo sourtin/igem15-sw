@@ -21,7 +21,7 @@ echo "---- START INSTALL $(date) ----" >> $LOGFILE
 
 echo Installing basic packages...
 (
-    sudo apt-get -y install python3.4 python3-numpy build-essential python3-pil fail2ban hostapd python3-pip vim python3-serial python3-flask udhcpd python3-pip virtualenv || exit 1
+    sudo apt-get -y install python3.4 python3-numpy build-essential python3-pil fail2ban hostapd python3-pip vim python3-serial python3-flask udhcpd python3-pip virtualenv libjpeg-dev || exit 1
 ) 2>&1 | log || error 'Installing python, fail2ban and hostapd'
 
 echo Copying config...
