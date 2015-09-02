@@ -88,13 +88,13 @@ echo Setting up hostapd
         if which hostapd.ORIG; then
             echo Already downloaded hostapd
         else
-           wget http://www.adafruit.com/downloads/adafruit_hostapd.zip -O adafruit_hostapd.zip || exit 1
+            wget http://www.adafruit.com/downloads/adafruit_hostapd.zip -O adafruit_hostapd.zip || exit 1
+            unzip adafruit_hostapd.zip || exit 1
+            sudo mv /usr/sbin/hostapd /usr/sbin/hostapd.ORIG || exit 1
+            sudo mv hostapd /usr/sbin || exit 1
+            sudo chmod 755 /usr/sbin/hostapd || exit 1
+            sed -ri 's/nl80211/rtl871xdrv/g' ~/igem15-sw/raspi_conf/hostapd.conf
         fi
-        unzip adafruit_hostapd.zip || exit 1
-        sudo mv /usr/sbin/hostapd /usr/sbin/hostapd.ORIG || exit 1
-        sudo mv hostapd /usr/sbin || exit 1
-        sudo chmod 755 /usr/sbin/hostapd || exit 1
-        sed -ri 's/nl80211/rtl871xdrv/g' ~/igem15-sw/raspi_conf/hostapd.conf
     fi
 ) 2>&1 | log || error 'Installing hostapd'
 
