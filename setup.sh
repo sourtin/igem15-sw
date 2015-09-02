@@ -117,11 +117,15 @@ else
 
     (
         cd ~/tmp || exit 3
-        git clone https://github.com/Itseez/opencv.git || exit 1
+        if [ ! -d opencv ]; then
+            git clone https://github.com/Itseez/opencv.git || exit 1
+        fi
         cd opencv || exit 1
         git checkout 3.0.0 || exit 1
         cd .. || exit 1
-        git clone https://github.com/Itseez/opencv_contrib.git || exit 1
+        if [ ! -d opencv_contrib ]; then
+            git clone https://github.com/Itseez/opencv_contrib.git || exit 1
+        fi
         cd opencv_contrib || exit 1
         git checkout 3.0.0 || exit 1
         cd ../opencv || exit 1
