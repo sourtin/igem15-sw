@@ -63,6 +63,7 @@ class MjpgStreamer:
     def captureImg(user):
         MjpgStreamer.touch("/tmp/igemcam-lock")
         MjpgStreamer.stop()
+        os.makedirs("/home/pi/igem15-sw/captured", exist_ok=True)
         os.chdir("/home/pi/igem15-sw/captured")
         os.makedirs(user, exist_ok=True)
         fname = str(datetime.datetime.now())

@@ -6,7 +6,7 @@ import sys
 sys.path.append("/home/pi/igem15-sw/")
 
 from gui.webshell.mjpgstreamer import MjpgStreamer
-from hw.ledcontrol.ledcontrol_p2 import LEDControl
+from hw.ledcontrol.ledcontrol import LEDControl
 
 app = Flask(__name__)
 leds = None
