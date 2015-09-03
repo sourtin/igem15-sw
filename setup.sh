@@ -1,5 +1,5 @@
 #!/bin/bash
-LOGFILE=~/igem15-sw.log
+LOGFILE=/home/pi/igem15-sw.log
 function error {
     echo "Error: $@"
     echo "Check the log at $LOGFILE"
@@ -27,7 +27,7 @@ echo Installing basic packages...
 echo Copying config...
 (
     # Copy config
-    dir=~/igem15-sw
+    dir=/home/pi/igem15-sw
 
     sudo touch /etc/udhcpd.conf /etc/hostapd/hostapd.conf
     sudo rm /etc/udhcpd.conf /etc/hostapd/hostapd.conf || exit 1
@@ -44,15 +44,15 @@ echo Copying config...
 echo Checking if nginx needs recompiling...
 (
     nginx/nginx -h && exit 0
-    cd ~/tmp
+    cd /home/pi/tmp
     wget http://nginx.org/download/nginx-1.9.4.tar.gz -O nginx.tar.gz
     tar zxvf nginx.tar.gz
     cd nginx-1.9.4
     sudo apt-get -y install libpcre3-dev
     ./configure --with-http_ssl_module
     make
-    cp objs/nginx ~/igem15-sw/nginx/nginx
-    cd ~/igem15-sw/
+    cp objs/nginx /home/pi/igem15-sw/nginx/nginx
+    cd /home/pi/igem15-sw/
 ) 2>&1 | log || error 'Compiling nginx'
 
 echo nginx ok. Now setting up ssl certs and nginx config...
@@ -82,8 +82,8 @@ echo Installing and configuring gunicorn...
 # only if chipset requires it
 echo Setting up hostapd
 (
-    mkdir -p ~/tmp || exit 1
-    cd ~/tmp || exit 1
+    mkdir -p /home/pi/tmp || exit 1
+    cd /home/pi/tmp || exit 1
     if lsusb|grep RTL8188CUS; then
         if which hostapd.ORIG; then
             echo Already downloaded hostapd
@@ -93,7 +93,7 @@ echo Setting up hostapd
             sudo mv /usr/sbin/hostapd /usr/sbin/hostapd.ORIG || exit 1
             sudo mv hostapd /usr/sbin || exit 1
             sudo chmod 755 /usr/sbin/hostapd || exit 1
-            sed -ri 's/nl80211/rtl871xdrv/g' ~/igem15-sw/raspi_conf/hostapd.conf
+            sed -ri 's/nl80211/rtl871xdrv/g' /home/pi/igem15-sw/raspi_conf/hostapd.conf
         fi
     fi
 ) 2>&1 | log || error 'Installing hostapd'
@@ -116,7 +116,7 @@ else
     echo I hope you have enough space...
 
     (
-        cd ~/tmp || exit 3
+        cd /home/pi/tmp || exit 3
         if [ ! -d opencv ]; then
             git clone https://github.com/Itseez/opencv.git || exit 1
         fi
@@ -136,7 +136,7 @@ else
                   -D CMAKE_INSTALL_PREFIX=/usr/local \
                   -D INSTALL_C_EXAMPLES=ON \
                   -D INSTALL_PYTHON_EXAMPLES=ON \
-                  -D OPENCV_EXTRA_MODULES_PATH=~/tmp/opencv_contrib/modules \
+                  -D OPENCV_EXTRA_MODULES_PATH=/home/pi/tmp/opencv_contrib/modules \
                   -D BUILD_EXAMPLES=ON .. || exit 1
         fi
         touch configured || exit 72
@@ -144,7 +144,7 @@ else
 
     echo Actually making now...
     (
-        cd ~/tmp/opencv/build
+        cd /home/pi/tmp/opencv/build
         make -j4 || exit 4
         sudo make install || exit 5
         sudo ldconfig || exit 6
