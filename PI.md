@@ -1,3 +1,5 @@
+TODO: HOW TO GET THE INTERNETS
+
 # Installation instructions
 The easiest way to install the pi software is to download our pre-prepared disk image at .... and image a microSD card with it following the instructions at ....
 
@@ -41,7 +43,7 @@ Now obtain our software, entering your password as needed:
 
 For wifi access, you may need to find the right wifi driver for your dongle (TODO: list of common drivers) and edit raspi_conf/hostapd.conf (`nano raspi_conf/hostapd.conf`) - here you can also change the broadcast wifi network name and password.
 
-_NOTE: At this point, if you have opted for a smaller microSD card, it may be necessary to provide some extra storage until after setup.sh has been run (after which you may remove the extra storage). Plug in a USB stick of at least 4GB capacity and make sure it is formatted to ext2+. Mount this partition on ~/tmp and follow the next steps as usual._
+_NOTE: At this point, if you have opted for a smaller microSD card, it may be necessary to provide some extra storage until after setup.sh has been run (after which you may remove the extra storage). Plug in a USB stick of at least 4GB capacity and make sure it is formatted to ext2+. Mount this partition on ~/tmp (```mkdir -p ~/tmp; sudo mount /dev/sda1 ~/tmp``` where /dev/sda1 should be replaced with the device file represented by your usb storage device) and follow the next steps as usual._
 
 Now you are ready to start installing packages!
 
