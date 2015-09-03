@@ -1,7 +1,16 @@
 #!/bin/bash
 
 dhclient eth0 &
-hostapd /etc/hostapd/hostapd.conf &
+# reconf binary and config
+service hostapd disable
+service hostapd stop
+if lsusb|grep RTL8188CUS; then
+    sed -ri 's/nl80211/rtl871xdrv/g' /etc/hostapd/hostapd.conf
+    hostapd /etc/hostapd/hostapd.conf &
+else
+    sed -ri 's/rtl871xdrv/nl80211/g' /etc/hostapd/hostapd.conf
+    hostapd.ORIG /etc/hostapd/hostapd.conf &
+fi
 udhcpd &
 
 iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
