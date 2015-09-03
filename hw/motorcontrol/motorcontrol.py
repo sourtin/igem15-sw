@@ -11,8 +11,9 @@ class MotorControl:
 
     def wait_for_fin(self):
         while True:
-            line = self._ser.readline()
+            line = self._ser.readline().decode("utf-8")
             try:
+                print(" < %s" %line)
                 if len(line) and "fin" in line:
                     return
             except:
@@ -27,13 +28,17 @@ class MotorControl:
             self._move(2, int(z))
 
     def _move(self, axis, amount):
-#        print('m%d%s%dg' % (axis, "+" if amount > 0 else "", amount))
+        print(' > m%d%s%dg' % (axis, "+" if amount > 0 else "", amount))
         self._ser.write(('m%d%s%dg' % (axis, "+" if amount > 0 else "", amount)).encode())
         self._ser.flush()
         self.wait_for_fin()
+
         del self._ser
         self._ser = serial.Serial(self.dev, 9600)
-#        time.sleep(1)
+        self._ser.setDTR(False)
+        time.sleep(1)
+        self._ser.flushInput()
+        self._ser.setDTR(True)
 
     def close(self):
         self._ser.close()
