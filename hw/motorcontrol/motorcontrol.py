@@ -35,10 +35,7 @@ class MotorControl:
 
         del self._ser
         self._ser = serial.Serial(self.dev, 9600)
-        self._ser.setDTR(False)
-        time.sleep(1)
-        self._ser.flushInput()
-        self._ser.setDTR(True)
+        time.sleep(2)
 
     def close(self):
         self._ser.close()
