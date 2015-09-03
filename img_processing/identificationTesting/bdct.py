@@ -43,7 +43,7 @@ def contrast_stretch(I, N):
                 
         # Get the enhanced image
         I = I*Gain - Offset*np.ones_like(I)
-        cv2.imwrite('stage_1.png',I)
+        #cv2.imwrite('stage_1.png',I)
     return I
     
 # Brightness-direction balancing function
@@ -70,7 +70,7 @@ def brightness_direction_balance(I):
     # Filter the image
     I = np.rint(0.5 * np.multiply( I , (Wx + Wy)))
 
-    cv2.imwrite('stage_2.png',I)
+    #cv2.imwrite('stage_2.png',I)
     return(I)
   
 # Background reconstruction using DCT-II function
@@ -90,21 +90,11 @@ def background_reconstruction_dct(I):
     X[1:,:][:,1:]= 0;
     Y =fftpack.idct( fftpack.idct(X, type = 2, norm = 'ortho').T, type =2, norm = 'ortho').T
     Y = np.uint8(Y)
-    cv2.imwrite('stage_3.png', Y)
+    #cv2.imwrite('stage_3.png', Y)
     return Y
     
-    
-# Read in picture
-image_name = input("Type in picture name, eg. 'marchantia5.jpg' \n")
-# Default image 
-if image_name == "" :
-    image = cv2.imread('focusedMarchantia_small.jpg')
-else:
-    image = cv2.imread(image_name)
-image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) # Convert to black and white
-    
 # Carry out the BDCT
-def bdct(N = 2, othervalue =0 , img=image):
+def bdct(img, N = 2):
     
     """ Do contrast stretch """
     img = contrast_stretch(img, int(N))
@@ -121,24 +111,46 @@ def bdct(N = 2, othervalue =0 , img=image):
     
     """ Image difference classification """
     img_idc = img_bg - img
-    cv2.imwrite('stage_4.png', img_idc)
+    #cv2.imwrite('stage_4.png', img_idc)
     
     """ Otsu thresholding """ # <-- this did not work as well as the paper suggested, normal thresholding using a slider would be better
+    
     #img_idc = cv2.convertScaleAbs(img_idc)
     #ret2,img = cv2.threshold(img_idc,img_idc.min(),img_idc.max(),cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-    
-    # # Resize picture
-    # if img.shape[0] > 500 | img.shape[1] > 500 :
-       # cv2.resize(image, (0,0), fx=0.125, fy=0.125)
-    # cv2.namedWindow("Image", flags = cv2.WINDOW_NORMAL)
-    # cv2.moveWindow("Image", 500,0)   
-    # cv2.imshow('Image', img)
-    
+
+    """ Return processed image"""
     # Output final image
-    cv2.imwrite("stage_final.png", img)    
-
-
+    img_out = cv2.convertScaleAbs(img_idc)
+    return img_out
+    #return cv2.bitwise_not(img_out,img_out)
+    #cv2.threshold(img_out, 0, 255, cv2.THRESH_BINARY)
+    #print(img_out)
+    #cv2.imwrite("stage_final.png", img_idc)    
     
- 
 
-bdct(img=image)
+
+if __name__ == '__main__':
+    
+    """ Read in image """
+    image_name = input("Type in picture name, eg. 'marchantia5.jpg' \n")
+    # Default image 
+    if image_name == "" :
+        image = cv2.imread('C:\\Users\\RAK\\Documents\\iGEM\\Software\\focusedMarchantia_small.jpg')
+    else:
+        image = cv2.imread(image_name)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) # Convert to black and white
+        
+    """ BDCT """ 
+    img = bdct(img=image)
+    
+    """ Display image """
+    # Resize picture
+    if img.shape[0] > 500 | img.shape[1] > 500 :
+       cv2.resize(image, (0,0), fx=0.125, fy=0.125)
+    cv2.namedWindow("Press any key to close", flags = cv2.WINDOW_NORMAL)
+    cv2.moveWindow("Press any key to close", 500,0)
+    print(img.dtype, img.shape)
+    #print(img)
+    cv2.imshow('Press any key to close', img)
+    cv2.waitKey()
+    cv2.destroyAllWindows()

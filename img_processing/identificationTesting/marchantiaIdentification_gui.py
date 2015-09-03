@@ -3,12 +3,15 @@
 
 import cv2
 import numpy
-from imageProcessingClasses.contrastImprovement import contrastImprovement as contImprov
-from imageProcessingClasses.isolateColorsBGR import isolateColorsBGR as isoCol
+from contrastImprovement import contrastImprovement as contImprov
+from isolateColorsBGR import isolateColorsBGR as isoCol
 from tkinter import *
+import bdct
 
 """load image"""
-imgOriginal = cv2.imread("E:\\Shared OS folder\\iGEM\Images\\Focused Marchantia\\focusedMarchantia1\\focusedMarchantia_small2.jpg", cv2.IMREAD_COLOR)
+imgOriginal = cv2.imread("C:\\Users\\RAK\\Documents\\iGEM\\Software\\focusedMarchantia_small.jpg", cv2.IMREAD_COLOR)
+
+# print(imgOriginal)
 
 """Set upper threshold limit for slider"""
 upperThresholdLimit = 255
@@ -20,7 +23,13 @@ def threshold(blackCriteria, image):
     imgEdit = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 
     """Improve contrast""" #OPTIMISED FOR SMALL MARCHANTIA
-    imgEdit = contImprov.improveContrastGrayscale(imgEdit, 105, 125)
+    #imgEdit = contImprov.improveContrastGrayscale(imgEdit, 105, 125)
+    #print(imgEdit.dtype, imgEdit.shape)
+    
+    
+    """ Carry out the BDCT method """
+    imgEdit = bdct.bdct(img=imgEdit)
+    cv2.imshow('bdct',imgEdit)
 
     """Do openCV Thresholding"""
     _, imgEdit = cv2.threshold(imgEdit, float(blackCriteria), 255, cv2.THRESH_BINARY_INV)
@@ -87,7 +96,7 @@ def go(blackCriteria = 30, kernelVal = 20, type = "threshold", image = imgOrigin
     imgOriginalBoxes = imgOriginal.copy()
     cv2.drawContours(imgOriginalBoxes,contours, -1, (0,0,255))
 
-    cv2.imshow("image", imgOriginalBoxes)
+    cv2.imshow("image", imgEdit)
 
 
 
@@ -132,7 +141,7 @@ kernelSlider.set(20)
 kernelSlider.pack()
 
 """Create threshold slider"""
-slider = Scale(master, from_=0, to=upperThresholdLimit, label = "threshold", command=lambda x:go(x, kernelSlider.get(), radioVal.get()), orient=HORIZONTAL)
+slider = Scale(master, from_=1, to=upperThresholdLimit, label = "threshold", command=lambda x:go(x, kernelSlider.get(), radioVal.get()), orient=HORIZONTAL)
 slider.set(50)
 slider.pack()
 
@@ -140,6 +149,7 @@ slider.pack()
 Button(master, text='Save', command=lambda:save(slider.get(), kernelSlider.get(), radioVal.get())).pack()
 
 """Run tkinter frame"""
+cv2.namedWindow("image", flags = cv2.WINDOW_NORMAL)
 mainloop()
 
 cv2.waitKey(0)
