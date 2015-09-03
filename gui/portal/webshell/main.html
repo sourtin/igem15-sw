@@ -86,6 +86,53 @@ setTimeout(restartCam, 1000)
 });
 });
 
+
+$("#motx").on("click", function(){
+$("#motx").attr("disabled", "true")
+$.ajax({
+  url: "/_webshell/control/motor/1/"+($("#motx_").attr("value")),
+  context: document.body
+}).done(function(){$("#motx").removeAttr("disabled")});
+});
+$("#motxb").on("click", function(){
+$("#motxb").attr("disabled", "true")
+$.ajax({
+  url: "/_webshell/control/motor/1/"+(parseInt($("#motx_").attr("value"))*(-1)),
+  context: document.body
+}).done(function(){$("#motxb").removeAttr("disabled")});
+});
+
+$("#moty").on("click", function(){
+$("#moty").attr("disabled", "true")
+$.ajax({
+  url: "/_webshell/control/motor/2/"+($("#moty_").attr("value")),
+  context: document.body
+}).done(function(){$("#moty").removeAttr("disabled")});
+});
+$("#motyb").on("click", function(){
+$("#motyb").attr("disabled", "true")
+$.ajax({
+  url: "/_webshell/control/motor/2/"+(parseInt($("#moty_").attr("value"))*(-1)),
+  context: document.body
+}).done(function(){$("#motyb").removeAttr("disabled")});
+});
+
+$("#motz").on("click", function(){
+$("#motz").attr("disabled", "true")
+$.ajax({
+  url: "/_webshell/control/motor/0/"+($("#motz_").attr("value")),
+  context: document.body
+}).done(function(){$("#motz").removeAttr("disabled")});
+});
+$("#motzb").on("click", function(){
+$("#motzb").attr("disabled", "true")
+$.ajax({
+  url: "/_webshell/control/motor/0/"+(parseInt($("#motz_").attr("value"))*(-1)),
+  context: document.body
+}).done(function(){$("#motzb").removeAttr("disabled")});
+});
+
+
 $.ajax({
   url: "/_webshell/control/led/get/_",
   context: document.body
@@ -119,7 +166,10 @@ Camera:<br/><a href="#" id="camhold">Hold</a> <a href="#" id="camrel">Release</a
 <a href="#" id="camcap">Capture</a><br /><br />
 LED Mode (current: <span id="ledmode"></span>):<br /><a href="#" id="led0">Brightfield</a> <a href="#" id="led1">Fluorescence</a> <a href="#" id="led2">Darkfield</a> <a href="#" id="led3">Off</a> .... <a href="#" id="ledtog">Toggle</a><br /><br />
 <a href="#" id="ledreload">Reload LED control</a><br /><br />
-Motors: (TODO)
+Move motors:<br />
+X: <input type="text" value="100" id="motx_" /> <button id="motx">Go!</button> <button id="motxb">Back!</button><br />
+Y: <input type="text" value="100" id="moty_" /> <button id="moty">Go!</a> <button id="motyb">Back!</button><br />
+Z: <input type="text" value="600" id="motz_" /> <button id="motz">Go!</a> <button id="motzb">Back!</button><br />
 </div>
 
 <div id="cam"></div>

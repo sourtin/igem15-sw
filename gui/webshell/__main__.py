@@ -7,9 +7,11 @@ sys.path.append("/home/pi/igem15-sw/")
 
 from gui.webshell.mjpgstreamer import MjpgStreamer
 from hw.ledcontrol.ledcontrol import LEDControl
+from hw.motorcontrol.motorcontrol import MotorControl
 
 app = Flask(__name__)
 leds = None
+mots = None
 
 def init_leds():
     global leds
@@ -17,6 +19,15 @@ def init_leds():
         leds = LEDControl("/dev/serial/by-id/usb-Arduino__www.arduino.cc__0043_5543434383335181A060-if00")
     except:
         leds = None
+        pass
+
+def init_mots():
+    global mots
+    try:
+        mots = MotorControl("/dev/serial/by-id/usb-Arduino__www.arduino.cc__0043_55434343833351813261-if00")
+    except:
+        print("error connecting motors")
+        mots = None
         pass
 
 @app.route("/")
@@ -56,6 +67,15 @@ def reload():
     init_leds()
     return 'done'
 
+@app.route("/control/reload_motors/")
+def reload_mots():
+    global mots
+    if mots != None:
+        mots._ser.close()
+        del mots
+    init_motors()
+    return 'done'
+
 @app.route("/control/led/<mode>/<setting>")
 def control_led(mode, setting):
     global leds
@@ -73,10 +93,21 @@ def control_led(mode, setting):
         return str(leds.get_mode())
     return 'error'
 
+@app.route("/control/motor/<axis>/<amount>")
+def control_mot(axis, amount):
+    global mots
+
+    if mots is None:
+        return 'No Motor control board connected'
+
+    mots._move(int(axis), int(amount))
+    return 'done'
+
 #MjpgStreamer.start() # Start camera by default
 
 app.wsgi_app = ProxyFix(app.wsgi_app)
 init_leds()
+init_mots()
 
 if __name__ == '__main__':
     app.run('0.0.0.0', 9001, debug=True)
