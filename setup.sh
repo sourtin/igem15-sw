@@ -150,7 +150,7 @@ else
     ) 2>&1 | log || error 'Making and installing opencv'
 fi
 
-sudo service wicd disable
+sudo systemctl disable wicd
 sudo service wicd stop
 echo SUCCESS, install completed
 
