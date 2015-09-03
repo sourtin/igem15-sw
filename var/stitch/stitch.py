@@ -23,10 +23,15 @@ def warpTwoImages(img1, img2, H):
     [xmin, ymin] = np.int32(pts.min(axis=0).ravel() - 0.5)
     [xmax, ymax] = np.int32(pts.max(axis=0).ravel() + 0.5)
     t = [-xmin,-ymin]
+    print(xmin, ymin, xmax, ymax, t)
     Ht = np.array([[1,0,t[0]],[0,1,t[1]],[0,0,1]]) # translate
 
     result = cv2.warpPerspective(img2, Ht.dot(H), (xmax-xmin, ymax-ymin))
-    result[t[1]:h1+t[1],t[0]:w1+t[0]] = img1
+    im1 = np.full((ymax-ymin, xmax-xmin, 3), 2, dtype=np.uint8) 
+    im1[t[1]:h1+t[1],t[0]:w1+t[0]] = img1
+    #result[t[1]:h1+t[1],t[0]:w1+t[0]] = img1
+    res = np.maximum.reduce([result, im1])
+    return res
     return result
 
 im00, im01, im02, im10, im11, im12 = [cv2.imread("tiles/%s.jpg"%im, cv2.IMREAD_COLOR) for im in ['00','01','02','10','11','12']]
@@ -39,15 +44,15 @@ orb = cv2.ORB_create()
 bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
 
 kps = [orb.detectAndCompute(im, None) for im in ims]
-im1 = ims[0]
-im2 = ims[3]
-ik1, id1 = kps[0]
-ik2, id2 = kps[3]
+im1 = ims[3]
+im2 = ims[0]
+ik1, id1 = kps[3]
+ik2, id2 = kps[0]
 
 matches = bf.match(id1, id2)
 matches = sorted(matches, key=lambda m:m.distance)[:15]
 im3 = cv2.drawMatches(im1, ik1, im2, ik2, matches, None)
-display(im3)
+#display(im3)
 
 dst = np.float32([ik1[m.queryIdx].pt for m in matches]).reshape(-1,1,2)
 src = np.float32([ik2[m.trainIdx].pt for m in matches]).reshape(-1,1,2)
@@ -63,7 +68,7 @@ dsts = cv2.perspectiveTransform(pts, M)
 print(pts, dsts)
 print([np.int32(dsts)])
 im4 = cv2.polylines(im4, [np.int32(dsts)], True, (255,0,0), 30, cv2.LINE_AA)
-display(im4)
+#display(im4)
 
 im6 = warpTwoImages(im1, im2, M)
 display(im6)
