@@ -132,6 +132,13 @@ $.ajax({
 }).done(function(){$("#motzb").removeAttr("disabled")});
 });
 
+$("#remot").on("click", function(){
+$.ajax({
+  url: "/_webshell/control/reload_motors/",
+  context: document.body
+}).done(function(){});
+});
+
 
 $.ajax({
   url: "/_webshell/control/led/get/_",
@@ -170,6 +177,7 @@ Move motors:<br />
 X: <input type="text" value="100" id="motx_" /> <button id="motx">Go!</button> <button id="motxb">Back!</button><br />
 Y: <input type="text" value="100" id="moty_" /> <button id="moty">Go!</a> <button id="motyb">Back!</button><br />
 Z: <input type="text" value="600" id="motz_" /> <button id="motz">Go!</a> <button id="motzb">Back!</button><br />
+<a href="#" id="remot">Reload motor board</a>
 </div>
 
 <div id="cam"></div>
