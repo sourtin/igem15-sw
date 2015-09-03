@@ -33,6 +33,7 @@ echo Copying config...
     sudo rm /etc/udhcpd.conf /etc/hostapd/hostapd.conf || exit 1
 
     # add to rc.local
+    cd $dir
     rscript="$(pwd)/raspi_conf/rc.local"
     grep "$rscript" /etc/rc.local || sudo sed -ri "s|#\!\/bin.sh .e|#\!\/bin\/bash\n$rscript|g" /etc/rc.local
     grep "$rscript" /etc/rc.local || sudo sed -ri "s|#\!\/bin.bash|#\!\/bin\/bash\n$rscript|g" /etc/rc.local
