@@ -34,7 +34,8 @@ echo Copying config...
 
     # add to rc.local
     rscript="$(pwd)/raspi_conf/rc.local"
-    grep "$rscript" /etc/rc.local || sed -ri "s|#\!\/bin.bash|#\!\/bin\/bash\n$rscript|g" /etc/rc.local
+    grep "$rscript" /etc/rc.local || sudo sed -ri "s|#\!\/bin.sh .e|#\!\/bin\/bash\n$rscript|g" /etc/rc.local
+    grep "$rscript" /etc/rc.local || sudo sed -ri "s|#\!\/bin.bash|#\!\/bin\/bash\n$rscript|g" /etc/rc.local
 
     sudo ln -s $dir/raspi_conf/udhcpd.conf /etc/udhcpd.conf || exit 1
     sudo ln -s $dir/raspi_conf/hostapd.conf /etc/hostapd/hostapd.conf || exit 1
@@ -149,5 +150,7 @@ else
     ) 2>&1 | log || error 'Making and installing opencv'
 fi
 
+sudo service wicd disable
+sudo service wicd stop
 echo SUCCESS, install completed
 
