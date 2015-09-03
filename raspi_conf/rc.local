@@ -2,8 +2,11 @@
 
 dhclient eth0 &
 # reconf binary and config
-service hostapd disable
+systemctl disable hostapd
 service hostapd stop
+service wicd stop
+ifconfig wlan0 up
+
 if lsusb|grep RTL8188CUS; then
     sed -ri 's/nl80211/rtl871xdrv/g' /etc/hostapd/hostapd.conf
     hostapd /etc/hostapd/hostapd.conf &
