@@ -36,6 +36,8 @@ def warpTwoImages(img1, img2, H):
 
 im00, im01, im02, im10, im11, im12 = [cv2.imread("tiles/%s.jpg"%im, cv2.IMREAD_COLOR) for im in ['00','01','02','10','11','12']]
 ims = [im00, im01, im02, im10, im11, im12]
+ims[0] = cv2.imread("../tiles/00.jpg", cv2.IMREAD_COLOR)
+ims[3] = cv2.imread("../tiles/01.jpg", cv2.IMREAD_COLOR)
 
 #for im in ims: display(im)
 #cv2.destroyAllWindows()
@@ -44,10 +46,10 @@ orb = cv2.ORB_create()
 bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
 
 kps = [orb.detectAndCompute(im, None) for im in ims]
-im1 = ims[3]
-im2 = ims[0]
-ik1, id1 = kps[3]
-ik2, id2 = kps[0]
+im1 = ims[0]
+im2 = ims[3]
+ik1, id1 = kps[0]
+ik2, id2 = kps[3]
 
 matches = bf.match(id1, id2)
 matches = sorted(matches, key=lambda m:m.distance)[:15]

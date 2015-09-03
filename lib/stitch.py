@@ -10,14 +10,16 @@ def homography_test(H, bounds):
 
 class Tile:
     def __init__(self, image):
-        self.image = image
+        self.meta = image
+        self.image = image.cv()
         self.neighbours = {key:{
             'tile': None, 
+            'coord': None,
             'bounds': None,
             'hom': None,
         } for key in ['h','j','k','l']}
         self.abs = {}
-        h, w = image.shape[:2]
+        h, w = self.image.shape[:2]
         self.bounds = np.float32([[0,0], [0,h], [w,h], [w,0]]).reshape(-1,1,2)
         pts = np.float32([[0,0],[0,h],[w,h],[w,0]]).reshape(-1,1,2)
 
@@ -26,6 +28,7 @@ class Tile:
         w, h = tiles.shape
         if 0 <= x < w and 0 <= y < h:
             self.neighbours[dirn]['tile'] = tiles[coord]
+            self.neighbours[dirn]['coord'] = coord
 
     def meet_neighbours(self, coord, tiles):
         x, y = coord
@@ -38,14 +41,12 @@ class Tile:
         neighbour = self.neighbours[dirn]
         if neighbour['hom'] is None:
             # compute homography only when requested
-            kp1, des1 = orb.detectAndCompute(self.image.cv(), None)
-            kp2, des2 = orb.detectAndCompute(neighbour['tile'].image.cv(), None)
+            kp2, des2 = orb.detectAndCompute(self.image, None)
+            kp1, des1 = orb.detectAndCompute(neighbour['tile'].image, None)
             matches = sorted(bf.match(des1, des2), key=lambda m:m.distance)[:15]
             pts_src = np.float32([kp1[m.queryIdx].pt for m in matches]).reshape(-1,1,2)
             pts_dst = np.float32([kp2[m.trainIdx].pt for m in matches]).reshape(-1,1,2)
             M, _ = cv2.findHomography(pts_src, pts_dst, cv2.RANSAC, 5.0)
-            N, _ = cv2.findHomography(pts_dst, pts_src, cv2.RANSAC, 5.0)
-            print(M);print(N);print(M.dot(N));print(N.dot(M))
             neighbour['hom'] = M if homography_test(M, self.bounds) else False
         return neighbour['hom']
 
@@ -56,11 +57,11 @@ class Stitch:
         for c in np.ndindex(self.tiles.shape):
             self.tiles[c] = Tile(images[c])
         for c in np.ndindex(self.tiles.shape):
-            self.tiles[c].meet_neighbours(x, self.tiles)
+            self.tiles[c].meet_neighbours(c, self.tiles)
         
     def _homographies(self, here, there):
         if here == there:
-            return np.eye(3)
+            return [np.eye(3)]
         xh, yh = here
         xt, yt = there
         dirns = []
@@ -73,7 +74,7 @@ class Stitch:
         neighbours = self.tiles[here].neighbours
         return [self.tiles[here].homography_rel(dirn).dot(hom)
                     for dirn in dirns
-                        for hom in self._homographies(neighbours[dirn]['tile'], there)
+                        for hom in self._homographies(neighbours[dirn]['coord'], there)
                             if hom is not False]
 
     def homography(self, ref, there):
@@ -88,7 +89,7 @@ class Stitch:
         bounds = [self.tiles[ref].bounds]
         for c in np.ndindex(self.tiles.shape):
             hom = self.homography(ref, c)
-            prel = self.tiles[c].bounds()
+            prel = self.tiles[c].bounds
             pabs = cv2.perspectiveTransform(prel, hom)
             bounds.append(pabs)
 
@@ -105,28 +106,16 @@ class Stitch:
     def assemble(self, ref=None):
         if ref is None:
             w, h = self.tiles.shape
-            ref = w//2, h//2
+            ref = w//2-1, h//2-1
 
         (xmin, xmax), (ymin, ymax) = self.bounds(ref)
         ht = np.array([[1,0,-xmin], [0,1,-ymin], [0,0,1]])
         size = xmax-xmin, ymax-ymin
 
         warp = lambda c: self.warp(ref, ht, size, c)
-        ims = [warp(c) for c in np.ndindex(self.tiles.shape)]
-        return np.maximum.reduce(ims)
-
-def stitch(images, reference=None):
-    """stitch together:
-        images: matrix of Image objects
-        reference: coords of Image to use as ref,
-                   or None to choose centre
-        """
-
-    tiles = np.empty(images.shape, object)
-    for x, y in np.ndindex(tiles.shape):
-        tiles[x, y] = Tile(images[x, y])
-        tiles[x, y].meet_neighbours((x, y), images)
-
-    return tiles
-
+        im = None
+        for c in np.ndindex(self.tiles.shape):
+            # have to do one by one to save memory
+            im = warp(c) if im is None else np.maximum.reduce([im,warp(c)])
+        return im
 
