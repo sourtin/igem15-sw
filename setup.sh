@@ -84,17 +84,15 @@ echo Setting up hostapd
 (
     mkdir -p /home/pi/tmp || exit 1
     cd /home/pi/tmp || exit 1
-    if lsusb|grep RTL8188CUS; then
-        if which hostapd.ORIG; then
-            echo Already downloaded hostapd
-        else
-            wget http://www.adafruit.com/downloads/adafruit_hostapd.zip -O adafruit_hostapd.zip || exit 1
-            unzip adafruit_hostapd.zip || exit 1
-            sudo mv /usr/sbin/hostapd /usr/sbin/hostapd.ORIG || exit 1
-            sudo mv hostapd /usr/sbin || exit 1
-            sudo chmod 755 /usr/sbin/hostapd || exit 1
-            sed -ri 's/nl80211/rtl871xdrv/g' /home/pi/igem15-sw/raspi_conf/hostapd.conf
-        fi
+    if which hostapd.ORIG; then
+        echo Already downloaded hostapd
+    else
+        wget http://www.adafruit.com/downloads/adafruit_hostapd.zip -O adafruit_hostapd.zip || exit 1
+        unzip adafruit_hostapd.zip || exit 1
+        sudo mv /usr/sbin/hostapd /usr/sbin/hostapd.ORIG || exit 1
+        sudo mv hostapd /usr/sbin || exit 1
+        sudo chmod 755 /usr/sbin/hostapd || exit 1
+        #sed -ri 's/nl80211/rtl871xdrv/g' /home/pi/igem15-sw/raspi_conf/hostapd.conf
     fi
 ) 2>&1 | log || error 'Installing hostapd'
 
