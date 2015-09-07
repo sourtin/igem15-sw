@@ -38,8 +38,8 @@ def contrast_stretch(I, N):
             G_min = T_low
             
         # Set the Gain and Offset value
-        Gain = int(T_up/G_max) # keep Gain within int?!?! or start crying
-        Offset = int(G_min)*int(Gain) # again keep int(GminGmax) or start crying
+        Gain = T_up/G_max 
+        Offset = G_min*Gain
                 
         # Get the enhanced image
         I = I*Gain - Offset*np.ones_like(I)
@@ -60,18 +60,35 @@ def brightness_direction_balance(I):
     
     Wx_matrix = np.reshape(np.mean(I, axis = 0), (1,N)) # mean grey value of each column
     Wy_matrix = np.reshape(np.mean(I, axis = 1), (1,M)) # mean grey value of each row
-    Wx_max_matrix = np.reshape(np.max(I, axis = 0), (1,N)) # max grey values of each column
-    Wy_max_matrix = np.reshape(np.max(I, axis = 1), (1,M)) # max grey values of each row
-
-    # Arrange the values into a matrix
-    Wx = np.repeat((Wx_max_matrix/Wx_matrix), M, axis = 0)
-    Wy = np.transpose(np.repeat((Wy_max_matrix/Wy_matrix), N, axis = 0))
     
-    # Filter the image
-    I = np.rint(0.5 * np.multiply( I , (Wx + Wy)))
+    ############# Old stuff ################
+    # Wx_max_matrix = np.reshape(np.max(I, axis = 0), (1,N)) # max grey values of each column
+    # Wy_max_matrix = np.reshape(np.max(I, axis = 1), (1,M)) # max grey values of each row
+
+    # # Arrange the values into a matrix
+    # Wx = np.repeat((Wx_max_matrix/Wx_matrix), M, axis = 0)
+    # Wy = np.transpose(np.repeat((Wy_max_matrix/Wy_matrix), N, axis = 0))
+    
+        # # Filter the image
+    # I = np.rint(0.5 * np.multiply( I , (Wx + Wy)))
+    ##########################################
+    
+   ############ New stuff ########################## 
+    Wx_max = np.max(Wx_matrix)
+    Wy_max = np.max(Wy_matrix)
+    Wx_matrix = 0.5 * Wx_max / Wx_matrix
+    Wy_matrix = 0.5 * Wy_max / Wy_matrix
+  
+    for i in range(0,N):
+        for j in range(0,M):
+            #print(i,j)
+            #print(i)
+            I[j,i] = I[j,i] * 0.5 * (Wx_matrix[0,i] + Wy_matrix[0,j])
+
+    ####################################
 
     #cv2.imwrite('stage_2.png',I)
-    return(I)
+    return(np.float32(I))
   
 # Background reconstruction using DCT-II function
 def background_reconstruction_dct(I):
@@ -94,7 +111,7 @@ def background_reconstruction_dct(I):
     return Y
     
 # Carry out the BDCT
-def bdct(img, N = 2):
+def bdct(img, N = 20):
     
     """ Do contrast stretch """
     img = contrast_stretch(img, int(N))
@@ -149,8 +166,9 @@ if __name__ == '__main__':
        cv2.resize(image, (0,0), fx=0.125, fy=0.125)
     cv2.namedWindow("Press any key to close", flags = cv2.WINDOW_NORMAL)
     cv2.moveWindow("Press any key to close", 500,0)
-    print(img.dtype, img.shape)
+    #print(img.dtype, img.shape)
     #print(img)
+    #ret2,img = cv2.threshold(img,img.min(),img.max(),cv2.THRESH_BINARY+cv2.THRESH_OTSU)
     cv2.imshow('Press any key to close', img)
     cv2.waitKey()
     cv2.destroyAllWindows()
