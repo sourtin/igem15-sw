@@ -29,7 +29,7 @@ void setup() {
     int n = i * 4;
     steppers[i] = new AccelStepper(AccelStepper::FULL4WIRE, motor_pins[n], motor_pins[n+1], motor_pins[n+2], motor_pins[n+3]);
     steppers[i]->setMaxSpeed(600.0);
-    steppers[i]->setAcceleration(200.0);
+    steppers[i]->setAcceleration(300.0);
     stepper_states[i] = 0;
   }
   // Initialise led outputs

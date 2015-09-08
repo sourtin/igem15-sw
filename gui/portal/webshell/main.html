@@ -138,6 +138,40 @@ $.ajax({
   context: document.body
 })
 
+
+$('html').keyup(function(e){
+    if(e.key == "ArrowUp"){
+$.ajax({
+  url: "/_webshell/control/motor/1/"+((-1)*($("#motx_").attr("value"))),
+  context: document.body
+}).done();
+    }
+    if(e.key == "ArrowRight"){
+$.ajax({
+  url: "/_webshell/control/motor/2/"+($("#moty_").attr("value")),
+  context: document.body
+}).done();
+    }
+    if(e.key == "ArrowLeft"){
+$.ajax({
+  url: "/_webshell/control/motor/2/"+((-1)*($("#moty_").attr("value"))),
+  context: document.body
+}).done();
+    }
+    if(e.key == "ArrowDown"){
+$.ajax({
+  url: "/_webshell/control/motor/1/"+($("#motx_").attr("value")),
+  context: document.body
+}).done();
+    }
+    if(e.key == "a"){
+        alert("a")
+    }
+    if(e.key == "s"){
+        alert("s")
+    }
+});
+
 });
 </script>
 <style>
