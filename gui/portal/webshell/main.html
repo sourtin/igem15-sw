@@ -165,10 +165,16 @@ $.ajax({
 }).done();
     }
     if(e.key == "a"){
-        alert("a")
+$.ajax({
+  url: "/_webshell/control/motor/0/"+($("#motz_").attr("value")),
+  context: document.body
+}).done();
     }
     if(e.key == "s"){
-        alert("s")
+$.ajax({
+  url: "/_webshell/control/motor/0/"+((-1)*($("#motz_").attr("value"))),
+  context: document.body
+}).done();
     }
 });
 
