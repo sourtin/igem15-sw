@@ -6,10 +6,9 @@ import sys
 sys.path.append("/home/pi/igem15-sw/")
 
 from gui.webshell.mjpgstreamer import MjpgStreamer
-from hw.ledmotorcontrol.driver import HWControl
+from hw.ledmotorcontrol import driver
 
 app = Flask(__name__)
-hw = HWControl()
 
 @app.route("/")
 def root():
@@ -42,25 +41,23 @@ def pruneall():
 
 @app.route("/control/led/<mode>/<setting>")
 def control_led(mode, setting):
-    global hw
     error = "No LED board connected"
 
     if mode == "get":
-        r = hw.get_led_mode()
+        r = driver.get_led_mode()
         return str(r) if r is not None else error
     elif mode == "set":
-        hw.set_led_mode(int(setting))
+        driver.set_led_mode(int(setting))
         return 'Set!'
     elif mode == "toggle":
-        hw.toggle_led()
-        r = hw.get_led_mode()
+        driver.toggle_led()
+        r = driver.get_led_mode()
         return str(r) if r is not None else error
     return 'error'
 
 @app.route("/control/motor/<axis>/<amount>")
 def control_mot(axis, amount):
-    global hw
-    hw.move(int(axis), int(amount))
+    driver.move(int(axis), int(amount))
     return 'done'
 
 app.wsgi_app = ProxyFix(app.wsgi_app)

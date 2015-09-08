@@ -3,7 +3,6 @@
 
 // install accelstepper from http://www.airspayce.com/mikem/arduino/AccelStepper
 #include <AccelStepper.h>
-#define DEBUG
 
 // Configuration for pinouts
 const int motor_pins[] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
