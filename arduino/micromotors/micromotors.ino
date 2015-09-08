@@ -76,7 +76,7 @@ void loop() {
   // c = get brightness
   // mX<+/->Yg = make motor X go <clockwise|anticlockwise> Y steps
   // lXb = turn led X on
-  // +Xd =  set brightness to X
+  // +Xd =  set brightness to X - ONLY WORKS ON PINS 3, 5, 6, 9, 10, and 11.
   if(Serial.available() > 0) {
     char c = Serial.read();
 
