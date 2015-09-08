@@ -23,7 +23,7 @@ class HWControl:
     def reconnect(self):
         self.close()
         for dev in glob.glob("/dev/serial/by-path/*"):
-            ser = serial.Serial(dev, 9600, timeout=1)
+            ser = serial.Serial(dev, 9600, timeout=2)
             if "connected" in self._ser.readline().decode("utf-8"):
                 self._ser = ser
                 return
@@ -33,6 +33,7 @@ class HWControl:
             self._ser.close()
         except:
             pass
+        del self._ser
         self._ser = None
 
     @hotplug

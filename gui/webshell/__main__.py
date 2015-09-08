@@ -60,7 +60,6 @@ def control_led(mode, setting):
 @app.route("/control/motor/<axis>/<amount>")
 def control_mot(axis, amount):
     global hw
-
     hw.move(int(axis), int(amount))
     return 'done'
 
