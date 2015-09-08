@@ -17,9 +17,8 @@ int stepper_states[NUM_MOTORS];
 
 // Initalise variables related to led control
 #define NUM_LEDS (sizeof(led_pins)/sizeof(*led_pins))
-int last = 0;
-long last_state = 0;
-
+int button_last = 0;
+long button_last_state = 0;
 
 // Initalise variables related to command interpreter
 int interp = 0, motor = 0, amount = 0, led = 0, bright = 255;
@@ -40,6 +39,8 @@ void setup() {
   // Initialise led button input (optional)
   pinMode(led_button, INPUT);
   activateLeds();
+  Serial.println("micromotors connected.");
+  Serial.flush();
 }
 
 void activateLeds() {
@@ -55,33 +56,27 @@ void loop() {
       if (steppers[i]->distanceToGo() == 0) {
         stepper_states[i] = 0;
         steppers[i]->disableOutputs();
-        
-        #ifdef DEBUG
-          Serial.print("fin ");
-          Serial.println(i);
-          Serial.flush();
-        #endif
       } else steppers[i]->run();
     }
   }
 
   // Button input
   int val = digitalRead(led_button);
-  if(last_state > 0)
-    last_state--;
-  else if(val != last && val) {
+  if(button_last_state > 0)
+    button_last_state--;
+  else if(val != button_last && val) {
     led=(led+1)%NUM_LEDS;
     activateLeds();
-    last_state=10000;
+    button_last_state=10000; // debounce
   }
-  last = val;
+  button_last = val;
 
   // Command interpreter code
   // a = get led that is on
-  // a = get brightness
+  // c = get brightness
   // mX<+/->Yg = make motor X go <clockwise|anticlockwise> Y steps
   // lXb = turn led X on
-  // d+Xd =  set brightness to X
+  // +Xd =  set brightness to X
   if(Serial.available() > 0) {
     char c = Serial.read();
 
@@ -117,14 +112,6 @@ void loop() {
     else if(c == 'g') {
       // Activate motors
       motor = motor % NUM_MOTORS;
-      
-      #ifdef DEBUG
-        Serial.print("Moving ");
-        Serial.print(motor);
-        Serial.print(" by ");
-        Serial.println(amount);
-        Serial.flush();
-      #endif
 
       if(stepper_states[motor] == 0) {
           stepper_states[motor] = 1;
