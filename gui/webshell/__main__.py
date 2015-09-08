@@ -6,29 +6,10 @@ import sys
 sys.path.append("/home/pi/igem15-sw/")
 
 from gui.webshell.mjpgstreamer import MjpgStreamer
-from hw.ledcontrol.ledcontrol import LEDControl
-from hw.motorcontrol.motorcontrol import MotorControl
+from hw.ledmotorcontrol.driver import HWControl
 
 app = Flask(__name__)
-leds = None
-mots = None
-
-def init_leds():
-    global leds
-    try:
-        leds = LEDControl("/dev/serial/by-id/usb-Arduino__www.arduino.cc__0043_5543434383335181A060-if00")
-    except:
-        leds = None
-        pass
-
-def init_mots():
-    global mots
-    try:
-        mots = MotorControl("/dev/serial/by-id/usb-Arduino__www.arduino.cc__0043_55434343833351813261-if00")
-    except:
-        print("error connecting motors")
-        mots = None
-        pass
+hw = HWControl()
 
 @app.route("/")
 def root():
@@ -36,10 +17,10 @@ def root():
 
 @app.route("/control/power/<onoff>")
 def control_power(onoff):
-    if onoff == "on":# and not MjpgStreamer._started:
+    if onoff == "on":
         MjpgStreamer.start()
         return 'started'
-    elif onoff == "off":# and MjpgStreamer._started:
+    elif onoff == "off":
         MjpgStreamer.stop()
         return 'stopped'
     return 'error'
@@ -59,55 +40,31 @@ def pruneall():
     else:
         return "Error - cannot delete other user's data unless you are admin"
 
-@app.route("/control/reload/")
-def reload():
-    global leds
-    if leds != None:
-        leds.close()
-    init_leds()
-    return 'done'
-
-@app.route("/control/reload_motors/")
-def reload_mots():
-    global mots
-    if mots != None:
-        mots._ser.close()
-        del mots
-    init_motors()
-    return 'done'
-
 @app.route("/control/led/<mode>/<setting>")
 def control_led(mode, setting):
-    global leds
-
-    if leds is None:
-        return 'No LED control board connected'
+    global hw
+    error = "No LED board connected"
 
     if mode == "get":
-        return str(leds.get_mode())
+        r = hw.get_led_mode()
+        return str(r) if r is not None else error
     elif mode == "set":
-        leds.set_mode(setting)
+        hw.set_led_mode(int(setting))
         return 'Set!'
     elif mode == "toggle":
-        leds.toggle()
-        return str(leds.get_mode())
+        hw.toggle_led()
+        r = hw.get_led_mode()
+        return str(r) if r is not None else error
     return 'error'
 
 @app.route("/control/motor/<axis>/<amount>")
 def control_mot(axis, amount):
-    global mots
+    global hw
 
-    if mots is None:
-        return 'No Motor control board connected'
-
-    mots._move(int(axis), int(amount))
+    hw.move(int(axis), int(amount))
     return 'done'
 
-#MjpgStreamer.start() # Start camera by default
-
 app.wsgi_app = ProxyFix(app.wsgi_app)
-init_leds()
-init_mots()
 
 if __name__ == '__main__':
     app.run('0.0.0.0', 9001, debug=True)
