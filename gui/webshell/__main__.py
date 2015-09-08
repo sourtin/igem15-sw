@@ -57,7 +57,7 @@ def control_led(mode, setting):
 
 @app.route("/control/motor/<axis>/<amount>")
 def control_mot(axis, amount):
-    driver.move(int(axis), int(amount))
+    driver.move_motor(int(axis), int(amount))
     return 'done'
 
 app.wsgi_app = ProxyFix(app.wsgi_app)

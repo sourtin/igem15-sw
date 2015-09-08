@@ -1,7 +1,6 @@
 import serial
 import time
 import glob
-import sys
 
 def hotplug(f):
     def decor(*args):
@@ -41,20 +40,38 @@ def close():
 
 @hotplug
 def set_led_mode(mode):
+    global _led
     _ser.write(("l%db" % mode).encode())
+    _led = mode
 
 @hotplug
 def get_led_mode():
+    global _led
     _ser.write('a'.encode())
-    return int.from_bytes(_ser.read(), byteorder='big')
+    mode = int.from_bytes(_ser.read(), byteorder='big')
+    if _led is not mode:
+        set_led_mode(_led)
+        _ser.write('a'.encode())
+        _led = int.from_bytes(_ser.read(), byteorder='big')
+    return _led
 
 @hotplug
 def toggle_led():
     set_led_mode(int(get_led_mode()) + 1)
 
 @hotplug
-def move(axis, amount):
+def move_motor(axis, amount):
+    _pos[axis] += amount
     _ser.write(('m%d%s%dg' % (axis, "+" if amount > 0 else "", amount)).encode())
 
+def calibrate_motors(vals):
+    global _pos
+    _pos = vals
+
+def get_pos(axis):
+    return _pos[axis]
+
 _ser = None
+_led = 0
+_pos = [0, 0, 0]
 reconnect()
