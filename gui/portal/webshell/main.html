@@ -83,14 +83,14 @@ setTimeout(restartCam, 1000)
 $("#motx").on("click", function(){
 $("#motx").attr("disabled", "true")
 $.ajax({
-  url: "/_webshell/control/motor/1/"+($("#motx_").attr("value")),
+  url: "/_webshell/control/motor/0/"+($("#motx_").attr("value")),
   context: document.body
 }).done(function(){$("#motx").removeAttr("disabled")});
 });
 $("#motxb").on("click", function(){
 $("#motxb").attr("disabled", "true")
 $.ajax({
-  url: "/_webshell/control/motor/1/"+(parseInt($("#motx_").attr("value"))*(-1)),
+  url: "/_webshell/control/motor/0/"+(parseInt($("#motx_").attr("value"))*(-1)),
   context: document.body
 }).done(function(){$("#motxb").removeAttr("disabled")});
 });
@@ -98,14 +98,14 @@ $.ajax({
 $("#moty").on("click", function(){
 $("#moty").attr("disabled", "true")
 $.ajax({
-  url: "/_webshell/control/motor/2/"+($("#moty_").attr("value")),
+  url: "/_webshell/control/motor/1/"+($("#moty_").attr("value")),
   context: document.body
 }).done(function(){$("#moty").removeAttr("disabled")});
 });
 $("#motyb").on("click", function(){
 $("#motyb").attr("disabled", "true")
 $.ajax({
-  url: "/_webshell/control/motor/2/"+(parseInt($("#moty_").attr("value"))*(-1)),
+  url: "/_webshell/control/motor/1/"+(parseInt($("#moty_").attr("value"))*(-1)),
   context: document.body
 }).done(function(){$("#motyb").removeAttr("disabled")});
 });
@@ -113,14 +113,14 @@ $.ajax({
 $("#motz").on("click", function(){
 $("#motz").attr("disabled", "true")
 $.ajax({
-  url: "/_webshell/control/motor/0/"+($("#motz_").attr("value")),
+  url: "/_webshell/control/motor/2/"+($("#motz_").attr("value")),
   context: document.body
 }).done(function(){$("#motz").removeAttr("disabled")});
 });
 $("#motzb").on("click", function(){
 $("#motzb").attr("disabled", "true")
 $.ajax({
-  url: "/_webshell/control/motor/0/"+(parseInt($("#motz_").attr("value"))*(-1)),
+  url: "/_webshell/control/motor/2/"+(parseInt($("#motz_").attr("value"))*(-1)),
   context: document.body
 }).done(function(){$("#motzb").removeAttr("disabled")});
 });
@@ -148,13 +148,13 @@ $.ajax({
     }
     if(e.key == "ArrowRight"){
 $.ajax({
-  url: "/_webshell/control/motor/2/"+($("#moty_").attr("value")),
+  url: "/_webshell/control/motor/0/"+($("#moty_").attr("value")),
   context: document.body
 }).done();
     }
     if(e.key == "ArrowLeft"){
 $.ajax({
-  url: "/_webshell/control/motor/2/"+((-1)*($("#moty_").attr("value"))),
+  url: "/_webshell/control/motor/0/"+((-1)*($("#moty_").attr("value"))),
   context: document.body
 }).done();
     }
@@ -166,13 +166,13 @@ $.ajax({
     }
     if(e.key == "a"){
 $.ajax({
-  url: "/_webshell/control/motor/0/"+($("#motz_").attr("value")),
+  url: "/_webshell/control/motor/2/"+($("#motz_").attr("value")),
   context: document.body
 }).done();
     }
     if(e.key == "s"){
 $.ajax({
-  url: "/_webshell/control/motor/0/"+((-1)*($("#motz_").attr("value"))),
+  url: "/_webshell/control/motor/2/"+((-1)*($("#motz_").attr("value"))),
   context: document.body
 }).done();
     }
