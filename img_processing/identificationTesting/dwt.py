@@ -119,14 +119,22 @@ def nleveldwt(N, X):
         Xs += nleveldwt(N-1, dwt(X)[:h//2, :w//2])
     return Xs
     
+def focus_score(X):
+    score = 0
+    for i in X:
+        i += 1
+        score += np.var(i)
+    return score
+    
 if __name__ == '__main__':
-    X = cv2.imread('lighthouse.jpg', cv2.IMREAD_GRAYSCALE)
+    X = cv2.imread('C:\\Users\\RAK\\Documents\\iGEM\\Software\\lighthouse.jpg', cv2.IMREAD_GRAYSCALE)
     print('Image read is of shape ', X.shape)
     #Y = dwt(X)
     Ys = nleveldwt(3, X)
     print('Finished DWT decomposition of image')
     print('Output image size is ', Ys[0].shape)
     i = 0
-    for Y in Ys:
-        cv2.imwrite('Ys%d.png' % i, Y)
-        i += 1
+    # for Y in Ys:
+        # cv2.imwrite('Ys%d.png' % i, Y)
+        # i += 1
+    print (focus_score(Ys[1:]))
