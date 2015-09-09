@@ -153,5 +153,6 @@ fi
 
 sudo systemctl disable wicd
 sudo service wicd stop
+sudo chown -R pi:pi /home/pi/igem15-sw
 echo SUCCESS, install completed
 
