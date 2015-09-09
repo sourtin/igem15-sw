@@ -41,8 +41,17 @@ class Tile:
         neighbour = self.neighbours[dirn]
         if neighbour['hom'] is None:
             # compute homography only when requested
-            kp2, des2 = orb.detectAndCompute(self.image, None)
-            kp1, des1 = orb.detectAndCompute(neighbour['tile'].image, None)
+            im1 = neighbour['tile'].image
+            im2 = self.image
+            #im1 = cv2.cvtColor(im1, cv2.COLOR_BGR2HSV)[:,:,1]
+            #im2 = cv2.cvtColor(im2, cv2.COLOR_BGR2HSV)[:,:,1]
+            #im1 = cv2.cvtColor(im1, cv2.COLOR_BGR2HSV)[:,:,(1,2,2)]
+            #im2 = cv2.cvtColor(im2, cv2.COLOR_BGR2HSV)[:,:,(1,2,2)]
+            #im1 = cv2.cvtColor(im1, cv2.COLOR_HSV2BGR)
+            #im2 = cv2.cvtColor(im2, cv2.COLOR_HSV2BGR)
+
+            kp2, des2 = orb.detectAndCompute(im2, None)
+            kp1, des1 = orb.detectAndCompute(im1, None)
             matches = sorted(bf.match(des1, des2), key=lambda m:m.distance)[:15]
             pts_src = np.float32([kp1[m.queryIdx].pt for m in matches]).reshape(-1,1,2)
             pts_dst = np.float32([kp2[m.trainIdx].pt for m in matches]).reshape(-1,1,2)
@@ -70,6 +79,7 @@ class Stitch:
         if xt < xh: dirns.append('h')
         if yt > yh: dirns.append('j')
         if yt < yh: dirns.append('k')
+        print(here, there, dirns)
 
         neighbours = self.tiles[here].neighbours
         return [self.tiles[here].homography_rel(dirn).dot(hom)
@@ -106,7 +116,7 @@ class Stitch:
     def assemble(self, ref=None):
         if ref is None:
             w, h = self.tiles.shape
-            ref = w//2-1, h//2-1
+            ref = w//2, h//2
 
         (xmin, xmax), (ymin, ymax) = self.bounds(ref)
         ht = np.array([[1,0,-xmin], [0,1,-ymin], [0,0,1]])
@@ -118,4 +128,8 @@ class Stitch:
             # have to do one by one to save memory
             im = warp(c) if im is None else np.maximum.reduce([im,warp(c)])
         return im
+
+def stitch(images):
+    return Stitch(images).assemble()
+    return Stitch(np.matrix(images)).assemble()
 
