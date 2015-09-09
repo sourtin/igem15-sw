@@ -176,6 +176,13 @@ $.ajax({
   context: document.body
 }).done();
     }
+if(e.key == "Shift"){
+$.ajax({
+  url: "/_webshell/control/led/toggle/_",
+  context: document.body
+}).done();
+    }
+
 });
 
 });
