@@ -36,8 +36,12 @@ def warpTwoImages(img1, img2, H):
 
 im00, im01, im02, im10, im11, im12 = [cv2.imread("tiles/%s.jpg"%im, cv2.IMREAD_COLOR) for im in ['00','01','02','10','11','12']]
 ims = [im00, im01, im02, im10, im11, im12]
-ims[0] = cv2.imread("../tiles/00.jpg", cv2.IMREAD_COLOR)
-ims[3] = cv2.imread("../tiles/01.jpg", cv2.IMREAD_COLOR)
+im1 = cv2.imread("../tiles/00.jpg", cv2.IMREAD_COLOR)
+im2 = cv2.imread("../tiles/01.jpg", cv2.IMREAD_COLOR)
+im1 = cv2.cvtColor(im1, cv2.COLOR_BGR2HSV)[:,:,(2,1,2)]
+im2 = cv2.cvtColor(im2, cv2.COLOR_BGR2HSV)[:,:,(2,1,2)]
+ims[0]=im1
+ims[3]=im2
 
 #for im in ims: display(im)
 #cv2.destroyAllWindows()
