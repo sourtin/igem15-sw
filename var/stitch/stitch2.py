@@ -27,13 +27,16 @@ def warpTwoImages(img1, img2, H):
 
     result = cv2.warpPerspective(img2, Ht.dot(H), (xmax-xmin, ymax-ymin))
     result[t[1]:h1+t[1],t[0]:w1+t[0]] = img1
+
     return result
 
-im1 = cv2.imread("tiles/11.jpg", cv2.IMREAD_COLOR)
-im2 = cv2.imread("tiles/12.jpg", cv2.IMREAD_COLOR)
+im01 = cv2.imread("tile2/01.jpg", cv2.IMREAD_COLOR)
+im02 = cv2.imread("tile2/02.jpg", cv2.IMREAD_COLOR)
+im1 = cv2.cvtColor(im01, cv2.COLOR_BGR2HSV)[:,:,1]
+im2 = cv2.cvtColor(im02, cv2.COLOR_BGR2HSV)[:,:,1]
 
-#display(im1)
-#display(im2)
+display(im01)
+display(im02)
 
 orb = cv2.ORB_create()
 bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
@@ -55,7 +58,7 @@ dst_pts = np.float32([kp1[m.queryIdx].pt for m in matches]).reshape(-1,1,2)
 src_pts = np.float32([kp2[m.trainIdx].pt for m in matches]).reshape(-1,1,2)
 M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
 
-display(warpTwoImages(im1, im2, M))
+display(warpTwoImages(im01, im02, M))
 
 
 
