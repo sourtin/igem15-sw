@@ -180,7 +180,7 @@ if(e.key == "Shift"){
 $.ajax({
   url: "/_webshell/control/led/toggle/_",
   context: document.body
-}).done();
+}).done(function(data){$("#ledmode").html(data)});
     }
 
 });
