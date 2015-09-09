@@ -68,13 +68,6 @@ $("#ledmode").html(data)
 });
 });
 
-$("#ledreload").on("click", function(){
-$.ajax({
-  url: "/_webshell/control/reload/",
-  context: document.body
-}).done(function(data){});
-});
-
 $("#camcap").on("click", function(){
 //$("#cam").html("Say cheese, little cells!")
 $.ajax({
@@ -132,13 +125,6 @@ $.ajax({
 }).done(function(){$("#motzb").removeAttr("disabled")});
 });
 
-$("#remot").on("click", function(){
-$.ajax({
-  url: "/_webshell/control/reload_motors/",
-  context: document.body
-}).done(function(){});
-});
-
 
 $.ajax({
   url: "/_webshell/control/led/get/_",
@@ -151,6 +137,53 @@ $.ajax({
   url: "/_webshell/control/power/on",
   context: document.body
 })
+
+
+$('html').keyup(function(e){
+    if(e.key == "ArrowUp"){
+$.ajax({
+  url: "/_webshell/control/motor/1/"+((-1)*($("#motx_").attr("value"))),
+  context: document.body
+}).done();
+    }
+    if(e.key == "ArrowRight"){
+$.ajax({
+  url: "/_webshell/control/motor/2/"+($("#moty_").attr("value")),
+  context: document.body
+}).done();
+    }
+    if(e.key == "ArrowLeft"){
+$.ajax({
+  url: "/_webshell/control/motor/2/"+((-1)*($("#moty_").attr("value"))),
+  context: document.body
+}).done();
+    }
+    if(e.key == "ArrowDown"){
+$.ajax({
+  url: "/_webshell/control/motor/1/"+($("#motx_").attr("value")),
+  context: document.body
+}).done();
+    }
+    if(e.key == "a"){
+$.ajax({
+  url: "/_webshell/control/motor/0/"+($("#motz_").attr("value")),
+  context: document.body
+}).done();
+    }
+    if(e.key == "s"){
+$.ajax({
+  url: "/_webshell/control/motor/0/"+((-1)*($("#motz_").attr("value"))),
+  context: document.body
+}).done();
+    }
+if(e.key == "Shift"){
+$.ajax({
+  url: "/_webshell/control/led/toggle/_",
+  context: document.body
+}).done(function(data){$("#ledmode").html(data)});
+    }
+
+});
 
 });
 </script>
@@ -171,13 +204,11 @@ height: 600px;
 <div id="controlpanel">
 Camera:<br/><a href="#" id="camhold">Hold</a> <a href="#" id="camrel">Release</a> <br />
 <a href="#" id="camcap">Capture</a><br /><br />
-LED Mode (current: <span id="ledmode"></span>):<br /><a href="#" id="led0">Brightfield</a> <a href="#" id="led1">Fluorescence</a> <a href="#" id="led2">Darkfield</a> <a href="#" id="led3">Off</a> .... <a href="#" id="ledtog">Toggle</a><br /><br />
-<a href="#" id="ledreload">Reload LED control</a><br /><br />
+LED Mode (current: <span id="ledmode"></span>):<br /><a href="#" id="led0">Brightfield</a> <a href="#" id="led1">Fluorescence</a> <!--<a href="#" id="led2">Darkfield</a>--> <a href="#" id="led2">Off</a> .... <a href="#" id="ledtog">Toggle</a><br /><br />
 Move motors:<br />
 X: <input type="text" value="100" id="motx_" /> <button id="motx">Go!</button> <button id="motxb">Back!</button><br />
 Y: <input type="text" value="100" id="moty_" /> <button id="moty">Go!</a> <button id="motyb">Back!</button><br />
 Z: <input type="text" value="600" id="motz_" /> <button id="motz">Go!</a> <button id="motzb">Back!</button><br />
-<a href="#" id="remot">Reload motor board</a>
 </div>
 
 <div id="cam"></div>
