@@ -57,7 +57,7 @@ class MjpgStreamer:
     @staticmethod
     def stop():
         # stop mjpg-streamer
-        subprocess.call(["killall", "mjpg_streamer"])
+        subprocess.call(["killall", "-9", "mjpg_streamer"])
 
     @staticmethod
     def captureImg(user):
