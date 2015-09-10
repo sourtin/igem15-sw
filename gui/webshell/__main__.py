@@ -6,9 +6,53 @@ import sys
 sys.path.append("/home/pi/igem15-sw/")
 
 from gui.webshell.mjpgstreamer import MjpgStreamer
+from gui.webshell.timelapser import Timelapser
 from hw.ledmotorcontrol import driver
 
+tl = ['', 0, 0]
+tlThread = None
 app = Flask(__name__)
+
+@app.route("/timelapse/set/<delay>/<times>")
+def timelapse(delay, times):
+    global tl, tlThread
+    if tl[0] == '':
+        pass # todo: notify user their timelapse was interrupted by another user
+
+    tl = [request.authorization.username, int(delay), int(times)]
+    # stop thread
+    if tlThread is not None:
+        tlThread.stop()
+        tlThread.join()
+    # start thread
+    tlThread = Timelapser(tl)
+    tlThread.start()
+    return 'Timelapse set'
+
+@app.route("/timelapse/get/")
+def get_if_timelapse():
+    global tlThread, tl
+    if tlThread.stopped():
+         del tlThread
+         tlThread = None
+         tl = ['', 0, 0]
+    return json.dumps(tl)
+
+@app.route("/zstack/<amount>/<times>")
+def zstack(amount, times):
+    imgs = []
+    for _ in xrange(int(times)):
+        imgs.append(MjpgStreamer.captureImg(request.authorization.username))
+        driver.move_motor(2, int(amount))
+    # todo:
+    # apply z stack algorithm to images
+    # save image
+    # return image file
+    # for now, link to the captured images and let user do it themselves
+    ret = ''
+    for a in imgs:
+        ret += '<a href="'+a+'">'+a+'</a><br/>'
+    return ret
 
 @app.route("/")
 def root():
