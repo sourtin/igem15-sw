@@ -130,58 +130,76 @@ def golden_section(a,d):
     
     return b
 
-def golden_section_interval_reduction(a, d, f, tolerance = 50, iterations = 0):
+def golden_section_interval_reduction(interval, f, finterval,  tolerance = 50, iterations = 0, iter_max = 1000, min_tolerance = 5):
     """ Carry out optimization to find position of minimum value for 'f'
+        interval = (a, b, d) is the interval to search within
+        finterval = (f(a), f(b), f(d)) is the function value for each interval
+        f(x) is the function to be minimized
     """
+    a = interval[0]
+    b = interval[1]
+    d = interval[2]
     
-    # Initialise values
-    iter_max = 1000
-    min_tolerance = 5
-        
+    f1 = finterval[0]
+    f2 = finterval[1]
+    f4 = finterval[2]
+    
     if (tolerance > min_tolerance or iter_max < iterations):
         
         # Evaluate values
-        b = golden_section(a, d)
         c = golden_section(b, d)
-        f1 = f(a)
-        f2 = f(b)
         f3 = f(c)
-        f4 = f(d)
 
-        print('Iteration %d' % iterations)
+        print('iter: %d' % iterations, 'b: %f' % b)
         
         if f2 < f3:
             d = c
+            f4 = f3
             tolerance = abs(f3 - f1)
-            golden_section_interval_reduction(a, d, f, tolerance, iterations+1)
+            golden_section_interval_reduction((a, b, d), f, (f1, f2, f4), tolerance, iterations+1, iter_max, min_tolerance)
         
         elif f2 > f3 :
-            a = b 
+            a = b
+            b = c
+            f1 = f2
+            f2 = f3
             tolerance = abs(f2 - f4)
-            golden_section_interval_reduction(a, d, f, tolerance, iterations+1)
+            golden_section_interval_reduction((a, b, d), f, (f1, f2, f4), tolerance, iterations+1, iter_max, min_tolerance)
             
         elif f2 == f3:
             d = c
+            f4 = f3
             tolerance = abs(f3 - f1)
-            golden_section_interval_reduction(a, d, f, tolerance, iterations+1)
+            golden_section_interval_reduction((a, b, d), f, (f1, f2, f4), tolerance, iterations+1, iter_max, min_tolerance)
 
+    return b
+    
 def test_function(x):
-    return x**2
+    return (x-2)**2
+
     
    
-#if __name__ == '__main__':
+# if __name__ == '__main__':
 
-    X = cv2.imread('C:\\Users\\RAK\\Documents\\iGEM\\Software\\lighthouse.jpg', cv2.IMREAD_GRAYSCALE)
-    print('Image read is of shape ', X.shape)
-    #Y = dwt(X)
-    Ys = nleveldwt(3, X)
-    print('Finished DWT decomposition of image')
-    print('Output image size is ', Ys[0].shape)
-    i = 0
-    # for Y in Ys:
-        # cv2.imwrite('Ys%d.png' % i, Y)
-        # i += 1
-    print (focus_score(Ys[1:]))
+    # X = cv2.imread('C:\\Users\\RAK\\Documents\\iGEM\\Software\\lighthouse.jpg', cv2.IMREAD_GRAYSCALE)
+    # print('Image read is of shape ', X.shape)
+    # #Y = dwt(X)
+    # Ys = nleveldwt(3, X)
+    # print('Finished DWT decomposition of image')
+    # print('Output image size is ', Ys[0].shape)
+    # i = 0
+    # # for Y in Ys:
+        # # cv2.imwrite('Ys%d.png' % i, Y)
+        # # i += 1
+    # print (focus_score(Ys[1:]))
     
 if __name__ == '__main__':
-    golden_section_interval_reduction(-5.1, 10.9, test_function)
+    a = -5
+    d = 10
+    b = golden_section(a,d)
+  
+    x = golden_section_interval_reduction((a, b , d), test_function, (test_function(a), test_function(b), test_function(d)), min_tolerance = 0.5)
+    
+    
+# htttps://172.29.9.20:9000/_webshell/control/motor/2/50
+    
