@@ -122,8 +122,8 @@ public class Start_Connection implements PlugIn, KeyListener {
 	            public void actionPerformed(ActionEvent ae) {
 
 	       		 try {
-	       			Desktop.getDesktop().browse(URI.create("https://"+ip+":9000/force_ministream.html"));
-	       			//JFXPanel p = null;
+	       			//Desktop.getDesktop().browse(URI.create("https://"+ip+":9000/force_ministream.html"));
+	       			 MicroCam.launch();
 	       		} catch (Exception e) {
 	       			e.printStackTrace();
 	       		}
