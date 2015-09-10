@@ -2,6 +2,7 @@
 
 import numpy as np
 import cv2
+import time
 
 def dwt(X, h1 = np.array([-1, 2, 6, 2, -1])/8 , h2 = np.array([-1, 2 -1])/4):
     """ 
@@ -96,19 +97,7 @@ def rowdec2(X, h):
         Y = Y + h[i] * X[:,xe[t+i]];
     
     return Y
-    
-# def nleveldwt_old(N, shape, X):
-    # """ N Level DWT of image """
-    # if N>0:
-        # print (N)
-        # m = np.array(range(shape[0]))
-        # n = np.array(range(shape[1]))
-        # #print(Y[m,:][:,n].shape)
-        # Y[m,:][:,n] = dwt(X[m,:][:,n])
-        # return nleveldwt(N-1, (int(shape[0]/2),int(shape[1]/2)), Y)
-    # else:
-        # pass
-        
+
 def nleveldwt(N, X):
     """ N level DWT of image
     Returns an array of the smaller resolution images
@@ -120,13 +109,68 @@ def nleveldwt(N, X):
     return Xs
     
 def focus_score(X):
+    """ Focus score is the sum of the squared values of the low resolution images.
+    """
     score = 0
     for i in X:
         i += 1
         score += np.var(i)
     return score
+
+def golden_section(a,d):
+    """Given an interval, returns the next two intervals using the golden ratio
+    The interval is arranged as [a, b, c, d]
+    """
+    golden = (1 + 5 ** 0.5) / 2     # Golden ratio
+
+    # New interval point to test
+    delta_x = d * (1 - 1/golden)
+    b = a + delta_x
+    #c = d - delta_x
     
-if __name__ == '__main__':
+    return b
+
+def golden_section_interval_reduction(a, d, f, tolerance = 50, iterations = 0):
+    """ Carry out optimization to find position of minimum value for 'f'
+    """
+    
+    # Initialise values
+    iter_max = 1000
+    min_tolerance = 5
+        
+    if (tolerance > min_tolerance or iter_max < iterations):
+        
+        # Evaluate values
+        b = golden_section(a, d)
+        c = golden_section(b, d)
+        f1 = f(a)
+        f2 = f(b)
+        f3 = f(c)
+        f4 = f(d)
+
+        print('Iteration %d' % iterations)
+        
+        if f2 < f3:
+            d = c
+            tolerance = abs(f3 - f1)
+            golden_section_interval_reduction(a, d, f, tolerance, iterations+1)
+        
+        elif f2 > f3 :
+            a = b 
+            tolerance = abs(f2 - f4)
+            golden_section_interval_reduction(a, d, f, tolerance, iterations+1)
+            
+        elif f2 == f3:
+            d = c
+            tolerance = abs(f3 - f1)
+            golden_section_interval_reduction(a, d, f, tolerance, iterations+1)
+
+def test_function(x):
+    return x**2
+    
+   
+#if __name__ == '__main__':
+
     X = cv2.imread('C:\\Users\\RAK\\Documents\\iGEM\\Software\\lighthouse.jpg', cv2.IMREAD_GRAYSCALE)
     print('Image read is of shape ', X.shape)
     #Y = dwt(X)
@@ -138,3 +182,6 @@ if __name__ == '__main__':
         # cv2.imwrite('Ys%d.png' % i, Y)
         # i += 1
     print (focus_score(Ys[1:]))
+    
+if __name__ == '__main__':
+    golden_section_interval_reduction(-5.1, 10.9, test_function)
