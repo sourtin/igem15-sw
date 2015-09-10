@@ -322,7 +322,7 @@ class Polygon(object):
            the current polygon's reference frame"""
         return Polygon(*points)
 
-    def rectangle(self, angle):
+    def rectangle(self, angle=0):
         """return the smallest bounding rectangle
               angle - the orientation of the rectangle,
                       given in anticlockwise radians"""

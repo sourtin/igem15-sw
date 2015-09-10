@@ -96,6 +96,11 @@ class Vector(tuple):
         r, θ = self.polar()
         return Vector.from_polar(r, θ + φ)
 
+    def dot(self, u):
+        x1, y1 = self
+        x2, y2 = u
+        return x1*x2 + y1*y2
+
 def dissect(a, b, p):
     """find the point the fraction p along the line ab"""
     return (1-p)*a + p*b

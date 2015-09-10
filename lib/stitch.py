@@ -1,12 +1,58 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from lib.vector import Vector
+from lib.canvas import Polygon
+import math
 import numpy as np
 import cv2
 orb = cv2.ORB_create()
 bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
 
-def homography_test(H, bounds):
-    return True
+class HomographyTest:
+    def rotate(l, n):
+        n = n % len(l)
+        return l[n:] + l[:n]
+
+    def angle(a, b):
+        ax, ay = a
+        bx, by = b
+        wedge = ax*by - ay*bx
+        dot = ax*bx + ay*by
+        return math.atan2(wedge, dot)
+
+    def cv2vec(cv):
+        return [Vector(*b[0]) for b in cv]
+
+    def coords_dirn(coords):
+        centroid = Polygon(*coords).centroid()
+        vecs1 = [vec-centroid for vec in coords]
+        vecss = zip(vecs1, HomographyTest.rotate(vecs1, 1))
+        sign = lambda x:math.copysign(1, x)
+        signs = [sign(HomographyTest.angle(a,b)) for a,b in vecss]
+        return int((max(signs) + min(signs)) / 2)
+
+    def coords_bounds(coords):
+        rect = Polygon(*coords).rectangle()
+        return rect.width, rect.height
+
+    def test(hom, bounds, threshold=.1):
+        # homography
+        vecs0 = HomographyTest.cv2vec(bounds)
+        boundz = cv2.perspectiveTransform(bounds, hom)
+        vecs1 = HomographyTest.cv2vec(boundz)
+
+        # signs
+        sign0 = HomographyTest.coords_dirn(vecs0)
+        sign1 = HomographyTest.coords_dirn(vecs1)
+        if sign0 != sign1:
+            # not same points order/warped
+            return False
+
+        # size and angle-ish
+        w0, h0 = HomographyTest.coords_bounds(vecs0)
+        w1, h1 = HomographyTest.coords_bounds(vecs1)
+        thresh = lambda a,b: abs((a-b)/a) < threshold
+        return thresh(w0, w1) and thresh(h0, h1)
 
 class Tile:
     def __init__(self, image):
@@ -37,21 +83,25 @@ class Tile:
         self.meet_neighbour('k', tiles, (x, y-1))
         self.meet_neighbour('l', tiles, (x+1, y))
 
-    def homography_rel(self, dirn):
+    def homography_rel(self, dirn, process):
         neighbour = self.neighbours[dirn]
         if neighbour['hom'] is None:
             # compute homography only when requested
-            kp2, des2 = orb.detectAndCompute(self.image, None)
-            kp1, des1 = orb.detectAndCompute(neighbour['tile'].image, None)
+            im1 = process(neighbour['tile'].image)
+            im2 = process(self.image)
+
+            kp2, des2 = orb.detectAndCompute(im2, None)
+            kp1, des1 = orb.detectAndCompute(im1, None)
             matches = sorted(bf.match(des1, des2), key=lambda m:m.distance)[:15]
             pts_src = np.float32([kp1[m.queryIdx].pt for m in matches]).reshape(-1,1,2)
             pts_dst = np.float32([kp2[m.trainIdx].pt for m in matches]).reshape(-1,1,2)
             M, _ = cv2.findHomography(pts_src, pts_dst, cv2.RANSAC, 5.0)
-            neighbour['hom'] = M if homography_test(M, self.bounds) else False
+            neighbour['hom'] = M if HomographyTest.test(M, self.bounds) else False
         return neighbour['hom']
 
 class Stitch:
-    def __init__(self, images):
+    def __init__(self, images, process=lambda x:x):
+        self.process = process
         self.images = images
         self.tiles = np.empty(images.shape, object)
         for c in np.ndindex(self.tiles.shape):
@@ -72,10 +122,14 @@ class Stitch:
         if yt < yh: dirns.append('k')
 
         neighbours = self.tiles[here].neighbours
-        return [self.tiles[here].homography_rel(dirn).dot(hom)
-                    for dirn in dirns
-                        for hom in self._homographies(neighbours[dirn]['coord'], there)
-                            if hom is not False]
+        homs = []
+        for dirn in dirns:
+            hom1 = self.tiles[here].homography_rel(dirn, self.process)
+            if hom1 is not False:
+                for hom2 in self._homographies(neighbours[dirn]['coord'], there):
+                    if hom2 is not False:
+                        homs.append(hom1.dot(hom2))
+        return homs
 
     def homography(self, ref, there):
         if ref not in self.tiles[there].abs:
@@ -88,10 +142,13 @@ class Stitch:
     def bounds(self, ref):
         bounds = [self.tiles[ref].bounds]
         for c in np.ndindex(self.tiles.shape):
-            hom = self.homography(ref, c)
-            prel = self.tiles[c].bounds
-            pabs = cv2.perspectiveTransform(prel, hom)
-            bounds.append(pabs)
+            try:
+                hom = self.homography(ref, c)
+                prel = self.tiles[c].bounds
+                pabs = cv2.perspectiveTransform(prel, hom)
+                bounds.append(pabs)
+            except:
+                pass
 
         pts = np.concatenate(tuple(bounds), axis=0)
         [xmin, ymin] = np.int32(pts.min(axis=0).ravel() - 0.5)
@@ -99,14 +156,19 @@ class Stitch:
         return (xmin, xmax), (ymin, ymax)
 
     def warp(self, ref, ht, size, there):
-        hom = self.homography(ref, there)
-        im = self.tiles[there].image
-        return cv2.warpPerspective(im, ht.dot(hom), size)
+        try:
+            hom = self.homography(ref, there)
+            im = self.tiles[there].image
+            return cv2.warpPerspective(im, ht.dot(hom), size)
+        except:
+            print("Missing homography for image %r wrt %r!" % (there,ref))
+            w, h = size
+            return np.full((h,w,3), 0, dtype=np.uint8)
 
     def assemble(self, ref=None):
         if ref is None:
             w, h = self.tiles.shape
-            ref = w//2-1, h//2-1
+            ref = w//2, h//2
 
         (xmin, xmax), (ymin, ymax) = self.bounds(ref)
         ht = np.array([[1,0,-xmin], [0,1,-ymin], [0,0,1]])
@@ -118,4 +180,11 @@ class Stitch:
             # have to do one by one to save memory
             im = warp(c) if im is None else np.maximum.reduce([im,warp(c)])
         return im
+
+def stitch(images, process=lambda x:x):
+    return Stitch(images, process).assemble()
+    return Stitch(np.matrix(images)).assemble()
+
+def stitch_hsv(images, component=1):
+    return stitch(images, lambda im:cv2.cvtColor(im, cv2.COLOR_BGR2HSV)[:,:,component])
 
