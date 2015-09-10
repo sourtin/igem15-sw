@@ -4,8 +4,9 @@ import picamera.array
 import cv2
 import time
 import numpy as np
+import dwt
 
-for i in range(9999999):
+while(1):
 	with picamera.PiCamera() as camera:
 	    camera.start_preview()
 	    time.sleep(0.1)
@@ -13,5 +14,5 @@ for i in range(9999999):
 	        camera.capture(stream, format = 'bgr')
 	        image = cv2.cvtColor(stream.array, cv2.COLOR_BGR2GRAY)
 
-	print(np.var(image))
-	#time.sleep(2)
+	Y = dwt.nleveldwt(3,image)
+    print(dwt.focus_score(Ys[1:]))
