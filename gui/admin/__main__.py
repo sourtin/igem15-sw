@@ -64,7 +64,7 @@ def set(user, pw):
     fo = open("nginx/server.htpasswd.disabled", "w")
     fo.writelines(lines_dis)
     fo.close()
-    os.system("pyenv/bin/nginx -p nginx -c nginx.conf -s reload")
+    #os.system("nginx/nginx -p nginx -c nginx.conf -s reload")
     return 'OK'
 
 @app.route("/del/<user>")
@@ -91,7 +91,7 @@ def rem(user):
     fo = open("nginx/server.htpasswd.disabled", "w")
     fo.writelines(lines_dis)
     fo.close()
-    os.system("pyenv/bin/nginx -p nginx -c nginx.conf -s reload")
+    #os.system("nginx/nginx -p nginx -c nginx.conf -s reload")
 
     return 'ok'
 
@@ -117,7 +117,7 @@ def enable(user):
     fo = open("nginx/server.htpasswd.disabled", "w")
     fo.writelines(lines_dis)
     fo.close()
-    os.system("pyenv/bin/nginx -p nginx -c nginx.conf -s reload")
+    #os.system("nginx/nginx -p nginx -c nginx.conf -s reload")
 
     return 'kool'
 
@@ -143,7 +143,7 @@ def disable(user):
     fo = open("nginx/server.htpasswd.disabled", "w")
     fo.writelines(lines_dis)
     fo.close()
-    os.system("pyenv/bin/nginx -p nginx -c nginx.conf -s reload")
+    #os.system("nginx/nginx -p nginx -c nginx.conf -s reload")
 
     return 'sure thang'
 
