@@ -8,6 +8,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -20,121 +21,77 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 public class MicroCam extends JPanel implements Runnable {
+	public Thread mainThread = null;
 	DataInputStream dis;
-	private Image image = null;
-	public Dimension imageSize = null;
-	public boolean connected = false;
-	private boolean initCompleted = false;
-	HttpsURLConnection conn = null;
 	Component parent;
+	HttpsURLConnection conn = null;
+	private Image image = null, im = null;
+	public Dimension imageSize = null;
 
 	public MicroCam(Component parent_) {
 		parent = parent_;
 	}
+	
+	public void connect() throws Exception {
+		URL url = new URL("https://"+Start_Connection.ip+":9000/_stream/?action=stream");
+		//URL url = new URL("http://131.111.125.248/axis-cgi/mjpg/video.cgi");
+		conn = (HttpsURLConnection) url.openConnection();
 
-	public void connect() {
-		try {
-			
-			
-			URL url = new URL("https://"+Start_Connection.ip+":9000/_stream/?action=stream");
-			conn = (HttpsURLConnection) url.openConnection();
-
-			if (conn.getResponseCode() == 401) {
-				// incorrect username password combo
-				JOptionPane
-						.showMessageDialog(
-								null,
-								"Incorrect username/password combo... Could not authenticate, but managed to connect.");
-				conn.disconnect();
-				return;
-			}
-
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					conn.getInputStream()));
-			InputStream is = conn.getInputStream();
-			connected = true;
-			BufferedInputStream bis = new BufferedInputStream(is);
-			dis = new DataInputStream(bis);
-			readMJPGStream();
-			if (!initCompleted)
-				initDisplay();
-
-		} catch (Exception e) {
-			e.printStackTrace();
+		if (conn.getResponseCode() == 401) {
+			// incorrect username password combo
+			JOptionPane
+					.showMessageDialog(
+							null,
+							"Incorrect username/password combo... Could not authenticate, but managed to connect.");
+			conn.disconnect();
+			return;
 		}
+
+		BufferedReader in = new BufferedReader(new InputStreamReader(
+				conn.getInputStream()));
+		InputStream is = conn.getInputStream();
+		
+		BufferedInputStream bis = new BufferedInputStream(is);
+		dis = new DataInputStream(bis);
+		readStream();
+		initDisplay();
 	}
-
+	
 	public void initDisplay() {
-
 		imageSize = new Dimension(image.getWidth(this), image.getHeight(this));
 		setPreferredSize(imageSize);
 		parent.setSize(imageSize);
 		parent.validate();
-		initCompleted = true;
 	}
-
-	long len = 0;
-
-	public void readMJPGStream() {
-		readLine(5, dis, "\n");
-		readJPG();
-		readLine(1, dis, "--boundary");
-	}
-
-	public void readLine(int n, DataInputStream dis, String lineEnd) {
-		for (int i = 0; i < n; i++) {
-			try {
-				byte[] lineEndBytes = lineEnd.getBytes();
-				byte[] byteBuf = new byte[lineEndBytes.length];
-				boolean end = false;
-
-				while (!end) {
-					dis.read(byteBuf, 0, lineEndBytes.length);
-					String t = new String(byteBuf);
-
-					//System.out.print(t);
-					if (t.equals(lineEnd))
-						end = true;
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-
+	
+	public void readStream() throws Exception {
+		String line = "";
+		int len = 0;
+		
+		while(!(line = dis.readLine().trim()).equals("")) {
+			//System.out.println(line);
+			if(line.startsWith("Content-Length"))
+				len = Integer.parseInt(line.split(" ")[1]);
 		}
-	}
-
-	public void disconnect() {
-		try {
-			if (connected) {
-				dis.close();
-				conn.disconnect();
-				connected = false;
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		
+		byte[] bb = new byte[len];
+		dis.readFully(bb, 0, len);
+		
+		ByteArrayInputStream bbi = new ByteArrayInputStream(bb);
+		if( (im = ImageIO.read(bbi)) != null) image = im;
+		bbi.close();
 	}
 
 	public void paint(Graphics g) {
 		if (image != null)
 			g.drawImage(image, 0, 0, this);
 	}
-
-	public void readJPG() {
-		try {
-			image = ImageIO.read(dis);
-			//System.out.println("read image: " + image);
-		} catch (Exception e) {
-			e.printStackTrace();
-			disconnect();
-		}
-	}
-
+	
 	public void run() {
-		connect();
 		try {
+		connect();
 			while (true) {
-				readMJPGStream();
+				readStream();
 				parent.repaint();
 			}
 		} catch (Exception e) {
@@ -142,8 +99,6 @@ public class MicroCam extends JPanel implements Runnable {
 		}
 	}
 	
-	public Thread mainThread = null;
-
 	public static void launch() {
 		final JFrame main = new JFrame("Live view");
 		
