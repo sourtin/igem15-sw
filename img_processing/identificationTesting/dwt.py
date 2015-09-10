@@ -2,6 +2,7 @@
 
 import numpy as np
 import cv2
+import time
 
 def dwt(X, h1 = np.array([-1, 2, 6, 2, -1])/8 , h2 = np.array([-1, 2 -1])/4):
     """ 
@@ -96,19 +97,7 @@ def rowdec2(X, h):
         Y = Y + h[i] * X[:,xe[t+i]];
     
     return Y
-    
-# def nleveldwt_old(N, shape, X):
-    # """ N Level DWT of image """
-    # if N>0:
-        # print (N)
-        # m = np.array(range(shape[0]))
-        # n = np.array(range(shape[1]))
-        # #print(Y[m,:][:,n].shape)
-        # Y[m,:][:,n] = dwt(X[m,:][:,n])
-        # return nleveldwt(N-1, (int(shape[0]/2),int(shape[1]/2)), Y)
-    # else:
-        # pass
-        
+
 def nleveldwt(N, X):
     """ N level DWT of image
     Returns an array of the smaller resolution images
@@ -120,21 +109,97 @@ def nleveldwt(N, X):
     return Xs
     
 def focus_score(X):
+    """ Focus score is the sum of the squared values of the low resolution images.
+    """
     score = 0
     for i in X:
         i += 1
         score += np.var(i)
     return score
+
+def golden_section(a,d):
+    """Given an interval, returns the next two intervals using the golden ratio
+    The interval is arranged as [a, b, c, d]
+    """
+    golden = (1 + 5 ** 0.5) / 2     # Golden ratio
+
+    # New interval point to test
+    delta_x = d * (1 - 1/golden)
+    b = a + delta_x
+    #c = d - delta_x
+    
+    return b
+
+def golden_section_interval_reduction(interval, f, finterval,  tolerance = 50, iterations = 0, iter_max = 1000, min_tolerance = 5):
+    """ Carry out optimization to find position of minimum value for 'f'
+        interval = (a, b, d) is the interval to search within
+        finterval = (f(a), f(b), f(d)) is the function value for each interval
+        f(x) is the function to be minimized
+    """
+    a = interval[0]
+    b = interval[1]
+    d = interval[2]
+    
+    f1 = finterval[0]
+    f2 = finterval[1]
+    f4 = finterval[2]
+    
+    if (tolerance > min_tolerance or iter_max < iterations):
+        
+        # Evaluate values
+        c = golden_section(b, d)
+        f3 = f(c)
+
+        print('iter: %d' % iterations, 'b: %f' % b)
+        
+        if f2 < f3:
+            d = c
+            f4 = f3
+            tolerance = abs(f3 - f1)
+            golden_section_interval_reduction((a, b, d), f, (f1, f2, f4), tolerance, iterations+1, iter_max, min_tolerance)
+        
+        elif f2 > f3 :
+            a = b
+            b = c
+            f1 = f2
+            f2 = f3
+            tolerance = abs(f2 - f4)
+            golden_section_interval_reduction((a, b, d), f, (f1, f2, f4), tolerance, iterations+1, iter_max, min_tolerance)
+            
+        elif f2 == f3:
+            d = c
+            f4 = f3
+            tolerance = abs(f3 - f1)
+            golden_section_interval_reduction((a, b, d), f, (f1, f2, f4), tolerance, iterations+1, iter_max, min_tolerance)
+
+    return b
+    
+def test_function(x):
+    return (x-2)**2
+
+    
+   
+# if __name__ == '__main__':
+
+    # X = cv2.imread('C:\\Users\\RAK\\Documents\\iGEM\\Software\\lighthouse.jpg', cv2.IMREAD_GRAYSCALE)
+    # print('Image read is of shape ', X.shape)
+    # #Y = dwt(X)
+    # Ys = nleveldwt(3, X)
+    # print('Finished DWT decomposition of image')
+    # print('Output image size is ', Ys[0].shape)
+    # i = 0
+    # # for Y in Ys:
+        # # cv2.imwrite('Ys%d.png' % i, Y)
+        # # i += 1
+    # print (focus_score(Ys[1:]))
     
 if __name__ == '__main__':
-    X = cv2.imread('C:\\Users\\RAK\\Documents\\iGEM\\Software\\lighthouse.jpg', cv2.IMREAD_GRAYSCALE)
-    print('Image read is of shape ', X.shape)
-    #Y = dwt(X)
-    Ys = nleveldwt(3, X)
-    print('Finished DWT decomposition of image')
-    print('Output image size is ', Ys[0].shape)
-    i = 0
-    # for Y in Ys:
-        # cv2.imwrite('Ys%d.png' % i, Y)
-        # i += 1
-    print (focus_score(Ys[1:]))
+    a = -5
+    d = 10
+    b = golden_section(a,d)
+  
+    x = golden_section_interval_reduction((a, b , d), test_function, (test_function(a), test_function(b), test_function(d)), min_tolerance = 0.5)
+    
+    
+# htttps://172.29.9.20:9000/_webshell/control/motor/2/50
+    
