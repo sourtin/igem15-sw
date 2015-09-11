@@ -24,12 +24,12 @@ public class Connection_Settings implements PlugIn {
 	public static JFrame settingsWindow = null;
 	public static JTextField ipField = null, userField = null;
 	public static JPasswordField passField = null;
-	
+
 	public static void loadSettings() {
 		Properties properties = new Properties();
 		try {
-			new File(System.getProperty("user.home")
-					+ File.separator + ".ij.openscope.settings").createNewFile();
+			new File(System.getProperty("user.home") + File.separator
+					+ ".ij.openscope.settings").createNewFile();
 			properties.load(new FileInputStream(System.getProperty("user.home")
 					+ File.separator + ".ij.openscope.settings"));
 			Start_Connection.ip = properties.getProperty("ip");
@@ -53,7 +53,7 @@ public class Connection_Settings implements PlugIn {
 			settingsWindow = new JFrame("OpenScope plugin settings");
 
 			JPanel panel = new JPanel();
-			
+
 			JLabel label = new JLabel("IP/Hostname: ");
 			ipField = new JTextField();
 			ipField.setPreferredSize(new Dimension(330, 20));
@@ -77,30 +77,32 @@ public class Connection_Settings implements PlugIn {
 			panel.add(doneBtn);
 
 			panel.setPreferredSize(new Dimension(450, 130));
-			
+
 			doneBtn.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent ae) {
-	            	Properties properties = new Properties();
-	        		try {
-	        			Start_Connection.ip = ipField.getText();
-	        			Start_Connection.user = userField.getText();
-	        			Start_Connection.pass = passField.getText();
-	        			File f = new File(System.getProperty("user.home")
-	        					+ File.separator + ".ij.openscope.settings");
-	        			f.createNewFile();
-	        			properties.load(new FileInputStream(System.getProperty("user.home")
-	        					+ File.separator + ".ij.openscope.settings"));
-	        			properties.setProperty("ip", Start_Connection.ip);
-	        			properties.setProperty("user", Start_Connection.user);
-	        			properties.setProperty("pass", Start_Connection.pass);
-	                    OutputStream out = new FileOutputStream( f );
-	        			properties.store(out, "");
-	        			settingsWindow.setVisible(false);
-	        		} catch (IOException e) {
-	        			e.printStackTrace();
-	        		}
-	            }
-	        });
+				public void actionPerformed(ActionEvent ae) {
+					Properties properties = new Properties();
+					try {
+						Start_Connection.ip = ipField.getText();
+						Start_Connection.user = userField.getText();
+						Start_Connection.pass = passField.getText();
+						File f = new File(System.getProperty("user.home")
+								+ File.separator + ".ij.openscope.settings");
+						f.createNewFile();
+						properties.load(new FileInputStream(System
+								.getProperty("user.home")
+								+ File.separator
+								+ ".ij.openscope.settings"));
+						properties.setProperty("ip", Start_Connection.ip);
+						properties.setProperty("user", Start_Connection.user);
+						properties.setProperty("pass", Start_Connection.pass);
+						OutputStream out = new FileOutputStream(f);
+						properties.store(out, "");
+						settingsWindow.setVisible(false);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			});
 
 			settingsWindow.getContentPane().add(panel);
 			settingsWindow.pack();
