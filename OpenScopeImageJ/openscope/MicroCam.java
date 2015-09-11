@@ -99,7 +99,7 @@ public class MicroCam extends JPanel implements Runnable {
 		}
 	}
 	
-	public static void launch() {
+	public static JFrame launch() {
 		final JFrame main = new JFrame("Live view");
 		
 		final MicroCam panel = new MicroCam(main);
@@ -126,5 +126,6 @@ public class MicroCam extends JPanel implements Runnable {
 	    
 		main.pack();
 		main.show();
+		return main;
 	}
 }
