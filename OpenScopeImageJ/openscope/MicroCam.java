@@ -31,10 +31,11 @@ public class MicroCam extends JPanel implements Runnable {
 	public MicroCam(Component parent_) {
 		parent = parent_;
 	}
-	
+
 	public void connect() throws Exception {
-		URL url = new URL("https://"+Start_Connection.ip+":9000/_stream/?action=stream");
-		//URL url = new URL("http://131.111.125.248/axis-cgi/mjpg/video.cgi");
+		URL url = new URL("https://" + Start_Connection.ip
+				+ ":9000/_stream/?action=stream");
+		// URL url = new URL("http://131.111.125.248/axis-cgi/mjpg/video.cgi");
 		conn = (HttpsURLConnection) url.openConnection();
 
 		if (conn.getResponseCode() == 401) {
@@ -50,35 +51,36 @@ public class MicroCam extends JPanel implements Runnable {
 		BufferedReader in = new BufferedReader(new InputStreamReader(
 				conn.getInputStream()));
 		InputStream is = conn.getInputStream();
-		
+
 		BufferedInputStream bis = new BufferedInputStream(is);
 		dis = new DataInputStream(bis);
 		readStream();
 		initDisplay();
 	}
-	
+
 	public void initDisplay() {
 		imageSize = new Dimension(image.getWidth(this), image.getHeight(this));
 		setPreferredSize(imageSize);
 		parent.setSize(imageSize);
 		parent.validate();
 	}
-	
+
 	public void readStream() throws Exception {
 		String line = "";
 		int len = 0;
-		
-		while(!(line = dis.readLine().trim()).equals("")) {
-			//System.out.println(line);
-			if(line.startsWith("Content-Length"))
+
+		while (!(line = dis.readLine().trim()).equals("")) {
+			// System.out.println(line);
+			if (line.startsWith("Content-Length"))
 				len = Integer.parseInt(line.split(" ")[1]);
 		}
-		
+
 		byte[] bb = new byte[len];
 		dis.readFully(bb, 0, len);
-		
+
 		ByteArrayInputStream bbi = new ByteArrayInputStream(bb);
-		if( (im = ImageIO.read(bbi)) != null) image = im;
+		if ((im = ImageIO.read(bbi)) != null)
+			image = im;
 		bbi.close();
 	}
 
@@ -86,10 +88,10 @@ public class MicroCam extends JPanel implements Runnable {
 		if (image != null)
 			g.drawImage(image, 0, 0, this);
 	}
-	
+
 	public void run() {
 		try {
-		connect();
+			connect();
 			while (true) {
 				readStream();
 				parent.repaint();
@@ -98,32 +100,32 @@ public class MicroCam extends JPanel implements Runnable {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static JFrame launch() {
 		final JFrame main = new JFrame("Live view");
-		
+
 		final MicroCam panel = new MicroCam(main);
 		panel.mainThread = new Thread(panel);
 		panel.mainThread.start();
-		
+
 		main.getContentPane().add(panel);
 		WindowAdapter wa = new WindowAdapter() {
-	        // WINDOW_CLOSING event handler
-	        @Override
-	        public void windowClosing(WindowEvent e) {
-	            super.windowClosing(e);
-	            panel.mainThread.stop();
-	        }
+			// WINDOW_CLOSING event handler
+			@Override
+			public void windowClosing(WindowEvent e) {
+				super.windowClosing(e);
+				panel.mainThread.stop();
+			}
 
-	        @Override
-	        public void windowClosed(WindowEvent e) {
-	            super.windowClosed(e);
-	        }
-	    };
+			@Override
+			public void windowClosed(WindowEvent e) {
+				super.windowClosed(e);
+			}
+		};
 
-	    main.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-	    main.addWindowListener(wa);
-	    
+		main.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		main.addWindowListener(wa);
+
 		main.pack();
 		main.show();
 		return main;

@@ -3,7 +3,6 @@ package openscope;
 import ij.IJ;
 import ij.plugin.PlugIn;
 
-import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -19,7 +18,6 @@ import java.net.Authenticator;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.PasswordAuthentication;
-import java.net.URI;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
@@ -45,9 +43,9 @@ public class Start_Connection implements PlugIn, KeyListener {
 	HostnameVerifier ignore = null;
 	public static String ip = "172.29.9.20";
 	public static String user = "admin", pass = "test";
-	
+
 	public static JFrame mainWindow = null;
-	
+
 	JTextField motor0, motor1, motor2;
 
 	@Override
@@ -62,21 +60,22 @@ public class Start_Connection implements PlugIn, KeyListener {
 			ctx.init(new KeyManager[0],
 					new TrustManager[] { new DefaultTrustManager() },
 					new SecureRandom());
-			SSLContext.setDefault(ctx);			
+			SSLContext.setDefault(ctx);
 
-			HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier()
-	        {
-	            public boolean verify(String hostname, SSLSession session) {
-	                    return true;
-	            }
-	        });
-			
+			HttpsURLConnection
+					.setDefaultHostnameVerifier(new HostnameVerifier() {
+						public boolean verify(String hostname,
+								SSLSession session) {
+							return true;
+						}
+					});
+
 			Authenticator.setDefault(new Authenticator() {
 				protected PasswordAuthentication getPasswordAuthentication() {
 					return new PasswordAuthentication(user, pass.toCharArray());
 				}
 			});
-			
+
 		} catch (ConnectException e) {
 			JOptionPane.showMessageDialog(null,
 					"Could not connect to openscope - incorrect ip?");
@@ -89,131 +88,132 @@ public class Start_Connection implements PlugIn, KeyListener {
 			JOptionPane.showMessageDialog(null,
 					"IO exception while trying to connect to openscope...");
 			e.printStackTrace();
-		} catch(Exception e) {
-			JOptionPane.showMessageDialog(null,
-					"Exotic error...");
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null, "Exotic error...");
 			e.printStackTrace();
 		}
 
 		// show swing ui
-		if(mainWindow == null) {
+		if (mainWindow == null) {
 			mainWindow = new JFrame("OpenScope control");
 			JPanel panel = new JPanel();
-			//mainWindow.addKeyListener(this);
+			// mainWindow.addKeyListener(this);
 
 			panel.setPreferredSize(new Dimension(450, 160));
 
 			JButton capture = new JButton("Capture image");
 			capture.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent ae) {
-	            	captureAndOpen();
-	            }
+				public void actionPerformed(ActionEvent ae) {
+					captureAndOpen();
+				}
 			});
 			panel.add(capture);
 			JButton toggle = new JButton("Toggle LEDs");
 			toggle.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent ae) {
-	            	toggleLed();
-	            }
+				public void actionPerformed(ActionEvent ae) {
+					toggleLed();
+				}
 			});
 			panel.add(toggle);
 			JButton live = new JButton("Show Live View");
 			live.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent ae) {
+				public void actionPerformed(ActionEvent ae) {
 
-	       		 try {
-	       			//Desktop.getDesktop().browse(URI.create("https://"+ip+":9000/force_ministream.html"));
-	       			 MicroCam.launch().addKeyListener(Start_Connection.this);
-	       		} catch (Exception e) {
-	       			e.printStackTrace();
-	       		}
-	            }
+					try {
+						// Desktop.getDesktop().browse(URI.create("https://"+ip+":9000/force_ministream.html"));
+						MicroCam.launch().addKeyListener(Start_Connection.this);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
 			});
 			panel.add(live);
-			
+
 			JLabel label = new JLabel("X step: ");
 			motor0 = new JTextField("100");
 			motor0.setPreferredSize(new Dimension(220, 20));
-			panel.add(label);panel.add(motor0);
-			
+			panel.add(label);
+			panel.add(motor0);
+
 			JButton go0 = new JButton("Go");
 			go0.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent ae) {
-	            	move(0, Integer.parseInt(motor0.getText()));
-	            }
+				public void actionPerformed(ActionEvent ae) {
+					move(0, Integer.parseInt(motor0.getText()));
+				}
 			});
 			panel.add(go0);
 			JButton go0b = new JButton("Back");
 			go0b.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent ae) {
-	            	move(0, -1 * Integer.parseInt(motor0.getText()));
-	            }
+				public void actionPerformed(ActionEvent ae) {
+					move(0, -1 * Integer.parseInt(motor0.getText()));
+				}
 			});
 			panel.add(go0b);
-			
+
 			JLabel label2 = new JLabel("Y step: ");
 			motor1 = new JTextField("100");
 			motor1.setPreferredSize(new Dimension(220, 20));
-			panel.add(label2);panel.add(motor1);
+			panel.add(label2);
+			panel.add(motor1);
 
 			JButton go1 = new JButton("Go");
 			go1.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent ae) {
-	            	move(1, Integer.parseInt(motor1.getText()));
-	            }
+				public void actionPerformed(ActionEvent ae) {
+					move(1, Integer.parseInt(motor1.getText()));
+				}
 			});
 			panel.add(go1);
 			JButton go1b = new JButton("Back");
 			go1b.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent ae) {
-	            	move(1, -1 * Integer.parseInt(motor1.getText()));
-	            }
+				public void actionPerformed(ActionEvent ae) {
+					move(1, -1 * Integer.parseInt(motor1.getText()));
+				}
 			});
 			panel.add(go1b);
 			JLabel label3 = new JLabel("Z step: ");
 			motor2 = new JTextField("600");
 			motor2.setPreferredSize(new Dimension(220, 20));
-			panel.add(label3);panel.add(motor2);
+			panel.add(label3);
+			panel.add(motor2);
 
 			JButton go2 = new JButton("Go");
 			go2.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent ae) {
-	            	move(2, Integer.parseInt(motor2.getText()));
-	            }
+				public void actionPerformed(ActionEvent ae) {
+					move(2, Integer.parseInt(motor2.getText()));
+				}
 			});
 			panel.add(go2);
-			
+
 			JButton go2b = new JButton("Back");
 			go2b.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent ae) {
-	            	move(2, -1 * Integer.parseInt(motor2.getText()));
-	            }
+				public void actionPerformed(ActionEvent ae) {
+					move(2, -1 * Integer.parseInt(motor2.getText()));
+				}
 			});
 			panel.add(go2b);
-			
 
 			JButton bf = new JButton("Brightfield");
 			bf.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent ae) {
-	            	setLed(0);
-	            }
+				public void actionPerformed(ActionEvent ae) {
+					setLed(0);
+				}
 			});
 			panel.add(bf);
 			JButton fl = new JButton("Fluorescence");
 			fl.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent ae) {
-	            	setLed(1);
-	            }
+				public void actionPerformed(ActionEvent ae) {
+					setLed(1);
+				}
 			});
 			panel.add(fl);
 			JButton off = new JButton("Off");
 			off.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent ae) {
-	            	setLed(2);
-	            }
+				public void actionPerformed(ActionEvent ae) {
+					setLed(2);
+				}
 			});
 			panel.add(off);
-			
+
 			mainWindow.setFocusTraversalKeysEnabled(false);
 			capture.addKeyListener(this);
 			toggle.addKeyListener(this);
@@ -231,9 +231,9 @@ public class Start_Connection implements PlugIn, KeyListener {
 			mainWindow.getContentPane().add(panel);
 			mainWindow.pack();
 		}
-		
+
 		mainWindow.setVisible(true);
-		//MicroCam.launch();
+		// MicroCam.launch();
 	}
 
 	public static void captureAndOpen() {
@@ -318,8 +318,8 @@ public class Start_Connection implements PlugIn, KeyListener {
 	public static void setLed(int led) {
 		try {
 
-			URL url = new URL("https://" + ip + ":9000/_webshell/control/led/set/"
-					+ led);
+			URL url = new URL("https://" + ip
+					+ ":9000/_webshell/control/led/set/" + led);
 			HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
 
 			if (conn.getResponseCode() == 401) {
@@ -398,19 +398,19 @@ public class Start_Connection implements PlugIn, KeyListener {
 
 	@Override
 	public void keyReleased(KeyEvent arg0) {
-		if(arg0.getKeyCode() == KeyEvent.VK_DOWN) {
+		if (arg0.getKeyCode() == KeyEvent.VK_DOWN) {
 			move(1, Integer.parseInt(motor1.getText()));
-		} else if(arg0.getKeyCode() == KeyEvent.VK_UP) {
+		} else if (arg0.getKeyCode() == KeyEvent.VK_UP) {
 			move(1, -1 * Integer.parseInt(motor1.getText()));
-		} else if(arg0.getKeyCode() == KeyEvent.VK_RIGHT) {
+		} else if (arg0.getKeyCode() == KeyEvent.VK_RIGHT) {
 			move(0, Integer.parseInt(motor0.getText()));
-		} else if(arg0.getKeyCode() == KeyEvent.VK_LEFT) {
+		} else if (arg0.getKeyCode() == KeyEvent.VK_LEFT) {
 			move(0, -1 * Integer.parseInt(motor0.getText()));
-		} else if(arg0.getKeyCode() == KeyEvent.VK_SHIFT) {
+		} else if (arg0.getKeyCode() == KeyEvent.VK_SHIFT) {
 			toggleLed();
-		} else if(arg0.getKeyChar() == 'a') {
+		} else if (arg0.getKeyChar() == 'a') {
 			move(2, Integer.parseInt(motor2.getText()));
-		} else if(arg0.getKeyChar() == 's') {
+		} else if (arg0.getKeyChar() == 's') {
 			move(2, -1 * Integer.parseInt(motor2.getText()));
 		}
 	}
