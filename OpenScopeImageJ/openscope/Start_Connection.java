@@ -123,7 +123,7 @@ public class Start_Connection implements PlugIn, KeyListener {
 
 	       		 try {
 	       			//Desktop.getDesktop().browse(URI.create("https://"+ip+":9000/force_ministream.html"));
-	       			 MicroCam.launch();
+	       			 MicroCam.launch().addKeyListener(Start_Connection.this);
 	       		} catch (Exception e) {
 	       			e.printStackTrace();
 	       		}
