@@ -7,7 +7,6 @@
 // Configuration for pinouts
 const int motor_pins[] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
 const int led_pins[] = {A0, A1, A2};
-const int led_button = A3;
 
 // Initalise variables related to stepper control and state
 #define NUM_MOTORS ((sizeof(motor_pins)/sizeof(*motor_pins))/4)
@@ -16,8 +15,6 @@ int stepper_states[NUM_MOTORS];
 
 // Initalise variables related to led control
 #define NUM_LEDS (sizeof(led_pins)/sizeof(*led_pins))
-int button_last = 0;
-long button_last_state = 0;
 
 // Initalise variables related to command interpreter
 int interp = 0, motor = 0, amount = 0, led = 0, bright = 255;
@@ -35,8 +32,7 @@ void setup() {
   // Initialise led outputs
   for(int i = 0; i < NUM_LEDS; i++)
     pinMode(led_pins[i], OUTPUT);
-  // Initialise led button input (optional)
-  pinMode(led_button, INPUT);
+  // turn on and say that we're ready
   activateLeds();
   Serial.println("micromotors connected.");
   Serial.flush();
@@ -58,17 +54,6 @@ void loop() {
       } else steppers[i]->run();
     }
   }
-
-  // Button input
-  int val = digitalRead(led_button);
-  if(button_last_state > 0)
-    button_last_state--;
-  else if(val != button_last && val) {
-    led=(led+1)%NUM_LEDS;
-    activateLeds();
-    button_last_state=10000; // debounce
-  }
-  button_last = val;
 
   // Command interpreter code
   // a = get led that is on
