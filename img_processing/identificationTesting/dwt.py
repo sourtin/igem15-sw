@@ -175,7 +175,50 @@ def golden_section_interval_reduction(interval, f, finterval,  tolerance = 50, i
     return b
     
 def test_function(x):
-    return (x-2)**2
+    return (x-10)**2
+
+def gradient_descent(z_initial, f, tolerance = 50, max_iter = 100000, alpha = 0.1):
+    """ Carry out steepest descent to find minimum of a unimodal R^1 function 
+    gradient_descent(z_initial, f , tolerance = 50, max_iter = 100000, alpha = 0.1)
+    z_initial    : inital search postion
+    f            : function to find minimum of 
+    tolerance    : difference of function evaluations in each iteration
+    max_iter     : maximum no: of iterations
+    alpha        : learning rate
+    """
+       
+    # Initial calculations
+    z = z_initial + alpha
+    f_current = f(z_initial)
+    f_next = f(z)
+    gradient = (f_next - f_current)/alpha
+    converged = False
+    iterations = 1
+    
+    # Steepest descent
+    while (not converged and max_iter > iterations):
+    
+        z = z - alpha * gradient    # update search position
+        f_previous = f_current      # update search history
+        f_nearby = f(z+alpha)       # check nearby position to evaluate greadient
+        f_current = f(z)            # update current search value
+        gradient = (f_nearby - f_current)/alpha     # calculate approx. gradient 
+        iterations += 1             # update no of iterations
+        
+        if abs(f_current-f_previous)<tolerance:
+            print ('Reached minimum tolerance')
+            converged = True
+        elif iterations>max_iter:
+            print('Reached max no: of iterations')
+     
+    # Return results
+    print('Minimum at z = %f' % z)
+    return z
+            
+    
+def z_position(z_current, z_min, z_max):
+    """ Intepret z_position requests as motor steps"""
+    pass
 
     
    
@@ -198,8 +241,9 @@ if __name__ == '__main__':
     d = 10
     b = golden_section(a,d)
   
-    x = golden_section_interval_reduction((a, b , d), test_function, (test_function(a), test_function(b), test_function(d)), min_tolerance = 0.5)
+    #x = golden_section_interval_reduction((a, b , d), test_function, (test_function(a), test_function(b), test_function(d)), min_tolerance = 0.5)
     
-    
+    x = gradient_descent (5, test_function, tolerance = 0.001, alpha = 0.1)
+        
 # htttps://172.29.9.20:9000/_webshell/control/motor/2/50
     
