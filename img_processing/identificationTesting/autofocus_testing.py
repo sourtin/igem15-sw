@@ -2,6 +2,14 @@
 
 import numpy as np
 import dwt
+import urllib
+import ssl
+import cv2
+
+import sys
+sys.path.append("/home/pi/igem15-sw")
+
+from gui.webshell.mjpgstreamer import MjpgStreamer
 
 
 def golden_section(a,d):
@@ -103,20 +111,38 @@ def gradient_descent(z_initial, f, tolerance = 50, max_iter = 100000, alpha = 0.
     print('Minimum at z = %f' % z)
     return z
     
-class microscope:
+class microscope_control:
     """ Microscope class to control motors and read images """
 
     def __init__(self):
-        pass
+        """ Set up HTTP request stuff """
+        username = 'admin'
+        password = 'test'
+
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode  = ssl.CERT_NONE
+        https_handler = urllib.request.HTTPSHandler(context=ctx)
+
+        top_level_url = 'https://172.29.9.20:9000/_webshell/'
+        pmgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
+        pmgr.add_password(None, top_level_url, username, password)
+        handler = urllib.request.HTTPBasicAuthHandler(pmgr)
+        opener = urllib.request.build_opener(https_handler, handler)
+        opener.open(top_level_url)
+        urllib.request.install_opener(opener)
+        # pagehandle = urllib.request.urlopen(theurl)
+        # print(pagehandle.read())
         
-    def motor(self, steps):
+    def get_image(self, steps, axis = 2):
         """ Control motors via the web and return image """
-        #return I
-        pass
-            
+        pagehandle = urllib.request.urlopen(theurl %(axis, steps))
+        print(pagehandle.read())
+        return MjpgStreamer.captureImg()
+                    
     def focus(self, steps, function):
         """ Get focus score """
-        img = self.motor(steps) # read image I at motor 
+        img = self.get_image(steps) # read image I at motor 
         return function(img) # Calculate focus score
     
  
@@ -128,7 +154,8 @@ if __name__ == '__main__':
     #b = golden_section(a,d)
     #x = golden_section_interval_reduction((a, b , d), test_function, (test_function(a), test_function(b), test_function(d)), min_tolerance = 0.5)
     
-    x = gradient_descent (5, test_function, tolerance = 0.001, alpha = 0.1)
-        
+    #x = gradient_descent (5, test_function, tolerance = 0.001, alpha = 0.1)
+      
+    cv2.imwrite(microscope.get_image(0),'testing_remote_motor_control.png')
 # htttps://172.29.9.20:9000/_webshell/control/motor/2/50
      
