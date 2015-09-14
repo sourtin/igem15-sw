@@ -12,7 +12,7 @@ class Timelapser(threading.Thread):
         self._stop = threading.Event()
         self._times = tl[2]+1
         self._delay = tl[1]
-        self._garcon = 0
+        self._garçon = 0
         self._user = tl[0]
 
     def stop(self):
@@ -23,10 +23,10 @@ class Timelapser(threading.Thread):
 
     def run(self):
         while not self.stopped() and self._times > 0:
-            if self._garcon == 0
+            if self._garçon == 0:
                 self._times -= 1
-                self._garcon = self._delay
+                self._garçon = self._delay
                 MjpgStreamer.captureImg(self._user)
-            self._garcon -= 1
+            self._garçon -= 1
             time.delay(1)
         self.stop()
