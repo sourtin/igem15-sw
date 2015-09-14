@@ -2,9 +2,10 @@
 
 import numpy as np
 import dwt
-import urllib
+import urllib.request
 import ssl
 import cv2
+from flask import request
 
 import sys
 sys.path.append("/home/pi/igem15-sw")
@@ -118,6 +119,7 @@ class microscope_control:
         """ Set up HTTP request stuff """
         username = 'admin'
         password = 'test'
+        self.theurl = 'https://172.29.9.20:9000/_webshell/control/motor/%d/%d'
 
         ctx = ssl.create_default_context()
         ctx.check_hostname = False
@@ -136,9 +138,9 @@ class microscope_control:
         
     def get_image(self, steps, axis = 2):
         """ Control motors via the web and return image """
-        pagehandle = urllib.request.urlopen(theurl %(axis, steps))
+        pagehandle = urllib.request.urlopen(self.theurl %(axis, steps))
         print(pagehandle.read())
-        return MjpgStreamer.captureImg()
+        return MjpgStreamer.captureImg(request.authorization.username)
                     
     def focus(self, steps, function):
         """ Get focus score """
@@ -155,7 +157,7 @@ if __name__ == '__main__':
     #x = golden_section_interval_reduction((a, b , d), test_function, (test_function(a), test_function(b), test_function(d)), min_tolerance = 0.5)
     
     #x = gradient_descent (5, test_function, tolerance = 0.001, alpha = 0.1)
-      
-    cv2.imwrite(microscope.get_image(0),'testing_remote_motor_control.png')
+    m = microscope_control()  
+    cv2.imwrite(m.get_image(1),'testing_remote_motor_control.png')
 # htttps://172.29.9.20:9000/_webshell/control/motor/2/50
      
