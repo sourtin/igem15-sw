@@ -21,6 +21,9 @@
     <style>
         html, body {height: 100%;}
         .container {height: 100%;}
+.btn {
+margin-bottom: 7px;
+}
 #cam {
 width: 800px;
 height: 600px;
@@ -102,7 +105,7 @@ font-size: 80%;
     margin: 0;
     width: 3em;
     margin-left: -4em;
-    margin-top: -600px;
+    margin-top: -610px;
     padding-bottom: 1cm;
     white-space: nowrap;
     height: 680px;
@@ -145,6 +148,10 @@ $("#cam").html("<img src='/_stream/?action=stream&date="+d.getTime()+"' />");
 
 
 $(document).ready(function(){
+$("a").click(function(e) {
+    e.preventDefault();
+})
+
 $("#cam").html("Connecting...")
 setTimeout(restartCam, 1000)
 
@@ -200,6 +207,7 @@ $("#ledmode").html(data)
 });
 });
 
+
 $("#camcap").on("click", function(){
 //$("#cam").html("Say cheese, little cells!")
 $.ajax({
@@ -208,6 +216,15 @@ $.ajax({
 }).done(function(data){
 $("#capt").html("<img src=\""+data+"\"/>")
 setTimeout(restartCam, 1000)
+});
+});
+
+$("#camsnap").on("click", function(){
+$.ajax({
+  url: "/_webshell/snap/",
+  context: document.body
+}).done(function(data){
+$("#capt").html("<img src=\""+data+"\"/>")
 });
 });
 
@@ -458,7 +475,7 @@ $.ajax({
 <p><div id="scalebar"><ul class="ruler" data-items="25"></ul>
 </div></p>
 <p>
-Last captured image:
+<h2>Last captured image:</h2>
 <div id="capt"></div>
 <br />
 <a href="/captured/">More captured images...</a>
@@ -471,7 +488,7 @@ Last captured image:
           <p><center>
 <a class="btn btn-default" href="#" role="button" id="camhold">Hold</a>
 <a class="btn btn-default" href="#" role="button" id="camrel">Release</a><br />
-<a class="btn btn-default btn-success" href="#" role="button" id="camcap">Capture</a><br />
+<a class="btn btn-default btn-success" href="#" role="button" id="camcap">Capture high-res</a> <a class="btn btn-default" href="#" role="button" id="camsnap">Save jpg snap from stream</a><br />
 </center></p>
           <h2>Measurement</h2>
           <p>
@@ -509,7 +526,7 @@ Number of images to take: <input type="text" id="times" value="2" /></p><p>
       <hr>
 
       <footer>
-        <p>Made with &hearts; from Cambridge-JIC iGEM 2015</p>
+        <p><center>Made with &hearts; from Cambridge-JIC iGEM 2015</center></p>
       </footer>
     </div> <!-- /container -->
 

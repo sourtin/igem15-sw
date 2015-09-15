@@ -7,6 +7,7 @@ import traceback
 import re
 import uuid
 import fnmatch
+import urllib
 
 class MjpgStreamer:
     @staticmethod
@@ -76,5 +77,17 @@ class MjpgStreamer:
             camera.capture('%s/%s.%s.jpg' % (user.replace('/', ''), fname, uid))
         os.remove("/tmp/igemcam-lock")
         MjpgStreamer.start()
+        return '/captured/%s/%s.%s.jpg' % (user.replace('/', ''), fname, uid)
+
+    @staticmethod
+    def captureSnap(user):
+        os.makedirs("/home/pi/igem15-sw/captured", exist_ok=True)
+        os.chdir("/home/pi/igem15-sw/captured")
+        os.makedirs(user, exist_ok=True)
+        fname = str(datetime.datetime.now())
+        uid = str(uuid.uuid4())
+
+        url = 'http://localhost:9002/?action=snapshot'
+        urllib.request.urlretrieve(url, '%s/%s.%s.jpg' % (user.replace('/', ''), fname, uid))
         return '/captured/%s/%s.%s.jpg' % (user.replace('/', ''), fname, uid)
 
