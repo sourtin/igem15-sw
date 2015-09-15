@@ -25,12 +25,23 @@
 width: 800px;
 height: 600px;
 }
+#capt img {
+width: 800px;
+height: 600px;
+}
 #scalebar {
 margin-top: -80px;
 z-index: 10;
 }
 #sidescalebar {
 z-index: 10;
+}
+
+#line {
+border-top: 1px solid #f00;
+position: absolute;
+z-index: 2;
+transform-origin: 0 0;
 }
 
 .ruler, .ruler li {
@@ -44,7 +55,6 @@ z-index: 10;
     padding: 0;
     list-style: none;
     display: inline-block;
-    overflow: hidden;
 }
 /* IE6-7 Fix */
 .ruler, .ruler li {
@@ -96,6 +106,7 @@ font-size: 80%;
     padding-bottom: 1cm;
     white-space: nowrap;
     height: 680px;
+    overflow: hidden;
 }
 .sideruler li {
     width: 3em;
@@ -327,7 +338,7 @@ ensureTl()
 setInterval(ensureTl, 10000)
 
 $("#scalebar").draggable();
-$("#sidebar").draggable();
+$("#sidescalebar").draggable();
 
 $(".ruler[data-items]").each(function() {
         var ruler = $(this).empty(),
@@ -338,7 +349,9 @@ $(".ruler[data-items]").each(function() {
             ruler.append(item.clone().html("<span>"+((i + 1)*20)+(i == (len-1) ? "&nbsp;&nbsp;&nbsp;microns": "")+"</span>"));
         }
     });
-$(".ruler").css("padding-right", "172px").find("li").
+
+// wanna know i came up with these numbers? it was a very late night. i gave up.
+$(".ruler").css("padding-right", "72px").find("li").
             css("padding-left", "57.63px").
             find("span").css("margin-left", "-25px")
 
@@ -368,11 +381,33 @@ $("body").mouseup(function(e){
         draggingDistance = false;
         $(".container").css("cursor", "default")
 
-        // update distances
+        dragStartX = 0;
+        dragStartY = 0;
+        return false;
     }
 })
 
-$("#cam").mousedown(function(e){
+$("body").mousemove(function(e){
+    if(draggingDistance && dragStartX != 0 && dragStartY != 0) {
+        dragEndX = e.pageX;
+        dragEndY = e.pageY;
+        var width = dragEndX - dragStartX, height = dragEndY - dragStartY;
+        var width2 = (width/800) * 540;
+        var height2 = (height/600) * 405;
+
+        var len = Math.sqrt(Math.pow(width2, 2) + Math.pow(height2, 2))
+        $("#measureinfo").text("Measured: "+len.toFixed(2)+" microns")
+
+        var len2 = Math.sqrt(Math.pow(width, 2) + Math.pow(height, 2))
+        $("#line").css("top", dragStartY + "px")
+        $("#line").css("left", dragStartX + "px")
+
+        $("#line").css("width", len2 + "px")
+        $("#line").css("transform", "rotate("+Math.atan2((dragEndY-dragStartY), (dragEndX - dragStartX))+"rad)");
+    }
+})
+
+$("#cam, #capt").mousedown(function(e){
 if(draggingDistance == true) {
 dragStartX = e.pageX;
 dragStartY = e.pageY;
@@ -402,6 +437,9 @@ $.ajax({
   </head>
 
   <body>
+
+<div id="line"></div>
+
     <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="container">
         <div class="navbar-header">
@@ -437,7 +475,7 @@ Last captured image:
 </center></p>
           <h2>Measurement</h2>
           <p>
-<center>
+<center><span id="measureinfo"></span><br />
 <a class="btn btn-default" href="#" role="button" id="dragbtn">Drag to measure</a><br />
 
            </center></p>
