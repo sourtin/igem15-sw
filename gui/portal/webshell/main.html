@@ -21,10 +21,24 @@
     <style>
         html, body {height: 100%;}
         .container {height: 100%;}
+#cam {
+width: 800px;
+height: 600px;
+}
 #scalebar {
 z-index: 10;
 }
+#sidescalebar {
+z-index: 10;
+}
+
 .ruler, .ruler li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: inline-block;
+}
+.sideruler, .sideruler li {
     margin: 0;
     padding: 0;
     list-style: none;
@@ -32,6 +46,9 @@ z-index: 10;
 }
 /* IE6-7 Fix */
 .ruler, .ruler li {
+    *display: inline;
+}
+.sideruler, .sideruler li {
     *display: inline;
 }
 .ruler {
@@ -63,6 +80,44 @@ font-size: 80%;
     height: .64em;
     top: -.64em;
     right: 1em;
+}
+.sideruler {
+    background: lightYellow;
+    box-shadow: -1px 0 1em hsl(60, 60%, 84%) inset;
+    border-radius: 2px;
+    border: 1px solid #222;
+    color: #222;
+    margin: 0;
+    width: 3em;
+    margin-left: -4em;
+    margin-top: -600px;
+    padding-bottom: 1cm;
+    white-space: nowrap;
+    height: 680px;
+}
+.sideruler li {
+    width: 3em;
+    float: left;
+    padding-top: 1cm;
+    height: 2em;
+    text-align: center;
+    position: relative;
+    text-shadow: 1px 1px hsl(60, 60%, 84%);
+transform: rotate(90deg);
+    margin-left: 20px;
+    margin-top: -37.5px;
+}
+.sideruler li span {
+font-size: 80%;
+}
+.sideruler li:before {
+    content: '';
+    position: absolute;
+    border-left: 1px solid #222;
+    height: .64em;
+    right: -.64em;
+    top: 1em;
+    margin-top: 20px;
 }
     </style>
 <script src="/assets/jquery-1.11.3.min.js"></script>
@@ -270,7 +325,8 @@ ensureTl()
 setInterval(ensureTl, 10000)
 
 $("#scalebar").draggable();
-//$("#scalebar").html("");
+$("#sidescalebar").draggable();
+
 $(".ruler[data-items]").each(function() {
         var ruler = $(this).empty(),
             len = Number(ruler.attr("data-items")) || 0,
@@ -283,6 +339,19 @@ $(".ruler[data-items]").each(function() {
 $(".ruler").css("padding-right", "172px").find("li").
             css("padding-left", "57.63px").
             find("span").css("margin-left", "-25px")
+
+$(".sideruler[data-items]").each(function() {
+        var ruler = $(this).empty(),
+            len = Number(ruler.attr("data-items")) || 0,
+            item = $(document.createElement("li")),
+            i;
+        for (i = 0; i < len; i++) {
+            ruler.append(item.clone().html("<span>"+((i + 1)*20)+(i == (len-1) ? "&nbsp;&nbsp;&nbsp;microns": "")+"</span>"));
+        }
+    });
+$(".sideruler").css("padding-top", "3px").find("li").
+            css("padding-bottom", "29.6px").
+            find("span").css("margin-left", "45px")
 
 });
 
@@ -317,6 +386,8 @@ $.ajax({
         <div class="col-md-4" style="width: 70%">
           <h2>Live view</h2>
           <p><div id="cam"></div></p>
+<p><div id="sidescalebar"><ul class="sideruler" data-items="20"></ul>
+</div></p>
 <p><div id="scalebar"><ul class="ruler" data-items="25"></ul>
 </div></p>
 <p>
