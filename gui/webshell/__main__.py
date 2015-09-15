@@ -7,38 +7,39 @@ import sys
 sys.path.append("/home/pi/igem15-sw/")
 
 from gui.webshell.mjpgstreamer import MjpgStreamer
+import gui.webshell.locker
 from gui.webshell.timelapser import Timelapser
 from hw.ledmotorcontrol import driver
 
-tl = ['', 0, 0]
 tlThread = None
+
 app = Flask(__name__)
 
 @app.route("/timelapse/set/<delay>/<times>")
 def timelapse(delay, times):
-    global tl, tlThread
-    if tl[0] == '':
-        pass # todo: notify user their timelapse was interrupted by another user
+    global tlThread
 
-    tl = [request.authorization.username, int(delay), int(times)]
+    if gui.webshell.locker.lockobj[0] != request.authorization.username and not gui.webshell.locker.lock(request.authorization.username, "timelapse"):
+        return 'Webshell locked by %s for %s' % (gui.webshell.locker.lockobj[0], gui.webshell.locker.lockobj[1])
+
     # stop thread
     if tlThread is not None:
         tlThread.stop()
         tlThread.join()
     # start thread
-    tlThread = Timelapser(tl)
+    tlThread = Timelapser([request.authorization.username, int(delay), int(times)])
     tlThread.start()
     return 'Timelapse set'
 
 @app.route("/timelapse/get/")
 def get_if_timelapse():
-    global tlThread, tl
-    if tlThread is not None and tlThread.stopped():
-         del tlThread
-         tlThread = None
-         tl = ['', 0, 0]
-    return json.dumps(tl)
+    global tlThread
+    if tlThread is not None:
+        return json.dumps(tlThread.tl)
+    else:
+        return json.dumps(['', 0, 0])
 
+## todo: move to seperate module
 @app.route("/zstack/<amount>/<times>")
 def zstack(amount, times):
     imgs = []

@@ -140,43 +140,43 @@ $.ajax({
 
 
 $('html').keyup(function(e){
-    if(e.key == "ArrowUp"){
+    if(e.keyCode == 38){
 $.ajax({
   url: "/_webshell/control/motor/1/"+((-1)*($("#motx_").attr("value"))),
   context: document.body
 }).done();
     }
-    if(e.key == "ArrowRight"){
+    if(e.keyCode == 39){
 $.ajax({
   url: "/_webshell/control/motor/0/"+($("#moty_").attr("value")),
   context: document.body
 }).done();
     }
-    if(e.key == "ArrowLeft"){
+    if(e.keyCode == 37){
 $.ajax({
   url: "/_webshell/control/motor/0/"+((-1)*($("#moty_").attr("value"))),
   context: document.body
 }).done();
     }
-    if(e.key == "ArrowDown"){
+    if(e.keyCode == 40){
 $.ajax({
   url: "/_webshell/control/motor/1/"+($("#motx_").attr("value")),
   context: document.body
 }).done();
     }
-    if(e.key == "a"){
+    if(e.keyCode == 65){
 $.ajax({
   url: "/_webshell/control/motor/2/"+($("#motz_").attr("value")),
   context: document.body
 }).done();
     }
-    if(e.key == "s"){
+    if(e.keyCode == 83){
 $.ajax({
   url: "/_webshell/control/motor/2/"+((-1)*($("#motz_").attr("value"))),
   context: document.body
 }).done();
     }
-if(e.key == "Shift"){
+if(e.keyCode == 16){
 $.ajax({
   url: "/_webshell/control/led/toggle/_",
   context: document.body
@@ -184,6 +184,8 @@ $.ajax({
     }
 
 });
+
+
 
 });
 </script>
@@ -209,6 +211,11 @@ Move motors:<br />
 X: <input type="text" value="100" id="motx_" /> <button id="motx">Go!</button> <button id="motxb">Back!</button><br />
 Y: <input type="text" value="100" id="moty_" /> <button id="moty">Go!</a> <button id="motyb">Back!</button><br />
 Z: <input type="text" value="600" id="motz_" /> <button id="motz">Go!</a> <button id="motzb">Back!</button><br />
+<br />
+Timelapse:
+Delay between images (seconds): <input type="text" id="delay" /><br />
+Number of images to take: <input type="text" id="times" /><br />
+<button id="tl">Set timelapse</button><br />
 </div>
 
 <div id="cam"></div>
