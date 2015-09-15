@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import lib.stitch2
+import lib.stitch
 from lib.canvas import Image, Rectangle, Vector
 import numpy as np
 import cv2
@@ -13,7 +13,15 @@ ims = [read(f) for f in range(7)]
 
 ctx = lib.stitch2.StitchContext()
 ctx.features.grey().histeq()
-stitcher = lib.stitch2.ReferenceStitcher(ctx, ims[2], ims[1:4])
+ctx.post.histeq_clr()
+stitcher = lib.stitch2.ReferenceStitcher(ctx, ims[2], (1000,1000))
+
+for im in ims[1:4]:
+    (x,y), im_ = stitcher.align(im)
+    h, w = im_.shape[:2]
+    print(x,y,w,h)
+
+
 im = stitcher.assemble()
 #os._exit(0)
 
