@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from lib.stitch import stitch, stitch_hsv, stitch_grey, stitch_clahe
+from lib.stitch import TileStitcher, StitchContext
 from lib.canvas import Image, Rectangle, Vector
 import numpy as np
 import cv2
@@ -22,7 +22,11 @@ for file in files:
     ims[x, y] = Image(rect, im)
 
 print(ims)
-im = stitch_clahe(ims)
+ctx = StitchContext()
+ctx.features.grey().histeq()
+stitcher = TileStitcher(ctx, ims)
+im = stitcher.assemble()
+
 h, w = im.shape[:2]
 im2 = cv2.resize(im, (800, int(800*h/w)))
 imshow(im2)

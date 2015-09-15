@@ -31,6 +31,9 @@ class HomographyTest:
         return rect.width, rect.height
 
     def test(hom, bounds, threshold=.1):
+        if hom is None:
+            return None
+
         # homography
         vecs0 = HomographyTest.cv2vec(bounds)
         boundz = cv2.perspectiveTransform(bounds, hom)
@@ -49,58 +52,59 @@ class HomographyTest:
         thresh = lambda a,b: abs((a-b)/a) < threshold
         return thresh(w0, w1) and thresh(h0, h1)
 
-class Tile:
-    def __init__(self, image):
-        self.meta = image
-        self.image = image.cv()
-        self.neighbours = {key:{
-            'tile': None, 
-            'coord': None,
-            'bounds': None,
-            'hom': None,
-        } for key in ['h','j','k','l']}
-        self.abs = {}
-        h, w = self.image.shape[:2]
-        self.bounds = np.float32([[0,0], [0,h], [w,h], [w,0]]).reshape(-1,1,2)
-        pts = np.float32([[0,0],[0,h],[w,h],[w,0]]).reshape(-1,1,2)
+class TileStitcher:
+    """Stitch a matrix of Image objects"""
 
-    def meet_neighbour(self, dirn, tiles, coord):
-        x, y = coord
-        w, h = tiles.shape
-        if 0 <= x < w and 0 <= y < h:
-            self.neighbours[dirn]['tile'] = tiles[coord]
-            self.neighbours[dirn]['coord'] = coord
+    class Tile:
+        def __init__(self, image):
+            self.meta = image
+            self.image = image.cv()
+            self.neighbours = {key:{
+                'tile': None, 
+                'coord': None,
+                'bounds': None,
+                'hom': None,
+            } for key in ['h','j','k','l']}
+            self.abs = {}
+            h, w = self.image.shape[:2]
+            self.bounds = np.float32([[0,0], [0,h], [w,h], [w,0]]).reshape(-1,1,2)
 
-    def meet_neighbours(self, coord, tiles):
-        x, y = coord
-        self.meet_neighbour('h', tiles, (x-1, y))
-        self.meet_neighbour('j', tiles, (x, y+1))
-        self.meet_neighbour('k', tiles, (x, y-1))
-        self.meet_neighbour('l', tiles, (x+1, y))
+        def meet_neighbour(self, dirn, tiles, coord):
+            x, y = coord
+            w, h = tiles.shape
+            if 0 <= x < w and 0 <= y < h:
+                self.neighbours[dirn]['tile'] = tiles[coord]
+                self.neighbours[dirn]['coord'] = coord
 
-    def homography_rel(self, dirn, process):
-        neighbour = self.neighbours[dirn]
-        if neighbour['hom'] is None:
-            # compute homography only when requested
-            im1 = process(neighbour['tile'].image)
-            im2 = process(self.image)
+        def meet_neighbours(self, coord, tiles):
+            x, y = coord
+            self.meet_neighbour('h', tiles, (x-1, y))
+            self.meet_neighbour('j', tiles, (x, y+1))
+            self.meet_neighbour('k', tiles, (x, y-1))
+            self.meet_neighbour('l', tiles, (x+1, y))
 
-            kp2, des2 = orb.detectAndCompute(im2, None)
-            kp1, des1 = orb.detectAndCompute(im1, None)
-            matches = sorted(bf.match(des1, des2), key=lambda m:m.distance)[:15]
-            pts_src = np.float32([kp1[m.queryIdx].pt for m in matches]).reshape(-1,1,2)
-            pts_dst = np.float32([kp2[m.trainIdx].pt for m in matches]).reshape(-1,1,2)
-            M, _ = cv2.findHomography(pts_src, pts_dst, cv2.RANSAC, 5.0)
-            neighbour['hom'] = M if HomographyTest.test(M, self.bounds) else False
-        return neighbour['hom']
+        def homography_rel(self, dirn, process):
+            neighbour = self.neighbours[dirn]
+            if neighbour['hom'] is None:
+                # compute homography only when requested
+                im1 = process(neighbour['tile'].image)
+                im2 = process(self.image)
 
-class Stitch:
-    def __init__(self, images, process=lambda x:x):
-        self.process = process
-        self.images = images
+                kp2, des2 = orb.detectAndCompute(im2, None)
+                kp1, des1 = orb.detectAndCompute(im1, None)
+                matches = sorted(bf.match(des1, des2), key=lambda m:m.distance)[:15]
+                pts_src = np.float32([kp1[m.queryIdx].pt for m in matches]).reshape(-1,1,2)
+                pts_dst = np.float32([kp2[m.trainIdx].pt for m in matches]).reshape(-1,1,2)
+                M, _ = cv2.findHomography(pts_src, pts_dst, cv2.RANSAC, 5.0)
+                neighbour['hom'] = M if HomographyTest.test(M, self.bounds) else False
+            return neighbour['hom']
+
+    def __init__(self, context, images):
+        self.context = context
         self.tiles = np.empty(images.shape, object)
         for c in np.ndindex(self.tiles.shape):
-            self.tiles[c] = Tile(images[c])
+            images[c].data = context.pre(images[c].data)
+            self.tiles[c] = TileStitcher.Tile(images[c])
         for c in np.ndindex(self.tiles.shape):
             self.tiles[c].meet_neighbours(c, self.tiles)
         
@@ -119,7 +123,7 @@ class Stitch:
         neighbours = self.tiles[here].neighbours
         homs = []
         for dirn in dirns:
-            hom1 = self.tiles[here].homography_rel(dirn, self.process)
+            hom1 = self.tiles[here].homography_rel(dirn, self.context.features)
             if hom1 is not False:
                 for hom2 in self._homographies(neighbours[dirn]['coord'], there):
                     if hom2 is not False:
@@ -153,7 +157,7 @@ class Stitch:
     def warp(self, ref, ht, size, there):
         try:
             hom = self.homography(ref, there)
-            im = self.tiles[there].image
+            im = self.context.post(self.tiles[there].image)
             return cv2.warpPerspective(im, ht.dot(hom), size)
         except Exception as e:
             print("Missing homography for image %r wrt %r!" % (there,ref))
@@ -176,50 +180,102 @@ class Stitch:
             im = warp(c) if im is None else np.maximum.reduce([im,warp(c)])
         return im
 
-def preprocess_clahe(images):
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-    def colourhe(im):
-        im2 = cv2.cvtColor(im, cv2.COLOR_BGR2YCrCb)
-        im2[:,:,0] = clahe.apply(im2[:,:,0])
-        return cv2.cvtColor(im2, cv2.COLOR_YCrCb2BGR)
-    from lib.canvas import Image
-    for c in np.ndindex(images.shape):
-        images[c] = Image(None,colourhe(images[c].cv()))
-    return images
+class ReferenceStitcher:
+    def __init__(self, context, ref, pos):
+        """ref, im should be cv ims"""
+        self.context = context
+        self.ref = context.pre(ref)
+        self.rpos = pos
+        self.kdr = orb.detectAndCompute(context.features(self.ref), None)
 
-def stitch(images, process=lambda x:x):
-    return Stitch(images, process).assemble()
-    return Stitch(np.matrix(images)).assemble()
+    def bounds(self, im):
+        h, w = im['im'].shape[:2]
+        return np.float32([[0,0], [0,h], [w,h], [w,0]]).reshape(-1,1,2)
 
-def stitch_hsv(images, component=1):
-    return stitch(images, lambda im:cv2.cvtColor(im, cv2.COLOR_BGR2HSV)[:,:,component])
+    def hom(self, im):
+        kpr, desr = self.kdr
+        kpi, desi = orb.detectAndCompute(self.context.features(im['im']), None)
+        matches = sorted(bf.match(desi, desr), key=lambda m:m.distance)[:15]
+        pts_src = np.float32([kpi[m.queryIdx].pt for m in matches]).reshape(-1,1,2)
+        pts_dst = np.float32([kpr[m.trainIdx].pt for m in matches]).reshape(-1,1,2)
+        H, _ = cv2.findHomography(pts_src, pts_dst, cv2.RANSAC, 5.0)
+        return H if HomographyTest.test(H, im['bounds']) else None
 
-def stitch_grey(images):
-    return stitch(images, lambda im:cv2.cvtColor(im, cv2.COLOR_BGR2GRAY))
+    def inbounds(self, im):
+        boundc = cv2.perspectiveTransform(im['bounds'], im['h'])
+        bounds = HomographyTest.cv2vec(boundc)
+        xmin, xmax = sorted([x for x,_ in bounds])[1:3]
+        ymin, ymax = sorted([y for _,y in bounds])[1:3]
+        inbs = [Vector(xmin, ymin), Vector(xmax, ymin),
+                Vector(xmax, ymax), Vector(xmin, ymax)]
+        poly = Polygon(*bounds)
+        if not all(poly.contains(inb) for inb in inbs):
+            inbs = None
+        return inbs, (int(xmax-xmin), int(ymax-ymin))
 
-def stitch_clahe(images, he=1, colour=False):
-    # if colour, first optimise the Y component of YCrCb via histogram equalisation
-    # then, do one of three single component equalisers:
-    #  0) nothing
-    #  1) convert to greyscale
-    #  2) convert to hsv and select v
+    def rect(self, im):
+        x, y = im['inbounds'][0]
+        h = np.array([[1,0,-x],[0,1,-y],[0,0,1]]).dot(im['h'])
+        return cv2.warpPerspective(self.context.post(im['im']), h, im['inshape'])
 
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-    def colourhe(im):
-        if colour:
-            im2 = cv2.cvtColor(im, cv2.COLOR_BGR2YCrCb)
-            im2[:,:,0] = clahe.apply(im2[:,:,0])
-            return cv2.cvtColor(im2, cv2.COLOR_YCrCb2BGR)
-        else:
-            return im
+    def align(self, im):
+        im = {'im': im}
 
-    def greyhe(im):
-        return clahe.apply(cv2.cvtColor(im, cv2.COLOR_BGR2GRAY))
-    def valhe(im):
-        return clahe.apply(cv2.cvtColor(im, cv2.COLOR_BGR2HSV)[:,:,2])
-    def idhe(im):
-        return im
-    hes = [idhe, greyhe, valhe]
+        im['bounds'] = self.bounds(im)
 
-    return stitch(images, lambda im:hes[he](colourhe(im)))
+        im['h'] = self.hom(im)
+        if im['h'] is None:
+            return None
+
+        im['inbounds'], im['inshape'] = self.inbounds(im)
+        if im['inbounds'] is None:
+            return None
+
+        im['rect'] = self.rect(im)
+
+        x0, y0 = self.rpos
+        x, y = im['inbounds'][0]
+        return (int(x+x0), int(y+y0)), im['rect']
+
+class StitchContext:
+    class Processor:
+        def __init__(self, clahe):
+            self.clahe = clahe
+            self.f = lambda im:im
+
+        def __call__(self, im):
+            return self.f(im)
+
+        def reset(self):
+            self.f = lambda im:im
+
+        def grey(self):
+            f = self.f
+            self.f = lambda im: cv2.cvtColor(f(im), cv2.COLOR_BGR2GRAY)
+            return self
+
+        def hsv(self, component=2):
+            f = self.f
+            self.f = lambda im: cv2.cvtColor(f(im), cv2.COLOR_BGR2HSV)[:,:,component]
+            return self
+
+        def histeq_clr(self):
+            def he_colour(im):
+                im2 = cv2.cvtColor(im, cv2.COLOR_BGR2YCrCb)
+                im2[:,:,0] = self.clahe.apply(im2[:,:,0])
+                return cv2.cvtColor(im2, cv2.COLOR_YCrCb2BGR)
+            f = self.f
+            self.f = lambda im: he_colour(f(im))
+            return self
+
+        def histeq(self):
+            f = self.f
+            self.f = lambda im: self.clahe.apply(f(im))
+            return self
+
+    def __init__(self):
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+        self.pre = StitchContext.Processor(clahe)
+        self.features = StitchContext.Processor(clahe)
+        self.post = StitchContext.Processor(clahe)
 
