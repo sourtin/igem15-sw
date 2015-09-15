@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 
 def display(im):
-    ih, iw, _ = im.shape
+    ih, iw = im.shape[:2]
     sh = 700
     sw = int(iw * sh / ih)
     sm = cv2.resize(im, (sw, sh))
@@ -27,21 +27,20 @@ def warpTwoImages(img1, img2, H):
     Ht = np.array([[1,0,t[0]],[0,1,t[1]],[0,0,1]]) # translate
 
     result = cv2.warpPerspective(img2, Ht.dot(H), (xmax-xmin, ymax-ymin))
-    im1 = np.full((ymax-ymin, xmax-xmin, 3), 2, dtype=np.uint8) 
+    im1 = np.full((ymax-ymin, xmax-xmin), 2, dtype=np.uint8) 
     im1[t[1]:h1+t[1],t[0]:w1+t[0]] = img1
     #result[t[1]:h1+t[1],t[0]:w1+t[0]] = img1
     res = np.maximum.reduce([result, im1])
     return res
     return result
 
-im00, im01, im02, im10, im11, im12 = [cv2.imread("tiles/%s.jpg"%im, cv2.IMREAD_COLOR) for im in ['00','01','02','10','11','12']]
-ims = [im00, im01, im02, im10, im11, im12]
-im1 = cv2.imread("../tiles/00.jpg", cv2.IMREAD_COLOR)
-im2 = cv2.imread("../tiles/01.jpg", cv2.IMREAD_COLOR)
-im1 = cv2.cvtColor(im1, cv2.COLOR_BGR2HSV)[:,:,(2,1,2)]
-im2 = cv2.cvtColor(im2, cv2.COLOR_BGR2HSV)[:,:,(2,1,2)]
-ims[0]=im1
-ims[3]=im2
+clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+im1 = cv2.imread("./tile9b/00.jpg", 0)
+im2 = cv2.imread("./tile9b/01.jpg", 0)
+im1 = clahe.apply(im1)
+im2 = clahe.apply(im2)
+display(im1)
+display(im2)
 
 #for im in ims: display(im)
 #cv2.destroyAllWindows()
@@ -49,11 +48,8 @@ ims[3]=im2
 orb = cv2.ORB_create()
 bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
 
-kps = [orb.detectAndCompute(im, None) for im in ims]
-im1 = ims[0]
-im2 = ims[3]
-ik1, id1 = kps[0]
-ik2, id2 = kps[3]
+ik1, id1 = orb.detectAndCompute(im1, None)
+ik2, id2 = orb.detectAndCompute(im2, None)
 
 matches = bf.match(id1, id2)
 matches = sorted(matches, key=lambda m:m.distance)[:15]
@@ -65,9 +61,9 @@ src = np.float32([ik2[m.trainIdx].pt for m in matches]).reshape(-1,1,2)
 M, mask = cv2.findHomography(src, dst, cv2.RANSAC, 5.0)
 matchesMask = mask.ravel().tolist()
 
-im4 = np.zeros((8000,8000,3), np.uint8)
-ih, iw, id = im1.shape
-im4[:ih, :iw, :id] = im1
+im4 = np.zeros((8000,8000), np.uint8)
+ih, iw = im1.shape[:2]
+im4[:ih, :iw] = im1
 im5 = cv2.warpPerspective(im2, M, (8000,8000))
 pts = np.float32([[0,0],[0,ih-1],[iw-1,ih-1],[iw-1,0]]).reshape(-1,1,2)
 dsts = cv2.perspectiveTransform(pts, M)

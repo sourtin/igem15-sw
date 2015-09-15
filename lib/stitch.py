@@ -121,6 +121,8 @@ class Stitch:
         if yt > yh: dirns.append('j')
         if yt < yh: dirns.append('k')
 
+        print(here, there, dirns)
+
         neighbours = self.tiles[here].neighbours
         homs = []
         for dirn in dirns:
@@ -160,9 +162,11 @@ class Stitch:
             hom = self.homography(ref, there)
             im = self.tiles[there].image
             return cv2.warpPerspective(im, ht.dot(hom), size)
-        except:
+        except Exception as e:
+            print(e)
             print("Missing homography for image %r wrt %r!" % (there,ref))
             w, h = size
+            print("SIZE:",w,h)
             return np.full((h,w,3), 0, dtype=np.uint8)
 
     def assemble(self, ref=None):
@@ -187,4 +191,11 @@ def stitch(images, process=lambda x:x):
 
 def stitch_hsv(images, component=1):
     return stitch(images, lambda im:cv2.cvtColor(im, cv2.COLOR_BGR2HSV)[:,:,component])
+
+def stitch_grey(images):
+    return stitch(images, lambda im:cv2.cvtColor(im, cv2.COLOR_BGR2GRAY))
+
+def stitch_clahe(images):
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+    return stitch(images, lambda im:clahe.apply(cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)))
 
