@@ -206,6 +206,7 @@ class ReferenceStitcher:
             return H if HomographyTest.test(H, im['bounds']) else None
         for im in self.ims:
             im['h'] = hom(im)
+            print(im['h'])
         self.ims = [im for im in self.ims if im['h'] is not None]
 
     def inboundss(self):
@@ -222,6 +223,7 @@ class ReferenceStitcher:
             if not all(poly.contains(inb) for inb in inbs):
                 inbs = None
             print([(int(x),int(y)) for x,y in bounds])
+            print([(int(x),int(y)) for x,y in inbs])
             return inbs, (int(xmax-xmin), int(ymax-ymin))
         for im in self.ims:
             im['inbounds'], im['inshape'] = inbounds(im)
@@ -233,7 +235,22 @@ class ReferenceStitcher:
         self.boundss()
         self.homs()
         self.inboundss()
-        print(len(self.ims))
+        im0 = np.full((1300,2500,3),0,dtype=np.uint8)
+        im = np.full((1300,1100,3),0,dtype=np.uint8)
+        im2 = np.full((2000,2000,3),0,dtype=np.uint8)
+        for i in self.ims:
+            i['im'] = self.context.post(i['im'])
+            x, y = i['inbounds'][0]
+            h = np.array([[1,0,-x],[0,1,-y],[0,0,1]]).dot(i['h'])
+            im__ = cv2.warpPerspective(i['im'], h, i['inshape'])
+            w,h=i['inshape']
+            #im2[y+200:y+h+200,x+200:x+w+200]=im__
+            im2[y+200:y+h+200,x+200:x+w+200]=np.maximum.reduce([im2[y+200:y+h+200,x+200:x+w+200],im__])
+            im_ = cv2.warpPerspective(i['im'], i['h'], (1100,1300))
+            im = np.maximum.reduce([im,im_])
+        im0[:,:1100,:] = im
+        im0[:,1100:,:] = im2[:1300,:1400,:]
+        return im0
 
 class StitchContext:
     class Processor:
