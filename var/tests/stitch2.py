@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from lib.stitch import stitch
+from lib.stitch import stitch, stitch_hsv, stitch_grey, stitch_clahe
 from lib.canvas import Image, Rectangle, Vector
 import numpy as np
 import cv2
@@ -9,7 +9,10 @@ imshow = lambda im: Image(None, im).show()
 
 dir = "./var/stitch/tile%s/" % input("Which? ")
 files = os.listdir(dir)
-ims = np.empty((2,2), object)
+w = max(int(file[0]) for file in files) + 1
+h = max(int(file[1]) for file in files) + 1
+print(h,w)
+ims = np.empty((w,h), object)
 for file in files:
     x = int(file[0])
     y = int(file[1])
@@ -19,10 +22,10 @@ for file in files:
     ims[x, y] = Image(rect, im)
 
 print(ims)
-im = stitch(ims)
+im = stitch_clahe(ims)
 h, w = im.shape[:2]
-im = cv2.resize(im, (1200, int(1200*h/w)))
-imshow(im)
+im2 = cv2.resize(im, (800, int(800*h/w)))
+imshow(im2)
 save = lambda fn: cv2.imwrite(fn, im)
-os._exit(0)
+#os._exit(0)
 
