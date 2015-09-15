@@ -8,7 +8,7 @@ from gui.webshell.mjpgstreamer import MjpgStreamer
 
 class Timelapser(threading.Thread):
     def __init__(self, tl):
-        super(StoppableThread, self).__init__()
+        super(Timelapser, self).__init__()
         self._stop = threading.Event()
         self._times = tl[2]+1
         self._delay = tl[1]
@@ -26,7 +26,11 @@ class Timelapser(threading.Thread):
             if self._garçon == 0:
                 self._times -= 1
                 self._garçon = self._delay
-                MjpgStreamer.captureImg(self._user)
+                try:
+                    MjpgStreamer.captureImg(self._user)
+                except:
+                    print("Exception taking picture...")
             self._garçon -= 1
-            time.delay(1)
+            #print("delay=%d, waiter=%d" % (self._delay, self._garçon))
+            time.sleep(1)
         self.stop()

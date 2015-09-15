@@ -1,6 +1,7 @@
 from werkzeug.contrib.fixers import ProxyFix
 from flask import Flask
 from flask import request
+import json
 
 import sys
 sys.path.append("/home/pi/igem15-sw/")
@@ -32,7 +33,7 @@ def timelapse(delay, times):
 @app.route("/timelapse/get/")
 def get_if_timelapse():
     global tlThread, tl
-    if tlThread.stopped():
+    if tlThread is not None and tlThread.stopped():
          del tlThread
          tlThread = None
          tl = ['', 0, 0]

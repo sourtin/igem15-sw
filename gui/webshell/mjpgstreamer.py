@@ -69,7 +69,7 @@ class MjpgStreamer:
         fname = str(datetime.datetime.now())
         uid = str(uuid.uuid4())
         with picamera.PiCamera() as camera:
-            camera.resolution = (1024, 768)
+            camera.resolution = (2048, 1536)
             camera.exposure_mode = 'night'
             camera.start_preview()
             time.sleep(0.1)
