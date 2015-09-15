@@ -21,9 +21,53 @@
     <style>
         html, body {height: 100%;}
         .container {height: 100%;}
+#scalebar {
+z-index: 10;
+}
+.ruler, .ruler li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: inline-block;
+}
+/* IE6-7 Fix */
+.ruler, .ruler li {
+    *display: inline;
+}
+.ruler {
+    background: lightYellow;
+    box-shadow: 0 -1px 1em hsl(60, 60%, 84%) inset;
+    border-radius: 2px;
+    border: 1px solid #222;
+    color: #222;
+    margin: 0;
+    height: 3em;
+    padding-right: 1cm;
+    white-space: nowrap;
+}
+.ruler li {
+    padding-left: 1cm;
+    width: 2em;
+    margin: .64em -1em -.64em;
+    text-align: center;
+    position: relative;
+    text-shadow: 1px 1px hsl(60, 60%, 84%);
+}
+.ruler li span {
+font-size: 80%;
+}
+.ruler li:before {
+    content: '';
+    position: absolute;
+    border-left: 1px solid #222;
+    height: .64em;
+    top: -.64em;
+    right: 1em;
+}
     </style>
 <script src="/assets/jquery-1.11.3.min.js"></script>
 <script src="/assets/jquery-migrate-1.2.1.min.js"></script>
+<script src="/assets/jquery-ui.js"></script>
   
 <script>
 function restartCam() {
@@ -225,6 +269,21 @@ setTimeout(ensureTl, 1000 * delay * times + 1000);
 ensureTl()
 setInterval(ensureTl, 10000)
 
+$("#scalebar").draggable();
+//$("#scalebar").html("");
+$(".ruler[data-items]").each(function() {
+        var ruler = $(this).empty(),
+            len = Number(ruler.attr("data-items")) || 0,
+            item = $(document.createElement("li")),
+            i;
+        for (i = 0; i < len; i++) {
+            ruler.append(item.clone().html("<span>"+((i + 1)*20)+(i == (len-1) ? "&nbsp;&nbsp;&nbsp;microns": "")+"</span>"));
+        }
+    });
+$(".ruler").css("padding-right", "172px").find("li").
+            css("padding-left", "57.63px").
+            find("span").css("margin-left", "-25px")
+
 });
 
 function ensureTl(){
@@ -233,7 +292,6 @@ $.ajax({
   context: document.body,
   dataType: "json",
   success: function(json){
-     console.log(json)
      if(json[0] != '') {
          $("#currtl").html("Timelapse in progress...")
      } else $("#currtl").html("")
@@ -249,12 +307,6 @@ $.ajax({
     <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="container">
         <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
           <a class="navbar-brand" href="#">WebShell.</a>
         </div>
       </div>
@@ -265,14 +317,16 @@ $.ajax({
         <div class="col-md-4" style="width: 70%">
           <h2>Live view</h2>
           <p><div id="cam"></div></p>
-
+<p><div id="scalebar"><ul class="ruler" data-items="25"></ul>
+</div></p>
+<p>
 Last captured image:
 <div id="capt"></div>
 <br />
 <a href="/captured/">More captured images...</a>
 <a style="float:right" href="/_webshell/prune/">Prune your old files to under 50M</a> <br />
 <a style="float:right" href="/_webshell/pruneall/">Prune everyone's old files to under 500M</a>
-
+</p>
         </div>
         <div class="col-md-4" style="width: 30%;">
           <h2>Camera Control</h2>
@@ -311,7 +365,7 @@ Number of images to take: <input type="text" id="times" value="2" /></p><p>
       <hr>
 
       <footer>
-        <p>Made with &lt;3 from Cambridge-JIC iGEM 2015</p>
+        <p>Made with &hearts; from Cambridge-JIC iGEM 2015</p>
       </footer>
     </div> <!-- /container -->
 
