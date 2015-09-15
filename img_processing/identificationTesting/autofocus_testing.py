@@ -3,7 +3,7 @@
 
 import numpy as np
 import dwt
-import urllib
+import urllib.request
 import ssl
 import cv2
 import time
@@ -301,7 +301,7 @@ if __name__ == '__main__':
     #x = golden_section_interval_reduction((a, b , d), test_function, (test_function(a), test_function(b), test_function(d)), min_tolerance = 0.5)
     
     #x = gradient_descent (5, test_function, tolerance = 0.001, alpha = 0.1)
-    m = microscope_control()  
+    m = microscope_control()
     gradient_descent(0,m)
     
     # uro = m.get_image(0)
