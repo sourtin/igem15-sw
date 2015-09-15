@@ -14,19 +14,14 @@ class HomographyTest:
         return l[n:] + l[:n]
 
     def angle(a, b):
-        ax, ay = a
-        bx, by = b
-        wedge = ax*by - ay*bx
-        dot = ax*bx + ay*by
-        return math.atan2(wedge, dot)
+        return math.atan2(a.wedge(b), a.dot(b))
 
     def cv2vec(cv):
         return [Vector(*b[0]) for b in cv]
 
     def coords_dirn(coords):
         centroid = Polygon(*coords).centroid()
-        vecs1 = [vec-centroid for vec in coords]
-        vecss = zip(vecs1, HomographyTest.rotate(vecs1, 1))
+        vecss = Polygon(*[vec-centroid for vec in coords]).lines()
         sign = lambda x:math.copysign(1, x)
         signs = [sign(HomographyTest.angle(a,b)) for a,b in vecss]
         return int((max(signs) + min(signs)) / 2)
@@ -41,10 +36,10 @@ class HomographyTest:
         boundz = cv2.perspectiveTransform(bounds, hom)
         vecs1 = HomographyTest.cv2vec(boundz)
 
-        # signs
+        # are vecs0 and vecs1 both (counter)clockwise?
         sign0 = HomographyTest.coords_dirn(vecs0)
         sign1 = HomographyTest.coords_dirn(vecs1)
-        if sign0 != sign1:
+        if sign0 != sign1 or sign1 == 0:
             # not same points order/warped
             return False
 
@@ -121,8 +116,6 @@ class Stitch:
         if yt > yh: dirns.append('j')
         if yt < yh: dirns.append('k')
 
-        print(here, there, dirns)
-
         neighbours = self.tiles[here].neighbours
         homs = []
         for dirn in dirns:
@@ -163,10 +156,8 @@ class Stitch:
             im = self.tiles[there].image
             return cv2.warpPerspective(im, ht.dot(hom), size)
         except Exception as e:
-            print(e)
             print("Missing homography for image %r wrt %r!" % (there,ref))
             w, h = size
-            print("SIZE:",w,h)
             return np.full((h,w,3), 0, dtype=np.uint8)
 
     def assemble(self, ref=None):
@@ -185,6 +176,17 @@ class Stitch:
             im = warp(c) if im is None else np.maximum.reduce([im,warp(c)])
         return im
 
+def preprocess_clahe(images):
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+    def colourhe(im):
+        im2 = cv2.cvtColor(im, cv2.COLOR_BGR2YCrCb)
+        im2[:,:,0] = clahe.apply(im2[:,:,0])
+        return cv2.cvtColor(im2, cv2.COLOR_YCrCb2BGR)
+    from lib.canvas import Image
+    for c in np.ndindex(images.shape):
+        images[c] = Image(None,colourhe(images[c].cv()))
+    return images
+
 def stitch(images, process=lambda x:x):
     return Stitch(images, process).assemble()
     return Stitch(np.matrix(images)).assemble()
@@ -195,7 +197,29 @@ def stitch_hsv(images, component=1):
 def stitch_grey(images):
     return stitch(images, lambda im:cv2.cvtColor(im, cv2.COLOR_BGR2GRAY))
 
-def stitch_clahe(images):
+def stitch_clahe(images, he=1, colour=False):
+    # if colour, first optimise the Y component of YCrCb via histogram equalisation
+    # then, do one of three single component equalisers:
+    #  0) nothing
+    #  1) convert to greyscale
+    #  2) convert to hsv and select v
+
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-    return stitch(images, lambda im:clahe.apply(cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)))
+    def colourhe(im):
+        if colour:
+            im2 = cv2.cvtColor(im, cv2.COLOR_BGR2YCrCb)
+            im2[:,:,0] = clahe.apply(im2[:,:,0])
+            return cv2.cvtColor(im2, cv2.COLOR_YCrCb2BGR)
+        else:
+            return im
+
+    def greyhe(im):
+        return clahe.apply(cv2.cvtColor(im, cv2.COLOR_BGR2GRAY))
+    def valhe(im):
+        return clahe.apply(cv2.cvtColor(im, cv2.COLOR_BGR2HSV)[:,:,2])
+    def idhe(im):
+        return im
+    hes = [idhe, greyhe, valhe]
+
+    return stitch(images, lambda im:hes[he](colourhe(im)))
 
