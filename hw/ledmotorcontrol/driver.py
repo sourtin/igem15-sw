@@ -24,10 +24,13 @@ def reconnect():
         ser.setDTR(False)
         time.sleep(0.1)
         ser.setDTR(True)
-        if "connected" in ser.readline().decode("utf-8"):
-            print("Established")
-            _ser = ser
-            return
+        try:
+            if "connected" in ser.readline().decode("utf-8"):
+                print("Established")
+                _ser = ser
+                return
+        except:
+            pass
 
 def close():
     global _ser
