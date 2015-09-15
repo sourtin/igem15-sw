@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from lib.stitch import stitch_hsv
+from lib.stitch import TileStitcher, StitchContext
 from lib.canvas import Image, Rectangle, Vector
 import numpy as np
 import cv2
@@ -20,7 +20,12 @@ ims[0,0] = imread("10.jpg")
 ims[1,0] = imread("20.jpg")
 
 print(ims)
-im = stitch_hsv(ims, 1)
+ctx = StitchContext()
+ctx.features.hsv(1)
+stitcher = TileStitcher(ctx, ims)
+im = stitcher.assemble()
+#im = stitch_hsv(ims, 1)
+
 h, w = im.shape[:2]
 im = cv2.resize(im, (1200, int(1200*h/w)))
 imshow(im)
