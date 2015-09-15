@@ -26,7 +26,11 @@ var map = new ol.Map({
   ]),
   layers: [
     new ol.layer.Tile({
-      source: new ol.source.MapQuest({layer: 'sat'})
+      source: new ol.source.XYZ({
+        url: '/tile/{x}/{y}/{z}'
+      }),
+      wrapX: false,
+      wrapDateLine: false,
     })
   ],
   target: 'map',

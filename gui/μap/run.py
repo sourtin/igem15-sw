@@ -1,14 +1,42 @@
 #!/usr/bin/env python3
-from wsgiref.simple_server import make_server
-from pyramid.config import Configurator
-from pyramid.response import Response
+from werkzeug.contrib.fixers import ProxyFix
+from flask import Flask, request, send_from_directory, Response
 
 from PIL import Image
+import numpy as np
+import cv2
 from io import BytesIO
 import math
 
+app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app)
+
+@app.route("/")
 def redir(request):
     return Response('<meta http-equiv="refresh" content="0;URL=/ui/main.html">')
+
+@app.route('/ui/<path:path>')
+def send_js(path):
+    return send_from_directory('ui', path)
+
+native_z = 8
+@app.route('/tile/<x>/<y>/<z>')
+def tile(x, y, z):
+    global native_z
+    x, y, z = int(x), int(y), int(z)
+    factor = 1 << (native_z - z)
+    xs = (factor * x, factor * (x+1))
+    ys = (factor * y, factor * (y+1))
+
+    tile = np.full((256,256,3),255,np.uint8)
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    cv2.putText(tile,'xs:%d,%d'%xs,(50,80), font, 1,(255,127,127),2,cv2.LINE_AA)
+    cv2.putText(tile,'ys:%d,%d'%ys,(50,130), font, 1,(255,127,127),2,cv2.LINE_AA)
+    cv2.putText(tile,'z: %d'%z,(50,180), font, 1,(255,127,127),2,cv2.LINE_AA)
+    cv2.rectangle(tile,(1,1),(255,255),(0,255,0),3)
+    _, buf = cv2.imencode('.png', tile)
+    return Response(buf.tobytes(), mimetype='image/png')
+
 
 #class Andromeda(object):
 #    def __init__(self, path):
@@ -67,13 +95,6 @@ def redir(request):
 #             self.map(x, y, z_).save(out, format='png')
 #             return Response(out.getvalue(), content_type="image/png")
 
-if __name__ == '__main__':
-    config = Configurator()
-    config.add_static_view(name='ui', path='ui/')
-
-    config.add_route('root', '/')
-    config.add_view(redir, route_name='root')
-
 #    config.add_route('tile', '/tile/{x}/{y}/{z}')
 #    config.add_view(tile, route_name='tile')
 
@@ -81,7 +102,7 @@ if __name__ == '__main__':
 #    config.add_route('andromeda', '/andromeda/{x}/{y}/{z}')
 #    config.add_view(andromeda.get, route_name='andromeda')
 
-    app = config.make_wsgi_app()
-    server = make_server('0.0.0.0', 8080, app)
-    server.serve_forever()
 
+
+if __name__ == '__main__':
+    app.run('0.0.0.0', 8080, debug=True)

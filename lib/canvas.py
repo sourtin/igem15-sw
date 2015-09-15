@@ -3,7 +3,7 @@
 from lib import hw
 from lib.vector import Vector
 
-from math import ceil, pi
+from math import ceil, pi, copysign
 from time import time
 from threading import Thread, Event, Lock
 import subprocess
@@ -342,6 +342,21 @@ class Polygon(object):
         """return the centroid in polygon coordinates"""
         origin = Vector(0,0)
         return sum(self.points, origin) / len(self.points)
+
+    def _lines(vertices):
+        verticer = vertices[1:] + vertices[:1]
+        return zip(vertices, verticer)
+
+    def lines(self):
+        return Polygon._lines(self.points)
+
+    def contains(self, point, closed=True):
+        """do we contain point? if closed (in set-theoretic sense)
+           then we include points on our border, else False"""
+        contour = np.array([[x,y] for x,y in self.points], dtype=np.float32)
+        point = (np.float32(point.x()), np.float32(point.y()))
+        test = cv2.pointPolygonTest(contour, point, False)
+        return test > (-0.5 if closed else 0.5)
 
     def __repr__(self):
         return "Polygon(%r)" % self.points
