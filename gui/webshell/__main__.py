@@ -74,6 +74,10 @@ def control_power(onoff):
 def capture():
     return MjpgStreamer.captureImg(request.authorization.username)
 
+@app.route("/snap/")
+def snap():
+    return MjpgStreamer.captureSnap(request.authorization.username)
+
 @app.route("/prune/")
 def prune():
     return MjpgStreamer.prunedir("/home/pi/igem15-sw/captured/%s" % request.authorization.username)
