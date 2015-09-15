@@ -12,9 +12,9 @@ class Timelapser(threading.Thread):
         super(Timelapser, self).__init__()
         self.tl = tl
         self._stopper = threading.Event()
-        self._times = tl[2]+1
+        self._times = tl[2]
         self._delay = tl[1]
-        self._garçon = 0
+        self._garçon = tl[1]
         self._user = tl[0]
 
     def stop(self):
