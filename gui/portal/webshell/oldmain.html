@@ -1,30 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="">
+<!doctype html>
+<html>
+<head>
+<title>MicroMaps WebShell</title>
+<script src="../assets/jquery-1.11.3.min.js"></script>
+<script src="../assets/jquery-migrate-1.2.1.min.js"></script>
 
-    <title>WebShell</title>
-
-    <link href="/assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
-
-
-    <style>
-        html, body {height: 100%;}
-        .container {height: 100%;}
-    </style>
-<script src="/assets/jquery-1.11.3.min.js"></script>
-<script src="/assets/jquery-migrate-1.2.1.min.js"></script>
-  
 <script>
 function restartCam() {
 d=new Date();
@@ -165,28 +145,24 @@ $.ajax({
   url: "/_webshell/control/motor/1/"+((-1)*($("#motx_").attr("value"))),
   context: document.body
 }).done();
-e.preventDefault();
     }
     if(e.keyCode == 39){
 $.ajax({
   url: "/_webshell/control/motor/0/"+($("#moty_").attr("value")),
   context: document.body
 }).done();
-e.preventDefault();
     }
     if(e.keyCode == 37){
 $.ajax({
   url: "/_webshell/control/motor/0/"+((-1)*($("#moty_").attr("value"))),
   context: document.body
 }).done();
-e.preventDefault();
     }
     if(e.keyCode == 40){
 $.ajax({
   url: "/_webshell/control/motor/1/"+($("#motx_").attr("value")),
   context: document.body
 }).done();
-e.preventDefault();
     }
     if(e.keyCode == 65){
 $.ajax({
@@ -240,31 +216,40 @@ $.ajax({
   }
  })
 }
-
 </script>
+<style>
+#controlpanel {
+float: right;
+width: 400px;
+}
+#cam {
+width: 800px;
+height: 600px;
+}
+</style>
+</head>
+<body>
+<a href="/">Back</a><br />
 
-  </head>
+<div id="controlpanel">
+Camera:<br/><a href="#" id="camhold">Hold</a> <a href="#" id="camrel">Release</a> <br />
+<a href="#" id="camcap">Capture</a><br /><br />
+LED Mode (current: <span id="ledmode"></span>):<br /><a href="#" id="led0">Brightfield</a> <a href="#" id="led1">Fluorescence</a> <!--<a href="#" id="led2">Darkfield</a>--> <a href="#" id="led2">Off</a> .... <a href="#" id="ledtog">Toggle</a><br /><br />
+Move motors:<br />
+X: <input type="text" value="100" id="motx_" /> <button id="motx">Go!</button> <button id="motxb">Back!</button><br />
+Y: <input type="text" value="100" id="moty_" /> <button id="moty">Go!</a> <button id="motyb">Back!</button><br />
+Z: <input type="text" value="600" id="motz_" /> <button id="motz">Go!</a> <button id="motzb">Back!</button><br />
+<br />
+<h4>Timelapse:</h4>
+<div id="currtl"></div>
+Delay between images (seconds): <input type="text" id="delay" value="60" /><br />
+Number of images to take: <input type="text" id="times" value="2" /><br />
+<button id="tl">Set timelapse</button><br />
+</div>
 
-  <body>
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="#">WebShell.</a>
-        </div>
-      </div>
-    </nav>
+<div id="cam"></div>
 
-    <div class="container" style="margin-top: 50px">
-      <div class="row" style="height: 100%">
-        <div class="col-md-4" style="width: 70%">
-          <h2>Live view</h2>
-          <p><div id="cam"></div></p>
+<br />
 
 Last captured image:
 <div id="capt"></div>
@@ -272,51 +257,5 @@ Last captured image:
 <a href="/captured/">More captured images...</a>
 <a style="float:right" href="/_webshell/prune/">Prune your old files to under 50M</a> <br />
 <a style="float:right" href="/_webshell/pruneall/">Prune everyone's old files to under 500M</a>
-
-        </div>
-        <div class="col-md-4" style="width: 30%;">
-          <h2>Camera Control</h2>
-          <p><center>
-<a class="btn btn-default" href="#" role="button" id="camhold">Hold</a>
-<a class="btn btn-default" href="#" role="button" id="camrel">Release</a>
- <a class="btn btn-default btn-success" href="#" role="button" id="camcap">Capture</a>
-           </center></p>
-
-         <h2>LED Control</h2>
-          <p>Current LED: <span id="ledmode"></span> </p>
-          <p><center>
-<a class="btn btn-default" href="#" role="button" id="led0">Brightfield</a>
-<a class="btn btn-default" href="#" role="button" id="led1">Fluorescence</a>
-<a class="btn btn-default" href="#" role="button" id="led2">Off</a><br/>
-<a class="btn btn-default btn-warning" href="#" role="button" id="ledtog">Toggle</a>
-</center></p>
-          <h2>Motor Control</h2>
-          <p>
-        <form class="form-inline">
-X: <input type="text" class="input-large" value="100" id="motx_" /> <a class="btn btn-default" href="#" role="button" id="motx">Go!</a> <a class="btn btn-default" href="#" role="button" id="motxb">Back!</a><br />
-Y: <input type="text" class="input-large" value="100" id="moty_" /> <a class="btn btn-default" href="#" role="button" id="moty">Go!</a> <a class="btn btn-default" href="#" role="button" id="motyb">Back!</a><br />
-Z: <input type="text" class="input-large" value="600" id="motz_" /> <a class="btn btn-default" href="#" role="button" id="motz">Go!</a> <a class="btn btn-default" href="#" role="button" id="motzb">Back!</a><br />
-</form>
-</p>
-          <h2>Timelapse</h2>
-          <center><p>
-<div id="currtl"></div>
-Delay between images (seconds): <input type="text" id="delay" value="60" /><br />
-Number of images to take: <input type="text" id="times" value="2" /></p><p>
-<a href="#" role="button" class="btn btn-default btn-danger" id="tl">Set timelapse</a>
-</p></center>
-
-         </div>
-      <hr>
-
-      <footer style="position: absolute; bottom: 0">
-        <p>Made with &lt;3 from Cambridge-JIC iGEM 2015</p>
-      </footer>
-    </div> <!-- /container -->
-
-    <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
-    <script src="/assets/bootstrap/js/ie10-viewport-bug-workaround.js"></script>
-  </body>
+</body>
 </html>
-
-
