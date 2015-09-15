@@ -15,10 +15,10 @@ ctx = lib.stitch2.StitchContext()
 ctx.features.grey().histeq()
 stitcher = lib.stitch2.ReferenceStitcher(ctx, ims[2], ims[1:4])
 im = stitcher.assemble()
-os._exit(0)
+#os._exit(0)
 
 h, w = im.shape[:2]
-im2 = cv2.resize(im, (800, int(800*h/w)))
+im2 = cv2.resize(im, (int(400*w/h), 400))
 imshow(im2)
 save = lambda fn: cv2.imwrite(fn, im)
 os._exit(0)
