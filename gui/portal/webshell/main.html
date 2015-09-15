@@ -26,6 +26,7 @@ width: 800px;
 height: 600px;
 }
 #scalebar {
+margin-top: -80px;
 z-index: 10;
 }
 #sidescalebar {
@@ -43,6 +44,7 @@ z-index: 10;
     padding: 0;
     list-style: none;
     display: inline-block;
+    overflow: hidden;
 }
 /* IE6-7 Fix */
 .ruler, .ruler li {
@@ -325,7 +327,7 @@ ensureTl()
 setInterval(ensureTl, 10000)
 
 $("#scalebar").draggable();
-$("#sidescalebar").draggable();
+$("#sidebar").draggable();
 
 $(".ruler[data-items]").each(function() {
         var ruler = $(this).empty(),
@@ -353,7 +355,34 @@ $(".sideruler").css("padding-top", "3px").find("li").
             css("padding-bottom", "29.6px").
             find("span").css("margin-left", "45px")
 
+$("#dragbtn").mouseup(function(){
+$(".container").css("cursor", "crosshair");
+draggingDistance = true;
+return false;
+})
+
+$("body").mouseup(function(e){
+    if(draggingDistance) {
+        dragEndX = e.pageX;
+        dragEndY = e.pageY;
+        draggingDistance = false;
+        $(".container").css("cursor", "default")
+
+        // update distances
+    }
+})
+
+$("#cam").mousedown(function(e){
+if(draggingDistance == true) {
+dragStartX = e.pageX;
+dragStartY = e.pageY;
+return false;
+}
+})
+
 });
+
+var draggingDistance = false, dragStartX = 0, dragStartY=0, dragEndX = 0, dragEndY = 0;
 
 function ensureTl(){
 $.ajax({
@@ -403,8 +432,14 @@ Last captured image:
           <h2>Camera Control</h2>
           <p><center>
 <a class="btn btn-default" href="#" role="button" id="camhold">Hold</a>
-<a class="btn btn-default" href="#" role="button" id="camrel">Release</a>
- <a class="btn btn-default btn-success" href="#" role="button" id="camcap">Capture</a>
+<a class="btn btn-default" href="#" role="button" id="camrel">Release</a><br />
+<a class="btn btn-default btn-success" href="#" role="button" id="camcap">Capture</a><br />
+</center></p>
+          <h2>Measurement</h2>
+          <p>
+<center>
+<a class="btn btn-default" href="#" role="button" id="dragbtn">Drag to measure</a><br />
+
            </center></p>
 
          <h2>LED Control</h2>
