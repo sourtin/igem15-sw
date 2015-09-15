@@ -68,10 +68,6 @@ def golden_section_interval_reduction(interval, f, min_tolerance = 5, max_iter =
         
     return b    
             
-        
-        
-    
-
 def old_golden_section_interval_reduction(interval, f, finterval,  tolerance = 50, iterations = 0, iter_max = 1000, min_tolerance = 5):
     """ Carry out optimization to find position of minimum value for 'f'
         interval = (a, b, d) is the interval to search within
@@ -240,9 +236,7 @@ def gradient_descent(z_initial, f, tolerance = 50, max_iter = 100000, alpha = 5)
     # Return results
     print('Minimum at z = %f' % z)
     return z
-    
         
-    
 class microscope_control:
     """ Microscope class to control motors and read images """
 
@@ -303,12 +297,4 @@ if __name__ == '__main__':
     #x = gradient_descent (5, test_function, tolerance = 0.001, alpha = 0.1)
     m = microscope_control()
     gradient_descent(0,m)
-    
-    # uro = m.get_image(0)
-    # raw = uro.read()
-    # nparr = np.fromstring(raw, np.uint8)
-    # img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-    # cv2.imshow('im',img_np);cv2.waitKey(0);
-    # cv2.imwrite('testing_remote_motor_control.png',img_np)
-# htttps://172.29.9.20:9000/_webshell/control/motor/2/50
      
