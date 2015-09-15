@@ -185,9 +185,37 @@ $.ajax({
 
 });
 
+$("#tl").click(function(){
+// send tl
+var times = parseInt($("#delay").attr("value")), delay = parseInt($("#times").attr("value"))
 
+$.ajax({
+  url: "/_webshell/timelapse/set/"+delay+"/"+times,
+  context: document.body
+})
+$("#currtl").html("Timelapse in progress...")
+ensureTl()
+setTimeout(ensureTl, 1000 * delay * times + 1000);
+})
+
+ensureTl()
+setInterval(ensureTl, 10000)
 
 });
+
+function ensureTl(){
+$.ajax({
+  url: "/_webshell/timelapse/get/",
+  context: document.body,
+  dataType: "json",
+  success: function(json){
+     console.log(json)
+     if(json[0] != '') {
+         $("#currtl").html("Timelapse in progress...")
+     } else $("#currtl").html("")
+  }
+ })
+}
 </script>
 <style>
 #controlpanel {
@@ -212,9 +240,10 @@ X: <input type="text" value="100" id="motx_" /> <button id="motx">Go!</button> <
 Y: <input type="text" value="100" id="moty_" /> <button id="moty">Go!</a> <button id="motyb">Back!</button><br />
 Z: <input type="text" value="600" id="motz_" /> <button id="motz">Go!</a> <button id="motzb">Back!</button><br />
 <br />
-Timelapse:
-Delay between images (seconds): <input type="text" id="delay" /><br />
-Number of images to take: <input type="text" id="times" /><br />
+<h4>Timelapse:</h4>
+<div id="currtl"></div>
+Delay between images (seconds): <input type="text" id="delay" value="60" /><br />
+Number of images to take: <input type="text" id="times" value="2" /><br />
 <button id="tl">Set timelapse</button><br />
 </div>
 
