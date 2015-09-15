@@ -1,5 +1,5 @@
 # autofocus
-# Rememer that the microscope classes does -1*focus score 
+# Rememer that the microscope class does -1*focus_score 
 
 import numpy as np
 import dwt
@@ -7,111 +7,145 @@ import urllib.request
 import ssl
 import cv2
 import time
-
-def golden_section(a,d):
-    """Given an interval, returns the next two intervals using the golden ratio
-    The interval is arranged as [a, b, c, d]
-    """
+    
+def new_golden_section(A,D):
+    """ Return delta_x which is in golden ration with the interval input """
     golden = (1 + 5 ** 0.5) / 2     # Golden ratio
-
-    # New interval point to test
+    d = abs(D-A)
     delta_x = d * (1 - 1/golden)
-    b = a + delta_x
-    #c = d - delta_x
     
-    return b
+    return delta_x 
     
-def golden_section_interval_reduction(interval, f, min_tolerance = 5, max_iter = 10000):
+def old_golden_section_interval_reduction(interval, f, min_tolerance = 5, max_iter = 10000):
     """ Carry out golden section interval reduction 
-        interval is a tuple (a, d) 
+        interval is (a, d) 
         f is the function 
     """
     a = interval[0]
     d = interval[1]
-    b = golden_section(a,d)
+    b = a + new_golden_section(a,d)
+    c = d - new_golden_section(a,d)
     
     f1 = f(a)
     f2 = f(b)
     f3 = f(c)
-    
-    tolerance = f3-f1
-    iterations = 1
-    
-    while(min_tolerance < tolerance or max_iter > iterations):
-        c = golden_section(b,d)
-        f2 = f(c)
-
-        print('iter: %d' % iterations, 'b: %f' % b)
+    f4 = f(d)
         
-        if f2 < f3:
+    tolerance = f4-f1
+    iterations = 1
+
+    while(min_tolerance < tolerance and max_iter > iterations):
+
+        #print('iter: %d' % iterations, '(%f,%f,%f,%f)' % (a,b,c,d))
+        
+        if f2 <= f3:
             d = c
+            c = b
+            b = a + new_golden_section(a,d)
             f4 = f3
-            tolerance = abs(f3 - f1)
+            f3 = f2
+            f2 = f(b)
             
         elif f2 > f3 :
             a = b
             b = c
+            c = d - new_golden_section(a,d)
             f1 = f2
             f2 = f3
-            tolerance = abs(f2 - f4)
-            
-        elif f2 == f3:
-            d = c
-            f4 = f3
-            tolerance = abs(f3 - f1)
+            f3 = f(c)
        
         iterations += 1
-        if max_iter < iterations :
+        tolerance = abs(f4 - f1)
+        #time.sleep(1)
+        
+        if max_iter <= iterations :
             print ("Max iterations reached \n Minimum at %f" % b)
-        if tolerance < min_tolerance:
+        if tolerance <= min_tolerance:
             print ("Min tolerance reached \n Minimum at %f" % b)
         
-    return b    
-            
-def old_golden_section_interval_reduction(interval, f, finterval,  tolerance = 50, iterations = 0, iter_max = 1000, min_tolerance = 5):
-    """ Carry out optimization to find position of minimum value for 'f'
-        interval = (a, b, d) is the interval to search within
-        finterval = (f(a), f(b), f(d)) is the function value for each interval
-        f(x) is the function to be minimized
+    return (a, b, c, d)
+
+def golden_section_interval_reduction(interval, f, min_tolerance = 5, max_iter = 10000):
+    """ Carry out golden section interval reduction 
+        interval is (a, d) 
+        f is the microscope class focus function 
+        Assumes that the microscope is in position (a) at the start 
     """
     a = interval[0]
-    b = interval[1]
-    d = interval[2]
+    d = interval[1]
+    delta_x = new_golden_section(a,d)
+    b = a + delta_x
+    c = d - delta_x
     
-    f1 = finterval[0]
-    f2 = finterval[1]
-    f4 = finterval[2]
-    
-    if (tolerance > min_tolerance or iter_max < iterations):
+    f1 = f.move_motor(a).focus()
+    f2 = f.move_motor(delta_x).focus()
+    f3 = f.move_motor(b-c).focus()
+    f4 = f.move_motor(delta_x).focus()
+    # motor_positions : a  b  c  d 
+    #                   0  1  2  3
+    motor_position = 3
         
-        # Evaluate values
-        c = golden_section(b, d)
-        f3 = f(c)
+    tolerance = f4-f1
+    iterations = 1
 
-        print('iter: %d' % iterations, 'b: %f' % b)
+    while(min_tolerance < tolerance and max_iter > iterations):
+
+        #print('iter: %d' % iterations, '(%f,%f,%f,%f)' % (a,b,c,d))
         
-        if f2 < f3:
+        curr_range = (a,b,c,d)
+        
+        
+        if f2 <= f3:
+            # Update interval 
             d = c
+            c = b
+            delta_x = new_golden_section(a,d)
+            b = a + delta_x
             f4 = f3
-            tolerance = abs(f3 - f1)
-            golden_section_interval_reduction((a, b, d), f, (f1, f2, f4), tolerance, iterations+1, iter_max, min_tolerance)
-        
+            f3 = f2
+            
+            # Move motor to position 'b' depending on current position
+            if motor_position != 0 :
+                f2 = f.move_motor(b - curr_range[motor_position]).focus()
+            elif motor_position == 0:
+                f2 = f.move_motor(delta_x).focus()
+            else:
+                raise Exception('Motor position lost. Current position is:' , motor_position)
+            
+            motor_position = 1    # update motor position to 'b'
+            
         elif f2 > f3 :
+            # Update interval
             a = b
             b = c
+            delta_x = new_golden_section(a,d)
+            c = d - delta_x
             f1 = f2
             f2 = f3
-            tolerance = abs(f2 - f4)
-            golden_section_interval_reduction((a, b, d), f, (f1, f2, f4), tolerance, iterations+1, iter_max, min_tolerance)
             
-        elif f2 == f3:
-            d = c
-            f4 = f3
-            tolerance = abs(f3 - f1)
-            golden_section_interval_reduction((a, b, d), f, (f1, f2, f4), tolerance, iterations+1, iter_max, min_tolerance)
-
-    return b
-    
+            # Move motor to position 'b' depending on current position
+            if motor_position != 3:
+                f3 = f.move_motor(curr_range[3] - curr_range[motor_position]- delta_x).focus()
+            elif motor_position == 1:
+                f3 = f.move_motor(-1*delta_x).focus()
+            else:
+                raise Exception('Motor position lost. Current position is:', motor_position)
+            
+            motor_position = 2    # update motor position 
+            
+            #f3 = f(c) # need to think about how to move motors
+       
+        iterations += 1
+        tolerance = abs(f4 - f1)
+        #time.sleep(1)
+        
+        if max_iter <= iterations :
+            print ("Max iterations reached \n Minimum at %f" % b)
+        if tolerance <= min_tolerance:
+            print ("Min tolerance reached \n Minimum at %f" % b)
+        
+    return (a, b, c, d)    
+   
 def test_function(x):
     return (x-10)**2
 
@@ -227,10 +261,10 @@ def gradient_descent(z_initial, f, tolerance = 50, max_iter = 100000, alpha = 5)
         gradient = (f_nearby - f_current)/alpha     # calculate approx. gradient 
         iterations += 1             # update no of iterations
         
-        if abs(f_current-f_previous)<tolerance:
+        if abs(f_current-f_previous)<=tolerance:
             print ('Reached minimum tolerance')
             converged = True
-        elif iterations>max_iter:
+        elif iterations>=max_iter:
             print('Reached max no: of iterations')
      
     # Return results
@@ -289,12 +323,12 @@ class microscope_control:
 
     
 if __name__ == '__main__':
-    # a = -5
-    # d = 10
-    #b = golden_section(a,d)
-    #x = golden_section_interval_reduction((a, b , d), test_function, (test_function(a), test_function(b), test_function(d)), min_tolerance = 0.5)
     
-    #x = gradient_descent (5, test_function, tolerance = 0.001, alpha = 0.1)
+    # a = -6; b = 40; 
+    # x = golden_section_interval_reduction((a,b), test_function, min_tolerance = 0.01)
+    # print(x)
+    
+    # ################# Testing the autofocus ##################3
     m = microscope_control()
-    gradient_descent(0,m)
-     
+    # gradient_descent(0,m)
+    golden_section_interval_reduction(interval, m, min_tolerance = 100, max_iter = 1000): 

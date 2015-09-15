@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from lib.stitch import stitch, stitch_hsv, stitch_grey, stitch_clahe
+import lib.stitch2
 from lib.canvas import Image, Rectangle, Vector
 import numpy as np
 import cv2
@@ -21,11 +21,15 @@ for file in files:
     rect = Rectangle(Vector(0,0), 0, 1., h/w)
     ims[x, y] = Image(rect, im)
 
-print(ims)
-im = stitch_clahe(ims)
+ctx = lib.stitch2.StitchContext()
+ctx.features.grey().histeq()
+#ctx.post.histeq_clr()
+stitcher = lib.stitch2.TileStitcher(ctx, ims)
+im = stitcher.assemble()
+
 h, w = im.shape[:2]
 im2 = cv2.resize(im, (800, int(800*h/w)))
 imshow(im2)
 save = lambda fn: cv2.imwrite(fn, im)
-#os._exit(0)
+os._exit(0)
 
