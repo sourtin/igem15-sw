@@ -21,9 +21,121 @@
     <style>
         html, body {height: 100%;}
         .container {height: 100%;}
+#cam {
+width: 800px;
+height: 600px;
+}
+#capt img {
+width: 800px;
+height: 600px;
+}
+#scalebar {
+margin-top: -80px;
+z-index: 10;
+}
+#sidescalebar {
+z-index: 10;
+}
+
+#line {
+border-top: 1px solid #f00;
+position: absolute;
+z-index: 2;
+transform-origin: 0 0;
+}
+
+.ruler, .ruler li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: inline-block;
+}
+.sideruler, .sideruler li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: inline-block;
+}
+/* IE6-7 Fix */
+.ruler, .ruler li {
+    *display: inline;
+}
+.sideruler, .sideruler li {
+    *display: inline;
+}
+.ruler {
+    background: lightYellow;
+    box-shadow: 0 -1px 1em hsl(60, 60%, 84%) inset;
+    border-radius: 2px;
+    border: 1px solid #222;
+    color: #222;
+    margin: 0;
+    height: 3em;
+    padding-right: 1cm;
+    white-space: nowrap;
+}
+.ruler li {
+    padding-left: 1cm;
+    width: 2em;
+    margin: .64em -1em -.64em;
+    text-align: center;
+    position: relative;
+    text-shadow: 1px 1px hsl(60, 60%, 84%);
+}
+.ruler li span {
+font-size: 80%;
+}
+.ruler li:before {
+    content: '';
+    position: absolute;
+    border-left: 1px solid #222;
+    height: .64em;
+    top: -.64em;
+    right: 1em;
+}
+.sideruler {
+    background: lightYellow;
+    box-shadow: -1px 0 1em hsl(60, 60%, 84%) inset;
+    border-radius: 2px;
+    border: 1px solid #222;
+    color: #222;
+    margin: 0;
+    width: 3em;
+    margin-left: -4em;
+    margin-top: -600px;
+    padding-bottom: 1cm;
+    white-space: nowrap;
+    height: 680px;
+    overflow: hidden;
+}
+.sideruler li {
+    width: 3em;
+    float: left;
+    padding-top: 1cm;
+    height: 2em;
+    text-align: center;
+    position: relative;
+    text-shadow: 1px 1px hsl(60, 60%, 84%);
+transform: rotate(90deg);
+    margin-left: 20px;
+    margin-top: -37.5px;
+}
+.sideruler li span {
+font-size: 80%;
+}
+.sideruler li:before {
+    content: '';
+    position: absolute;
+    border-left: 1px solid #222;
+    height: .64em;
+    right: -.64em;
+    top: 1em;
+    margin-top: 20px;
+}
     </style>
 <script src="/assets/jquery-1.11.3.min.js"></script>
 <script src="/assets/jquery-migrate-1.2.1.min.js"></script>
+<script src="/assets/jquery-ui.js"></script>
   
 <script>
 function restartCam() {
@@ -225,7 +337,87 @@ setTimeout(ensureTl, 1000 * delay * times + 1000);
 ensureTl()
 setInterval(ensureTl, 10000)
 
+$("#scalebar").draggable();
+$("#sidescalebar").draggable();
+
+$(".ruler[data-items]").each(function() {
+        var ruler = $(this).empty(),
+            len = Number(ruler.attr("data-items")) || 0,
+            item = $(document.createElement("li")),
+            i;
+        for (i = 0; i < len; i++) {
+            ruler.append(item.clone().html("<span>"+((i + 1)*20)+(i == (len-1) ? "&nbsp;&nbsp;&nbsp;microns": "")+"</span>"));
+        }
+    });
+
+// wanna know i came up with these numbers? it was a very late night. i gave up.
+$(".ruler").css("padding-right", "72px").find("li").
+            css("padding-left", "57.63px").
+            find("span").css("margin-left", "-25px")
+
+$(".sideruler[data-items]").each(function() {
+        var ruler = $(this).empty(),
+            len = Number(ruler.attr("data-items")) || 0,
+            item = $(document.createElement("li")),
+            i;
+        for (i = 0; i < len; i++) {
+            ruler.append(item.clone().html("<span>"+((i + 1)*20)+(i == (len-1) ? "&nbsp;&nbsp;&nbsp;microns": "")+"</span>"));
+        }
+    });
+$(".sideruler").css("padding-top", "3px").find("li").
+            css("padding-bottom", "29.6px").
+            find("span").css("margin-left", "45px")
+
+$("#dragbtn").mouseup(function(){
+$(".container").css("cursor", "crosshair");
+draggingDistance = true;
+return false;
+})
+
+$("body").mouseup(function(e){
+    if(draggingDistance) {
+        dragEndX = e.pageX;
+        dragEndY = e.pageY;
+        draggingDistance = false;
+        $(".container").css("cursor", "default")
+
+        dragStartX = 0;
+        dragStartY = 0;
+        return false;
+    }
+})
+
+$("body").mousemove(function(e){
+    if(draggingDistance && dragStartX != 0 && dragStartY != 0) {
+        dragEndX = e.pageX;
+        dragEndY = e.pageY;
+        var width = dragEndX - dragStartX, height = dragEndY - dragStartY;
+        var width2 = (width/800) * 540;
+        var height2 = (height/600) * 405;
+
+        var len = Math.sqrt(Math.pow(width2, 2) + Math.pow(height2, 2))
+        $("#measureinfo").text("Measured: "+len.toFixed(2)+" microns")
+
+        var len2 = Math.sqrt(Math.pow(width, 2) + Math.pow(height, 2))
+        $("#line").css("top", dragStartY + "px")
+        $("#line").css("left", dragStartX + "px")
+
+        $("#line").css("width", len2 + "px")
+        $("#line").css("transform", "rotate("+Math.atan2((dragEndY-dragStartY), (dragEndX - dragStartX))+"rad)");
+    }
+})
+
+$("#cam, #capt").mousedown(function(e){
+if(draggingDistance == true) {
+dragStartX = e.pageX;
+dragStartY = e.pageY;
+return false;
+}
+})
+
 });
+
+var draggingDistance = false, dragStartX = 0, dragStartY=0, dragEndX = 0, dragEndY = 0;
 
 function ensureTl(){
 $.ajax({
@@ -233,7 +425,6 @@ $.ajax({
   context: document.body,
   dataType: "json",
   success: function(json){
-     console.log(json)
      if(json[0] != '') {
          $("#currtl").html("Timelapse in progress...")
      } else $("#currtl").html("")
@@ -246,15 +437,12 @@ $.ajax({
   </head>
 
   <body>
+
+<div id="line"></div>
+
     <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="container">
         <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
           <a class="navbar-brand" href="#">WebShell.</a>
         </div>
       </div>
@@ -265,21 +453,31 @@ $.ajax({
         <div class="col-md-4" style="width: 70%">
           <h2>Live view</h2>
           <p><div id="cam"></div></p>
-
+<p><div id="sidescalebar"><ul class="sideruler" data-items="20"></ul>
+</div></p>
+<p><div id="scalebar"><ul class="ruler" data-items="25"></ul>
+</div></p>
+<p>
 Last captured image:
 <div id="capt"></div>
 <br />
 <a href="/captured/">More captured images...</a>
 <a style="float:right" href="/_webshell/prune/">Prune your old files to under 50M</a> <br />
 <a style="float:right" href="/_webshell/pruneall/">Prune everyone's old files to under 500M</a>
-
+</p>
         </div>
         <div class="col-md-4" style="width: 30%;">
           <h2>Camera Control</h2>
           <p><center>
 <a class="btn btn-default" href="#" role="button" id="camhold">Hold</a>
-<a class="btn btn-default" href="#" role="button" id="camrel">Release</a>
- <a class="btn btn-default btn-success" href="#" role="button" id="camcap">Capture</a>
+<a class="btn btn-default" href="#" role="button" id="camrel">Release</a><br />
+<a class="btn btn-default btn-success" href="#" role="button" id="camcap">Capture</a><br />
+</center></p>
+          <h2>Measurement</h2>
+          <p>
+<center><span id="measureinfo"></span><br />
+<a class="btn btn-default" href="#" role="button" id="dragbtn">Drag to measure</a><br />
+
            </center></p>
 
          <h2>LED Control</h2>
@@ -311,7 +509,7 @@ Number of images to take: <input type="text" id="times" value="2" /></p><p>
       <hr>
 
       <footer>
-        <p>Made with &lt;3 from Cambridge-JIC iGEM 2015</p>
+        <p>Made with &hearts; from Cambridge-JIC iGEM 2015</p>
       </footer>
     </div> <!-- /container -->
 
