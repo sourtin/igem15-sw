@@ -20,8 +20,59 @@ def golden_section(a,d):
     #c = d - delta_x
     
     return b
+    
+def golden_section_interval_reduction(interval, f, min_tolerance = 5, max_iter = 10000):
+    """ Carry out golden section interval reduction 
+        interval is a tuple (a, d) 
+        f is the function 
+    """
+    a = interval[0]
+    d = interval[1]
+    b = golden_section(a,d)
+    
+    f1 = f(a)
+    f2 = f(b)
+    f3 = f(c)
+    
+    tolerance = f3-f1
+    iterations = 1
+    
+    while(min_tolerance < tolerance or max_iter > iterations):
+        c = golden_section(b,d)
+        f2 = f(c)
 
-def golden_section_interval_reduction(interval, f, finterval,  tolerance = 50, iterations = 0, iter_max = 1000, min_tolerance = 5):
+        print('iter: %d' % iterations, 'b: %f' % b)
+        
+        if f2 < f3:
+            d = c
+            f4 = f3
+            tolerance = abs(f3 - f1)
+            
+        elif f2 > f3 :
+            a = b
+            b = c
+            f1 = f2
+            f2 = f3
+            tolerance = abs(f2 - f4)
+            
+        elif f2 == f3:
+            d = c
+            f4 = f3
+            tolerance = abs(f3 - f1)
+       
+        iterations += 1
+        if max_iter < iterations :
+            print ("Max iterations reached \n Minimum at %f" % b)
+        if tolerance < min_tolerance:
+            print ("Min tolerance reached \n Minimum at %f" % b)
+        
+    return b    
+            
+        
+        
+    
+
+def old_golden_section_interval_reduction(interval, f, finterval,  tolerance = 50, iterations = 0, iter_max = 1000, min_tolerance = 5):
     """ Carry out optimization to find position of minimum value for 'f'
         interval = (a, b, d) is the interval to search within
         finterval = (f(a), f(b), f(d)) is the function value for each interval
@@ -109,7 +160,6 @@ def older_gradient_descent(z_initial, f, tolerance = 50, max_iter = 100000, alph
     print('Minimum at z = %f' % z)
     return z
 
-def old_gradient_descent(z_initial, f, tolerance = 50, max_iter = 100000, alpha = 0.1):
     """ Carry out steepest descent to find minimum of a unimodal R^1 function 
     gradient_descent(z_initial, f , tolerance = 50, max_iter = 100000, alpha = 0.1)
     z_initial    : inital search postion
