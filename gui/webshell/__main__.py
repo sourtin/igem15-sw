@@ -74,6 +74,10 @@ def control_power(onoff):
 def capture():
     return MjpgStreamer.captureImg(request.authorization.username)
 
+@app.route("/capture_stream/")
+def capture_stream():
+    return Response(MjpgStreamer.captureImgStream(), mimetype='image/png')
+
 @app.route("/capture_scale/")
 def capture_scale():
     return MjpgStreamer.scaleCaptureImg(MjpgStreamer.captureImg(request.authorization.username))

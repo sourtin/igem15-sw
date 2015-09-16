@@ -54,6 +54,7 @@ class HomographyTest:
 
 class TileStitcher:
     """Stitch a matrix of Image objects"""
+    ###TODO: watch context.mem limit!
 
     class Tile:
         def __init__(self, image):
@@ -215,6 +216,9 @@ class ReferenceStitcher:
 
     def rect(self, im):
         x, y = im['inbounds'][0]
+        if self.context.mem is not None and x * y * 3 > self.context.mem:
+            return None
+
         h = np.array([[1,0,-x],[0,1,-y],[0,0,1]]).dot(im['h'])
         return cv2.warpPerspective(self.context.post(im['im']), h, im['inshape'])
 
@@ -232,6 +236,8 @@ class ReferenceStitcher:
             return None
 
         im['rect'] = self.rect(im)
+        if im['rect'] is None:
+            return None
 
         x0, y0 = self.rpos
         x, y = im['inbounds'][0]
@@ -273,8 +279,9 @@ class StitchContext:
             self.f = lambda im: self.clahe.apply(f(im))
             return self
 
-    def __init__(self):
+    def __init__(self, mem_limit=None):
         clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+        self.mem = mem_limit
         self.pre = StitchContext.Processor(clahe)
         self.features = StitchContext.Processor(clahe)
         self.post = StitchContext.Processor(clahe)
