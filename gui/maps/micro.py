@@ -113,16 +113,13 @@ class MicroMaps:
                     auth=requests.auth.HTTPBasicAuth('admin', 'test')).content
 
         def _raw():
-            #return cv2.imread("/home/vil/net/capture_stream.png", cv2.IMREAD_COLOR)
-            png = _request("/_webshell/capture_stream/")
+            png = requests.get("http://127.0.0.1:9001/capture_stream").content
             data = np.fromstring(png, dtype=np.uint8)
             return cv2.imdecode(data, cv2.IMREAD_COLOR)
 
         def _motor(axis, amount):
             amount = int(amount)
-            print(axis, amount)
-            #return
-            _request("/_webshell/control/motor/%d/%d" % (axis, amount))
+            requests.get("http://127.0.0.1:9001/control/motor/%d/%d" % (axis, amount))
 
         if self.pos is None:
             im = _raw()
@@ -134,6 +131,7 @@ class MicroMaps:
             return cap
 
         else:
+            # !!! alpha handicap !!! #
             # early alpha; image stitching is not very reliable
             # so we will avoid adding other images
             # perhaps improve upon cv2.bfmatcher? (see lib.stitch)
@@ -145,7 +143,6 @@ class MicroMaps:
             _motor(0, δx)
             _motor(1, δy)
 
-            import time
             time.sleep(2)
             print('waited!!')
 
@@ -190,6 +187,10 @@ class MicroMaps:
         if self.pos is None:
             self.capture(x, y)
         matches = [cap for cap in self.caps if rect_in_rect(cap)]
+           
+        # !!! alpha handicap !!! #
+        return matches
+
         start = time.time()
         while not len(matches) and (time.time() - start) < timeout:
             # calculate suitable trajectory to target
