@@ -82,6 +82,15 @@ def capture_stream():
 def capture_scale():
     return MjpgStreamer.scaleCaptureImg(MjpgStreamer.captureImg(request.authorization.username))
 
+@app.route("/calibrate/<len>/<rad>/<actual>")
+def calibrate(len, rad, actual):
+    const = float(actual)/float(len)
+    jsn = [const * 800, const * 600]
+
+    with open('/home/pi/igem15-sw/gui/portal/webshell/fov.json', 'w') as outfile:
+        json.dump(jsn, outfile)
+    return 'done'
+
 @app.route("/snap/")
 def snap():
     return MjpgStreamer.captureSnap(request.authorization.username)

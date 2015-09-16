@@ -144,6 +144,8 @@ font-size: 80%;
 <script src="/assets/jquery-ui.js"></script>
   
 <script>
+var fov_w = 540, fov_h = 405;
+
 function restartCam() {
 d=new Date();
 $("#cam").html("<img src='/_stream/?action=stream&date="+d.getTime()+"' />");
@@ -151,6 +153,17 @@ $("#cam").html("<img src='/_stream/?action=stream&date="+d.getTime()+"' />");
 
 
 $(document).ready(function(){
+$.ajax({
+  url: "/webshell/fov.json",
+  context: document.body,
+  dataType: "json",
+  success: function(json){
+     fov_w = json[0]
+     fov_h = json[1]
+  }
+ })
+
+
 $("a").click(function(e) {
 if($(this).attr("href") == "#")
     e.preventDefault();
@@ -366,6 +379,9 @@ setInterval(ensureTl, 10000)
 
 $("#scalebar").draggable();
 $("#sidescalebar").draggable();
+// todo: make autogeneratable for arbitrary fov_w and fov_h
+$("#scalebar").hide();
+$("#sidescalebar").hide();
 
 $(".ruler[data-items]").each(function() {
         var ruler = $(this).empty(),
@@ -396,8 +412,13 @@ $(".sideruler").css("padding-top", "3px").find("li").
             find("span").css("margin-left", "45px")
 
 $("#dragbtn").mouseup(function(){
+$("#dragbtnspan").text("Click and drag to measure")
 $(".container").css("cursor", "crosshair");
 draggingDistance = true;
+
+$("#incal").hide()
+$("#calb").text("Calibrate")
+calibration = 0
 return false;
 })
 
@@ -406,10 +427,23 @@ $("body").mouseup(function(e){
         dragEndX = e.pageX;
         dragEndY = e.pageY;
         draggingDistance = false;
+        $("#dragbtnspan").text("Measure")
         $(".container").css("cursor", "default")
+
+        if(calibration == 1 && dragStartX != 0) {
+            $("#incal").show()
+            $("#calb").text("Set")
+            calibration = 2
+        } else if(calibration == 1) {
+            $("#incal").hide()
+            $("#line").css("width", "0")
+            $("#calb").text("Calibrate")
+            calibration = 0
+        }
 
         dragStartX = 0;
         dragStartY = 0;
+
         return false;
     }
 })
@@ -419,18 +453,20 @@ $("body").mousemove(function(e){
         dragEndX = e.pageX;
         dragEndY = e.pageY;
         var width = dragEndX - dragStartX, height = dragEndY - dragStartY;
-        var width2 = (width/800) * 540;
-        var height2 = (height/600) * 405;
+        var width2 = (width/800) * fov_w;
+        var height2 = (height/600) * fov_h;
 
         var len = Math.sqrt(Math.pow(width2, 2) + Math.pow(height2, 2))
-        $("#measureinfo").html("Measured: "+len.toFixed(2)+"&plusmn;1% &#956;m")
+        if(calibration == 0) $("#measureinfo").html("Measured: "+len.toFixed(2)+"&plusmn;1% &#956;m")
 
         var len2 = Math.sqrt(Math.pow(width, 2) + Math.pow(height, 2))
         $("#line").css("top", dragStartY + "px")
         $("#line").css("left", dragStartX + "px")
 
         $("#line").css("width", len2 + "px")
-        $("#line").css("transform", "rotate("+Math.atan2((dragEndY-dragStartY), (dragEndX - dragStartX))+"rad)");
+        var deg = Math.atan2((dragEndY-dragStartY), (dragEndX - dragStartX))
+        if(calibration == 1) {callen = len2; caldeg = deg}
+        $("#line").css("transform", "rotate("+deg+"rad)");
     }
 })
 
@@ -469,9 +505,33 @@ $(".col-md-4 h2").click(function(){
 $(this).next("div").slideToggle("fast")
 })
 
+$("#incal").hide()
+$("#calb").click(function(){
+  if(calibration == 0) {
+    calibration = 1;
+    draggingDistance = true;
+    $(this).text("Drag to select a region of known size")
+  } else if(calibration == 2) {
+//    alert(callen + " = " + $("#setmicron").attr("value"))
+    $.ajax({
+      url: "/_webshell/calibrate/"+callen+"/"+caldeg+"/"+$("#setmicron").attr("value"),
+      context: document.body,
+    })
+    var con = parseInt($("#setmicron").attr("value"))/callen
+
+    fov_w = con * 800
+    fov_h = con * 600
+
+    $("#line").css("width", "0")
+    $("#calb").text("Calibrate")
+    $("#incal").hide()
+    calibration = 0
+  }
+})
+
 });
 
-var draggingDistance = false, dragStartX = 0, dragStartY=0, dragEndX = 0, dragEndY = 0;
+var draggingDistance = false, dragStartX = 0, dragStartY=0, dragEndX = 0, dragEndY = 0, calibration = 0, callen = 0, caldeg = 0;
 
 function ensureTl(){
 $.ajax({
@@ -536,8 +596,9 @@ $.ajax({
           <h2>Measurement</h2>
 <div id="measurement">          <p>
 <center><span id="measureinfo"></span><br />
-<a class="btn btn-default" href="#" role="button" id="dragbtn"><span class="glyphicon glyphicon-pushpin"></span><br />Drag to measure</a> <a class="btn btn-default" href="#" role="button" id="clearline"><span class="glyphicon glyphicon-erase"></span><br />Clear</a><br />
+<a class="btn btn-default" href="#" role="button" id="dragbtn"><span class="glyphicon glyphicon-pushpin"></span><br /><span id="dragbtnspan">Measure</span></a> <a class="btn btn-default" href="#" role="button" id="clearline"><span class="glyphicon glyphicon-erase"></span><br />Clear</a><br />
 
+<span id="incal">Enter selected line (in microns): <input type="number" id="setmicron" /></span><a class="btn btn-default" href="#" role="button" id="calb">Calibrate</a> 
            </center></p></div>
 
          <h2>LED Control</h2>
