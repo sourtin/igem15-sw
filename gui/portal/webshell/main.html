@@ -457,7 +457,7 @@ $("body").mousemove(function(e){
         var height2 = (height/600) * fov_h;
 
         var len = Math.sqrt(Math.pow(width2, 2) + Math.pow(height2, 2))
-        if(calibration == 0) $("#measureinfo").html("Measured: "+len.toFixed(2)+"&plusmn;1% &#956;m")
+        if(calibration == 0) $("#measureinfo").html("Measured: "+len.toFixed(2)+"&#956;m")
 
         var len2 = Math.sqrt(Math.pow(width, 2) + Math.pow(height, 2))
         $("#line").css("top", dragStartY + "px")
