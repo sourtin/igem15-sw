@@ -76,7 +76,7 @@ x-wrap,
 }
 
 #fancybox-loading, .fancybox-close, .fancybox-prev span, .fancybox-next span {
-    background-image: url(http://2015.igem.org/wiki/images/d/d8/CamJIC-Fancybox_sprite.png);
+    background-image: url(CamJIC-Fancybox_sprite.png);
 }
 
 #fancybox-loading {
@@ -94,7 +94,7 @@ x-wrap,
 #fancybox-loading div {
     width: 44px;
     height: 44px;
-    background: url(http://2015.igem.org/wiki/images/d/d7/CamJIC-Fancybox_loading.gif) center center no-repeat;
+    background: url(CamJIC-Fancybox_loading.gif) center center no-repeat;
 }
 
 .fancybox-close {
@@ -114,7 +114,7 @@ x-wrap,
     height: 100%;
     cursor: pointer;
     text-decoration: none;
-    background: transparent url(http://2015.igem.org/wiki/images/a/a8/CamJIC-Blank.gif); /* helps IE */
+    background: transparent url(CamJIC-Blank.gif); /* helps IE */
     -webkit-tap-highlight-color: rgba(0,0,0,0);
     z-index: 8040;
 }
@@ -183,7 +183,7 @@ x-wrap,
     overflow: hidden;
     display: none;
     z-index: 8010;
-    background: url(http://2015.igem.org/wiki/images/c/cd/CamJIC-Fancybox_overlay.png);
+    background: url(CamJIC-Fancybox_overlay.png);
 }
 
 .fancybox-overlay-fixed {
@@ -262,12 +262,12 @@ x-wrap,
        only screen and (min-device-pixel-ratio: 1.5){
 
     #fancybox-loading, .fancybox-close, .fancybox-prev span, .fancybox-next span {
-        background-image: url(http://2015.igem.org/wiki/images/8/80/CamJIC-Fancybox_sprite%402x.png);
+        background-image: url(CamJIC-Fancybox_sprite%402x.png);
         background-size: 44px 152px; /*The size of the normal image, half the size of the hi-res image*/
     }
 
     #fancybox-loading div {
-        background-image: url(http://2015.igem.org/wiki/images/7/73/CamJIC-Fancybox_loading%402x.gif);
+        background-image: url(CamJIC-Fancybox_loading%402x.gif);
         background-size: 24px 24px; /*The size of the normal image, half the size of the hi-res image*/
     }
 }

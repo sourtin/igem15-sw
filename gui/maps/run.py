@@ -6,18 +6,14 @@ import cv2
 
 # werkzeug hack
 import sys
-sys.path.append('/home/vil/igem/srv/sw')
+sys.path.append('/home/pi/igem15-sw')
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app)
 
 @app.route("/")
 def redir():
-    return Response('<meta http-equiv="refresh" content="0;URL=/ui/main.html">')
-
-@app.route('/ui/<path:path>')
-def send_js(path):
-    return send_from_directory('/home/vil/igem/srv/sw/gui/μap/ui', path)
+    return Response('<meta http-equiv="refresh" content="0;URL=/maps/main.html">')
 
 native_z = 8
 w, h = 256, 256
