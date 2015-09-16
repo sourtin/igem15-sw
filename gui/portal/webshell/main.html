@@ -38,9 +38,11 @@ height: 600px;
 #scalebar {
 margin-top: -80px;
 z-index: 10;
+display:none
 }
 #sidescalebar {
 z-index: 10;
+display: none
 }
 
 #line {
@@ -380,10 +382,8 @@ setInterval(ensureTl, 10000)
 
 $("#scalebar").draggable();
 $("#sidescalebar").draggable();
-// todo: make autogeneratable for arbitrary fov_w and fov_h
-$("#scalebar").hide();
-$("#sidescalebar").hide();
 
+// todo: make autogeneratable for arbitrary fov_w and fov_h
 $(".ruler[data-items]").each(function() {
         var ruler = $(this).empty(),
             len = Number(ruler.attr("data-items")) || 0,
