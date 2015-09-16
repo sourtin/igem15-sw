@@ -33,6 +33,14 @@ After downloading the latest version from the raspberry pi foundation and imagin
 ### Packages
 Edit `/etc/apt/sources.list` with your favourite text editor, e.g. `nano`, or `vi` (`sudo nano /etc/apt/sources.list`) and change `wheezy` to `jessie` (or later) to get the appropriate packages. Now update the cache using `sudo apt-get update` and the distribution with `sudo apt-get dist-upgrade`. *This may take a while*. Finally let's recover some space with `sudo apt-get clean`. Finally, update your firmware to the latest version by running `sudo rpi-update`.
 
+    sudo nano /etc/apt/sources.list
+    sudo apt-get update
+    sudo apt-get dist-upgrade
+    sudo apt-get clean
+    sudo rpi-update
+
+Select 'yes' when prompted!
+
 Now obtain our software, entering your password as needed:
 
     cd ~
