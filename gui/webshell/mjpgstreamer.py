@@ -126,14 +126,14 @@ class MjpgStreamer:
 
         print(fov_w)
 
-        startline = (int(width*5/100.0), int(height * 90/100.0))
-        endline = (int(width*5/100.0 + width*100.0/fov_w), int(height * 90/100.0))
+        startline = (int(width*8/100.0), int(height * 90/100.0))
+        endline = (int(width*8/100.0 + width*100.0/fov_w), int(height * 90/100.0))
 
         draw = ImageDraw.Draw(im)
         draw.line([startline, endline], width=int(height*9/1000.0))
 
         font = ImageFont.truetype("/home/pi/igem15-sw/var/OpenSans.ttf", int(width/45.5))
-        draw.text([int(startline[0] + ((endline[0] - startline[0])*1.0/5)), int(height * 90/100.0 + height*2/1000.0)], "100 microns", font=font)
+        draw.text([int(startline[0]), int(height * 90/100.0 + height*2/1000.0)], "100 microns", font=font)
         del draw
         im.save('/home/pi/igem15-sw%s' % fname)
         return fname
