@@ -615,24 +615,24 @@ $.ajax({
           <h2>Motor Control</h2>
 <div id="motors"><p>(Pressing WASD for x and y movement and Q and E for z movement works too)</p>
           <p>
-X: <input type="text" class="input-large" value="100" id="motx_" /> <a class="btn btn-default" href="#" role="button" id="motx">Go!</a> <a class="btn btn-default" href="#" role="button" id="motxb">Back!</a><br />
-Y: <input type="text" class="input-large" value="100" id="moty_" /> <a class="btn btn-default" href="#" role="button" id="moty">Go!</a> <a class="btn btn-default" href="#" role="button" id="motyb">Back!</a><br />
-Z: <input type="text" class="input-large" value="600" id="motz_" /> <a class="btn btn-default" href="#" role="button" id="motz">Go!</a> <a class="btn btn-default" href="#" role="button" id="motzb">Back!</a><br />
+X: <input type="number" class="input-large" value="100" id="motx_" /> <a class="btn btn-default" href="#" role="button" id="motx">Go!</a> <a class="btn btn-default" href="#" role="button" id="motxb">Back!</a><br />
+Y: <input type="number" class="input-large" value="100" id="moty_" /> <a class="btn btn-default" href="#" role="button" id="moty">Go!</a> <a class="btn btn-default" href="#" role="button" id="motyb">Back!</a><br />
+Z: <input type="number" class="input-large" value="600" id="motz_" /> <a class="btn btn-default" href="#" role="button" id="motz">Go!</a> <a class="btn btn-default" href="#" role="button" id="motzb">Back!</a><br />
 </p></div>
 
           <h2>Timelapse</h2>
 <div id="timelapse">
           <center><p>
 <div id="currtl"></div>
-Delay between images (seconds): <input type="text" id="delay" value="60" /><br />
-Number of images to take: <input type="text" id="times" value="2" /></p><p>
+Delay between images (seconds): <input type="number" id="delay" value="60" /><br />
+Number of images to take: <input type="number" id="times" value="2" /></p><p>
 <a href="#" role="button" class="btn btn-default btn-danger" id="tl"><span class="glyphicon glyphicon-time"></span><br />Set</a>
 </p></center>
 </div>
 
           <h2>Exposure</h2>
 <div id="exposure">          <p>
-<center>ISO: <input type="text" id="enterexp" value="400" />
+<center>ISO: <input type="number" id="enterexp" value="400" />
 <a class="btn btn-default" href="#" role="button" id="setexp">Set</a><br />
 
            </center></p>
