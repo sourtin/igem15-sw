@@ -212,7 +212,7 @@ $("#ledmode").html(data)
 $("#camcap").on("click", function(){
 //$("#cam").html("Say cheese, little cells!")
 $.ajax({
-  url: "/_webshell/capture/",
+  url: "/_webshell/capture"+($("#scalecap").is(":checked") ? "_scale" : "")+"/",
   context: document.body
 }).done(function(data){
 $("#capt").html("<img src=\""+data+"\"/>")
@@ -222,7 +222,7 @@ setTimeout(restartCam, 1000)
 
 $("#camsnap").on("click", function(){
 $.ajax({
-  url: "/_webshell/snap/",
+  url: "/_webshell/snap"+($("#scalecap").is(":checked") ? "_scale" : "")+"/",
   context: document.body
 }).done(function(data){
 $("#capt").html("<img src=\""+data+"\"/>")
@@ -517,6 +517,9 @@ $.ajax({
           <p><center>
 <a class="btn btn-default" href="#" role="button" id="camhold">Hold</a>
 <a class="btn btn-default" href="#" role="button" id="camrel">Release</a><br />
+<label class="checkbox">
+    <input type="checkbox" id="scalecap"> Add scale bar to captured images
+</label>
 <a class="btn btn-default btn-success" href="#" role="button" id="camcap">Capture high-res</a> <a class="btn btn-default" href="#" role="button" id="camsnap">Save jpg snap from stream</a><br />
 </center></p>
 
