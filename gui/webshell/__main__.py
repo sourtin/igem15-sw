@@ -74,9 +74,17 @@ def control_power(onoff):
 def capture():
     return MjpgStreamer.captureImg(request.authorization.username)
 
+@app.route("/capture_scale/")
+def capture_scale():
+    return MjpgStreamer.scaleCaptureImg(MjpgStreamer.captureImg(request.authorization.username))
+
 @app.route("/snap/")
 def snap():
     return MjpgStreamer.captureSnap(request.authorization.username)
+
+@app.route("/snap_scale/")
+def snap_scale():
+    return MjpgStreamer.scaleCaptureImg(MjpgStreamer.captureSnap(request.authorization.username))
 
 @app.route("/prune/")
 def prune():
@@ -88,6 +96,15 @@ def pruneall():
         return MjpgStreamer.prunedir("/home/pi/igem15-sw/captured/", 524288000)
     else:
         return "Error - cannot delete other user's data unless you are admin"
+
+@app.route("/iso/set/<set>")
+def iso_set(set):
+    MjpgStreamer.iso = str(int(set))
+    return 'set iso, restart stream to see'
+
+@app.route("/iso/get/")
+def iso_get():
+    return MjpgStreamer.iso
 
 @app.route("/control/led/<mode>/<setting>")
 def control_led(mode, setting):

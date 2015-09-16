@@ -8,8 +8,11 @@ import re
 import uuid
 import fnmatch
 import urllib
+from PIL import Image, ImageDraw, ImageFont
 
 class MjpgStreamer:
+    iso = "400"
+
     @staticmethod
     def touch(fname, times=None):
         with open(fname, 'a'):
@@ -47,7 +50,7 @@ class MjpgStreamer:
     @staticmethod
     def _start():
         os.chdir("/home/pi/igem15-sw/contrib/mjpg-streamer/mjpg-streamer-experimental/")
-        subprocess.call('/home/pi/igem15-sw/contrib/mjpg-streamer/mjpg-streamer-experimental/run.sh', shell=True)
+        subprocess.call(['/bin/bash', '/home/pi/igem15-sw/contrib/mjpg-streamer/mjpg-streamer-experimental/run.sh', MjpgStreamer.iso])
 
     @staticmethod
     def start():
@@ -72,6 +75,7 @@ class MjpgStreamer:
         with picamera.PiCamera() as camera:
             camera.resolution = (2048, 1536)
             camera.exposure_mode = 'night'
+            camera.iso = int(MjpgStreamer.iso)
             camera.start_preview()
             time.sleep(0.1)
             camera.capture('%s/%s.%s.jpg' % (user.replace('/', ''), fname, uid))
@@ -91,3 +95,19 @@ class MjpgStreamer:
         urllib.request.urlretrieve(url, '%s/%s.%s.jpg' % (user.replace('/', ''), fname, uid))
         return '/captured/%s/%s.%s.jpg' % (user.replace('/', ''), fname, uid)
 
+    @staticmethod
+    def scaleCaptureImg(fname):
+        im = Image.open("/home/pi/igem15-sw%s" % fname)
+        width, height = im.size
+
+        startline = (int(width/100.0), int(height * 90/100.0))
+        endline = (int(width/100.0 + width*100/540.0), int(height * 90/100.0))
+
+        draw = ImageDraw.Draw(im)
+        draw.line([startline, endline], width=int(height*9/1000.0))
+
+        font = ImageFont.truetype("/home/pi/igem15-sw/var/OpenSans.ttf", int(width/45.5))
+        draw.text([int(startline[0] + ((endline[0] - startline[0])*1.0/5)), int(height * 90/100.0 + height*2/1000.0)], "100 microns", font=font)
+        del draw
+        im.save('/home/pi/igem15-sw%s' % fname)
+        return fname
