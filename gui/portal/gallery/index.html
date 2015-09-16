@@ -37,7 +37,7 @@ display: none;
   <body>
 
 <script type="text/javascript">
-var username = "", galdat = "", currstart = 0, currend = 19;
+var username = "", galdat = "", currstart = 0, currend = 20;
 
 $(document).ready(function(){
 
@@ -54,7 +54,7 @@ $.ajax({
     }).done(function(data){
         //console.log(data)
         galdat = data
-        generateGal(currstart, currend)
+        generateGal()
     })
 })
 
@@ -62,17 +62,35 @@ $.ajax({
 })
 
 
-function generateGal(start, end) {
+function generateGal() {
 $("#gall").html("")
 arr = galdat.split("href=\"").splice(2)
+
 if(arr.length == 0) {
 $("#nopics").show()
 $("#mypics").hide()
 return;
 }
-        for(var i=start; i < Math.min(arr.length, end); i++){
+
+arr.reverse()
+
+$("#pname").text("Page "+((currstart/20)+1)+" out of "+(Math.floor(arr.length/20)+1))
+
+if( ((currstart/20)+1) == 1) {
+$("#ppage").css("color", "black")
+} else {
+$("#ppage").css("color", "#337AB7")
+}
+
+if(currend >= arr.length) {
+$("#npage").css("color", "black")
+} else {
+$("#npage").css("color", "#337AB7")
+}
+
+        for(var i=currstart; i < Math.min(arr.length, currend); i++){
             var url = arr[i].split("\"")[0]
-            addGal("/captured"+username+"/"+url, "")
+            addGal("/captured"+username+"/"+url, unescape(url))
         }
         readyGallery()
 }
@@ -95,6 +113,24 @@ $(".fancybox").fancybox({
 			}
 		}
 	});
+}
+
+function nextPage() {
+if(currend < arr.length) {
+currstart += 20
+currend += 20
+generateGal()
+}
+
+}
+
+function prevPage() {
+if(currstart > 0) {
+currstart -= 20
+currend -= 20
+generateGal()
+}
+
 }
 </script>
 
@@ -119,9 +155,9 @@ $(".fancybox").fancybox({
         <p id="nopics" class="lead">Boo! You haven't taken any yet. Why not take some using <a href="/webshell/main.html">webshell</a>?</p>
 <div id="mypics">
 <p class="lead">Your images</p>
+<p><center><a href="javascript:prevPage()" id="ppage">&lt;</a> <span id="pname"></span> <a href="javascript:nextPage()" id="npage">&gt;</a></center></p>
 <p><div id="gall"></div></p>
 
-<p><a href="">Next</a></p>
 </div>
 
 <div id="theirpics">
