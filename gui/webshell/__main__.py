@@ -74,6 +74,10 @@ def control_power(onoff):
 def capture():
     return MjpgStreamer.captureImg(request.authorization.username)
 
+@app.route("/capture_scale/")
+def capture_scale():
+    return MjpgStreamer.scaleCaptureImg(request.authorization.username)
+
 @app.route("/snap/")
 def snap():
     return MjpgStreamer.captureSnap(request.authorization.username)

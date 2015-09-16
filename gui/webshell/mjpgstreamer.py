@@ -8,6 +8,7 @@ import re
 import uuid
 import fnmatch
 import urllib
+from PIL import Image, ImageDraw, ImageFont
 
 class MjpgStreamer:
     iso = "400"
@@ -93,3 +94,21 @@ class MjpgStreamer:
         url = 'http://localhost:9002/?action=snapshot'
         urllib.request.urlretrieve(url, '%s/%s.%s.jpg' % (user.replace('/', ''), fname, uid))
         return '/captured/%s/%s.%s.jpg' % (user.replace('/', ''), fname, uid)
+
+    @staticmethod
+    def scaleCaptureImg(user):
+        fname = MjpgStreamer.captureImg(user)
+        im = Image.open("/home/pi/igem15-sw%s" % fname)
+        width, height = im.size
+
+        startline = (int(width/100.0), int(height * 90/100.0))
+        endline = (int(width/100.0 + width*100/540.0), int(height * 90/100.0))
+
+        draw = ImageDraw.Draw(im)
+        draw.line([startline, endline], width=int(height*9/1000.0))
+
+        font = ImageFont.truetype("/home/pi/igem15-sw/var/OpenSans.ttf", 45)
+        draw.text([int(startline[0] + ((endline[0] - startline[0])/2)), int(height * 90/100.0 + height*2/1000.0)], "100 microns", font=font)
+        del draw
+        im.save('/home/pi/igem15-sw%s' % fname, "PNG")
+        return fname
