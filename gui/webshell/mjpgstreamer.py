@@ -108,7 +108,7 @@ class MjpgStreamer:
         draw.line([startline, endline], width=int(height*9/1000.0))
 
         font = ImageFont.truetype("/home/pi/igem15-sw/var/OpenSans.ttf", 45)
-        draw.text([int(startline[0] + ((endline[0] - startline[0])/2)), int(height * 90/100.0 + height*2/1000.0)], "100 microns", font=font)
+        draw.text([int(startline[0] + ((endline[0] - startline[0])*1.0/5)), int(height * 90/100.0 + height*2/1000.0)], "100 microns", font=font)
         del draw
-        im.save('/home/pi/igem15-sw%s' % fname, "PNG")
+        im.save('/home/pi/igem15-sw%s' % fname)
         return fname
