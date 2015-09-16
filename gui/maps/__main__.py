@@ -13,17 +13,13 @@ app.wsgi_app = ProxyFix(app.wsgi_app)
 
 @app.route("/")
 def redir():
-    return Response('<meta http-equiv="refresh" content="0;URL=/maps/main.html">')
+    return Response('<meta http-equiv="refresh" content="0;URL=/maps/">')
 
 native_z = 8
 w, h = 256, 256
-@app.route('/tile/<x>/<y>/<z>')
-def tile(x, y, z):
-    import time
-    start = time.time()
-    global native_z, w, h, maps
+def tile(maps, x, y, z):
+    global native_z, w, h
     x, y, z = int(x), int(y), int(z)
-    #y = (1 << z) - y
     factor = 1 << (native_z - z)
     xs = (factor * x, factor * (x+1))
     ys = (factor * y, factor * (y+1))
@@ -41,11 +37,29 @@ def tile(x, y, z):
             im[yy*hh:(yy+1)*hh,xx*ww:(xx+1)*ww] = thumb
 
     _, buf = cv2.imencode('.png', im)
-    print(time.time() - start)
     return Response(buf.tostring(), mimetype='image/png')
+
+@app.route('/tile/<x>/<y>/<z>')
+def live(x, y, z):
+    return tile(maps_live, x, y, z)
+
+@app.route('/im/<user>/<im>/tile/<x>/<y>/<z>')
+def custom(user, im, x, y, z):
+    root = '/home/pi/igem15-sw/captured/%s'
+
+    user = user.replace('/', '')
+    im = im.replace('/', '')
+    if user.startswith('.') or im.startswith('.'):
+        return "go away 5<r1p7 k1dd13"
+
+    subpath = '%s/%s' % (user, im)
+    if subpath not in maps_im:
+        maps_im[subpath] = MicroMaps(root % subpath)
+    return tile(maps_im[subpath], x, y, z)
 
 if __name__ == '__main__':
     from gui.maps.micro import MicroMaps
-    maps = MicroMaps()
-    app.run('0.0.0.0', 9005, debug=True)
+    maps_live = MicroMaps()
+    maps_im = {}
+    app.run('0.0.0.0', 9004, debug=True)
 

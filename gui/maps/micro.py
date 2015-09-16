@@ -11,10 +11,6 @@ import json
 limits = {
     'caps': 200 * 1048576,
     'stitching': 32 * 1048576,
-    'xmin': float('-inf'),
-    'xmax': float('+inf'),
-    'ymin': float('-inf'),
-    'ymax': float('+inf')
 }
 
 factors = {
@@ -30,11 +26,14 @@ context.features.hsv(1).histeq()
 requests.packages.urllib3.disable_warnings()
 
 class MicroMaps:
-    def __init__(self):
+    def __init__(self, im=None):
+        self._im = im
         self.pos = None
         self.caps = []
         self.dims = None, None
         self._fov = None
+        self.xmin = self.ymin = float('-inf')
+        self.xmax = self.ymax = float('+inf')
 
     def prune(self):
         if self.pos is None:
@@ -71,20 +70,19 @@ class MicroMaps:
         # only need one condition as signs cancel
         if abs(dx - ox) > 0 and (nx - ox) / (dx - ox) < threshold:
             if dx > ox:
-                limits['xmax'] = nx + w
+                self.xmax = nx + w
             else:
-                limits['xmin'] = nx
+                self.xmin = nx
             print("rebounded x %r %r %r" % (ox,dx,nx))
         if False and abs(dy - oy) > 0 and (ny - oy) / (dy - oy) < threshold:
             if dy > oy:
-                limits['ymax'] = ny + h
+                self.ymax = ny + h
             else:
-                limits['ymin'] = ny
+                self.ymin = ny
             print("rebounded y %r %r %r" % (oy,dy,ny))
 
         print("bounds (%r < x < %r) (%r < y < %r)" %
-                (limits['xmin'], limits['xmax'],
-                    limits['ymin'], limits['ymax']))
+                (self.xmin, self.xmax, self.ymin, self.ymax))
 
     """ pixels, metres, rots """
     def px2m(self, pixels):
@@ -113,6 +111,8 @@ class MicroMaps:
                     auth=requests.auth.HTTPBasicAuth('admin', 'test')).content
 
         def _raw():
+            if self._im is not None:
+                return cv2.imread(self._im, cv2.IMREAD_COLOR)
             png = requests.get("http://127.0.0.1:9001/capture_stream").content
             data = np.fromstring(png, dtype=np.uint8)
             return cv2.imdecode(data, cv2.IMREAD_COLOR)
@@ -220,10 +220,13 @@ class MicroMaps:
 
     def get(self, x, y, w, h):
         canvas = np.full((h,w,3), 0, dtype=np.uint8)
-        if (limits['xmin'] <= x and x+w <= limits['xmax'] and
-                limits['ymin'] <= y and y+h <= limits['ymax']):
-            for (x0, y0), cap in self.match(x, y, w, h):
+        if (self.xmin <= x and x+w <= self.xmax and
+                self.ymin <= y and y+h <= self.ymax):
+            matches = self.match(x, y, w, h)
+            for (x0, y0), cap in matches:
                 region = cap[y-y0:y-y0+h,x-x0:x-x0+w,:]
+                if len(matches) == 1:
+                    return region
                 canvas = np.maximum.reduce([canvas, region])
         return canvas
 

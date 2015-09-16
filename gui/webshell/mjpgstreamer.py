@@ -80,10 +80,10 @@ class MjpgStreamer:
             camera.iso = int(MjpgStreamer.iso)
             camera.start_preview()
             time.sleep(0.1)
-            camera.capture('%s/%s.%s.jpg' % (user.replace('/', ''), fname, uid))
+            camera.capture('%s/%s.%s.jpg' % (user.replace('/', '').replace('..', ''), fname, uid))
         os.remove("/tmp/igemcam-lock")
         MjpgStreamer.start()
-        return '/captured/%s/%s.%s.jpg' % (user.replace('/', ''), fname, uid)
+        return '/captured/%s/%s.%s.jpg' % (user.replace('/', '').replace('..', ''), fname, uid)
 
     @staticmethod
     def captureImgStream():
@@ -110,8 +110,8 @@ class MjpgStreamer:
         uid = str(uuid.uuid4())
 
         url = 'http://localhost:9002/?action=snapshot'
-        urllib.request.urlretrieve(url, '%s/%s.%s.jpg' % (user.replace('/', ''), fname, uid))
-        return '/captured/%s/%s.%s.jpg' % (user.replace('/', ''), fname, uid)
+        urllib.request.urlretrieve(url, '%s/%s.%s.jpg' % (user.replace('/', '').replace('..', ''), fname, uid))
+        return '/captured/%s/%s.%s.jpg' % (user.replace('/', '').replace('..', ''), fname, uid)
 
     @staticmethod
     def scaleCaptureImg(fname):
