@@ -149,6 +149,7 @@ $("#cam").html("<img src='/_stream/?action=stream&date="+d.getTime()+"' />");
 
 $(document).ready(function(){
 $("a").click(function(e) {
+if($(this).attr("href") == "#")
     e.preventDefault();
 })
 
