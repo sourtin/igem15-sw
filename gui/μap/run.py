@@ -25,6 +25,7 @@ w, h = 256, 256
 def tile(x, y, z):
     global native_z, w, h, maps
     x, y, z = int(x), int(y), int(z)
+    #y = (1 << z) - y
     factor = 1 << (native_z - z)
     xs = (factor * x, factor * (x+1))
     ys = (factor * y, factor * (y+1))
