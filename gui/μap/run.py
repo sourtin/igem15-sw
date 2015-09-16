@@ -21,19 +21,22 @@ def send_js(path):
 
 native_z = 8
 w, h = 256, 256
-@app.route('/tile/<x>/<y>/<z>')
-def tile(x, y, z):
+@app.route('/tile/<ratio>/<x>/<y>/<z>')
+def tile(ratio, x, y, z):
     global native_z, w, h, maps
+    ratio = float(ratio)
     x, y, z = int(x), int(y), int(z)
     factor = 1 << (native_z - z)
     xs = (factor * x, factor * (x+1))
     ys = (factor * y, factor * (y+1))
+    wr = int(w * ratio)
+    hr = int(h * ratio)
 
-    im = np.full((h,w,3), 0, dtype=np.uint8)
+    im = np.full((hr,wr,3), 0, dtype=np.uint8)
     for x in range(*xs):
-        ww = w // factor
+        ww = wr // factor
         for y in range(*ys):
-            hh = h // factor
+            hh = hr // factor
             raw = maps.get(x*w, y*h, w, h)
             thumb = cv2.resize(raw, (ww, hh))
 
