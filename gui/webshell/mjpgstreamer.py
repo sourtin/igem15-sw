@@ -10,6 +10,8 @@ import fnmatch
 import urllib
 
 class MjpgStreamer:
+    iso = "400"
+
     @staticmethod
     def touch(fname, times=None):
         with open(fname, 'a'):
@@ -47,7 +49,7 @@ class MjpgStreamer:
     @staticmethod
     def _start():
         os.chdir("/home/pi/igem15-sw/contrib/mjpg-streamer/mjpg-streamer-experimental/")
-        subprocess.call('/home/pi/igem15-sw/contrib/mjpg-streamer/mjpg-streamer-experimental/run.sh', shell=True)
+        subprocess.call(['/bin/bash', '/home/pi/igem15-sw/contrib/mjpg-streamer/mjpg-streamer-experimental/run.sh', MjpgStreamer.iso])
 
     @staticmethod
     def start():
@@ -90,4 +92,3 @@ class MjpgStreamer:
         url = 'http://localhost:9002/?action=snapshot'
         urllib.request.urlretrieve(url, '%s/%s.%s.jpg' % (user.replace('/', ''), fname, uid))
         return '/captured/%s/%s.%s.jpg' % (user.replace('/', ''), fname, uid)
-

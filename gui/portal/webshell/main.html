@@ -287,6 +287,12 @@ $.ajax({
   context: document.body
 })
 
+$.ajax({
+  url: "/_webshell/iso/get/",
+  context: document.body
+}).done(function(data){
+$("#enterexp").attr("value", data)
+});
 
 $('html').keyup(function(e){
     if(e.keyCode == 38){
@@ -432,6 +438,24 @@ return false;
 }
 })
 
+$("#setexp").click(function(){
+    $.ajax({
+        url: "/_webshell/iso/set/"+$("#enterexp").attr("value"),
+        context: document.body
+    }).done(function(data){
+        $("#cam").html("Reconnecting...");
+        $.ajax({
+            url: "/_webshell/control/power/off",
+            context: document.body
+        }).done(function(){
+            $.ajax({
+                url: "/_webshell/control/power/on",
+                context: document.body
+            }).done(function(){setTimeout(restartCam, 1000)});
+        });
+    });
+});
+
 });
 
 var draggingDistance = false, dragStartX = 0, dragStartY=0, dragEndX = 0, dragEndY = 0;
@@ -490,6 +514,7 @@ $.ajax({
 <a class="btn btn-default" href="#" role="button" id="camrel">Release</a><br />
 <a class="btn btn-default btn-success" href="#" role="button" id="camcap">Capture high-res</a> <a class="btn btn-default" href="#" role="button" id="camsnap">Save jpg snap from stream</a><br />
 </center></p>
+
           <h2>Measurement</h2>
           <p>
 <center><span id="measureinfo"></span><br />
@@ -520,6 +545,13 @@ Delay between images (seconds): <input type="text" id="delay" value="60" /><br /
 Number of images to take: <input type="text" id="times" value="2" /></p><p>
 <a href="#" role="button" class="btn btn-default btn-danger" id="tl">Set timelapse</a>
 </p></center>
+
+          <h2>Exposure</h2>
+          <p>
+<center>ISO: <input type="text" id="enterexp" value="400" />
+<a class="btn btn-default" href="#" role="button" id="setexp">Set</a><br />
+
+           </center></p>
 
          </div>
 <br style="clear:both"/>

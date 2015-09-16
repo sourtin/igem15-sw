@@ -15,8 +15,6 @@ tlThread = None
 
 app = Flask(__name__)
 
-iso = 400
-
 @app.route("/timelapse/set/<delay>/<times>")
 def timelapse(delay, times):
     global tlThread
@@ -90,6 +88,15 @@ def pruneall():
         return MjpgStreamer.prunedir("/home/pi/igem15-sw/captured/", 524288000)
     else:
         return "Error - cannot delete other user's data unless you are admin"
+
+@app.route("/iso/set/<set>")
+def iso_set(set):
+    MjpgStreamer.iso = str(int(set))
+    return 'set iso, restart stream to see'
+
+@app.route("/iso/get/")
+def iso_get():
+    return MjpgStreamer.iso
 
 @app.route("/control/led/<mode>/<setting>")
 def control_led(mode, setting):
