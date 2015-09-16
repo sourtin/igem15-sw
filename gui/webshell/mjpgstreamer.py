@@ -1,3 +1,4 @@
+import io
 import os
 import threading
 import subprocess
@@ -82,6 +83,22 @@ class MjpgStreamer:
         os.remove("/tmp/igemcam-lock")
         MjpgStreamer.start()
         return '/captured/%s/%s.%s.jpg' % (user.replace('/', ''), fname, uid)
+
+    @staticmethod
+    def captureImgStream():
+        MjpgStreamer.touch("/tmp/igemcam-lock")
+        MjpgStreamer.stop()
+        stream = io.BytesIO()
+        with picamera.PiCamera() as camera:
+            camera.resolution = (2048, 1536)
+            camera.exposure_mode = 'night'
+            camera.iso = int(MjpgStreamer.iso)
+            camera.start_preview()
+            time.sleep(0.1)
+            camera.capture(stream, format='png')
+        os.remove("/tmp/igemcam-lock")
+        MjpgStreamer.start()
+        return stream.getvalue()
 
     @staticmethod
     def captureSnap(user):
