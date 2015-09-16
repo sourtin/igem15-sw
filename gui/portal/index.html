@@ -25,6 +25,12 @@
 .main {
 padding-top: 25px;
 }
+.col-lg-4 {
+text-align: center
+}
+#adminonly {
+display: none;
+}
 </style>
 
   </head>
@@ -39,6 +45,7 @@ $.ajax({
     context: document.body
 }).done(function(data){
     $("#user").text(data);
+    if(data == "admin") $("#adminonly").show()
 })
 
 })
@@ -49,7 +56,7 @@ $.ajax({
         <div class="navbar-header">
           <a class="navbar-brand" href="#">OpenScope.</a>
         </div>
-<div id="navbar" class="collapse navbar-collap se" style="float: right">
+<div id="navbar" class="collapse navbar-collapse" style="float: right">
           <ul class="nav navbar-nav">
             <li><a href='javascript:(function(c){var a,b="You should be logged out now.";try{a=document.execCommand("ClearAuthenticationCache")}catch(d){}a||((a=window.XMLHttpRequest?new window.XMLHttpRequest:window.ActiveXObject?new ActiveXObject("Microsoft.XMLHTTP"):void 0)?(a.open("HEAD",c||location.href,!0,"logout",(new Date).getTime().toString()),a.send(""),a=1):a=void 0);a||(b="Your browser is too old or too weird to support log out functionality. Close all windows and restart the browser.");alert(b);location.reload()})(/*pass safeLocation here if you need*/);'>Logout</a></li>
           </ul>
@@ -60,31 +67,32 @@ $.ajax({
     <div class="container">
 
       <div class="main">
-        <h1>Welcome to OpenScope, <span id="user"></span>.</h1>
-<br /><br /><br />
+        <center><h1>Welcome to OpenScope, <span id="user"></span>.</h1><h4>Microscopy awaits you...</h4></center>
+<br /><hr /><br /><br />
 <div class="row">
-        <div class="col-lg-4" style="text-align: center">
+        <div class="col-lg-4">
           <i class="fa fa-camera-retro fa-5x"></i>
           <h2>WebShell</h2>
           <p>Direct access to the microscope basics.<br />And more.</p>
-          <p><a class="btn btn-default" href="#" role="button">View details »</a></p>
+          <p><a class="btn btn-default" href="/webshell/main.html" role="button">Go »</a></p>
         </div><!-- /.col-lg-4 -->
         <div class="col-lg-4">
-          <img class="img-circle" src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="Generic placeholder image" height="140" width="140">
-          <h2>Heading</h2>
-          <p>Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit. Cras mattis consectetur purus sit amet fermentum. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh.</p>
-          <p><a class="btn btn-default" href="#" role="button">View details »</a></p>
+          <i class="fa fa-picture-o fa-5x"></i>          
+          <h2>Gallery</h2>
+          <p>Look at your images. And those that other people using this microscope have taken.</p>
+          <p><a class="btn btn-default" href="/gallery/" role="button">Go »</a></p>
         </div><!-- /.col-lg-4 -->
-        <div class="col-lg-4">
-          <img class="img-circle" src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="Generic placeholder image" height="140" width="140">
-          <h2>Heading</h2>
-          <p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
-          <p><a class="btn btn-default" href="#" role="button">View details »</a></p>
+        <div class="col-lg-4" id="adminonly">
+          <i class="fa fa-cog fa-5x"></i>
+          <h2>Settings</h2>
+          <p>Let others use your microscope. Or stop them. (For the administrator only)</p>
+          <p><a class="btn btn-default" href="/admin/" role="button">Go »</a></p>
         </div><!-- /.col-lg-4 -->
       </div>
 
       </div>
-
+<hr />
+<p>Feelin' old? Go <a href="oldindex.html">retro</a>.</p>
       <hr/>
 
       <footer>
