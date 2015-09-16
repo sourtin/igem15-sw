@@ -69,7 +69,7 @@ def old_golden_section_interval_reduction(interval, f, min_tolerance = 5, max_it
         
     return (a, b, c, d)
 
-def golden_section_interval_reduction(interval, f, min_tolerance = 5, max_iter = 10000):
+def golden_section_interval_reduction(interval, f, min_tolerance = 5, max_iter = 20):
     """ Carry out golden section interval reduction 
         interval is (a, d) 
         f is the microscope class focus function 
@@ -81,16 +81,17 @@ def golden_section_interval_reduction(interval, f, min_tolerance = 5, max_iter =
     b = a + delta_x
     c = d - delta_x
     
-    f1 = f.move_motor(a).focus()
-    f2 = f.move_motor(delta_x).focus()
-    f3 = f.move_motor(b-c).focus()
-    f4 = f.move_motor(delta_x).focus()
+    f1 = f.move_motor(a).focus(); time.sleep(5)
+    f2 = f.move_motor(delta_x).focus(); time.sleep(5)
+    f3 = f.move_motor(b-c).focus(); time.sleep(5)
+    f4 = f.move_motor(delta_x).focus(); time.sleep(5)
     # motor_positions : a  b  c  d 
     #                   0  1  2  3
     motor_position = 3
         
     tolerance = f4-f1
     iterations = 1
+    min_step = 100
 
     while(min_tolerance < tolerance and max_iter > iterations):
 
@@ -104,43 +105,51 @@ def golden_section_interval_reduction(interval, f, min_tolerance = 5, max_iter =
             d = c
             c = b
             delta_x = new_golden_section(a,d)
-            b = a + delta_x
-            f4 = f3
-            f3 = f2
-            
-            # Move motor to position 'b' depending on current position
-            if motor_position != 0 :
-                f2 = f.move_motor(b - curr_range[motor_position]).focus()
-            elif motor_position == 0:
-                f2 = f.move_motor(delta_x).focus()
+            if delta_x > min_step:
+                    
+                b = a + delta_x
+                f4 = f3
+                f3 = f2
+                
+                # Move motor to position 'b' depending on current position
+                if motor_position != 0 :
+                    f2 = f.move_motor(b - curr_range[motor_position]).focus(); time.sleep(5)
+                elif motor_position == 0:
+                    f2 = f.move_motor(delta_x).focus(); time.sleep(5)
+                else:
+                    raise Exception('Motor position lost. Current position is:' , motor_position)
+                
+                motor_position = 1    # update motor position to 'b'
             else:
-                raise Exception('Motor position lost. Current position is:' , motor_position)
-            
-            motor_position = 1    # update motor position to 'b'
+                print('Reached min_step, stopping golden section')
+                return (a,b,c,d)
             
         elif f2 > f3 :
             # Update interval
             a = b
             b = c
             delta_x = new_golden_section(a,d)
-            c = d - delta_x
-            f1 = f2
-            f2 = f3
-            
-            # Move motor to position 'b' depending on current position
-            if motor_position != 3:
-                f3 = f.move_motor(curr_range[3] - curr_range[motor_position]- delta_x).focus()
-            elif motor_position == 3:
-                f3 = f.move_motor(-1*delta_x).focus()
+            if delta_x > min_step:
+                c = d - delta_x
+                f1 = f2
+                f2 = f3
+                
+                # Move motor to position 'b' depending on current position
+                if motor_position != 3:
+                    f3 = f.move_motor(curr_range[3] - curr_range[motor_position]- delta_x).focus(); time.sleep(5)
+                elif motor_position == 3:
+                    f3 = f.move_motor(-1*delta_x).focus(); time.sleep(5)
+                else:
+                    raise Exception('Motor position lost. Current position is:', motor_position)
+                
+                motor_position = 2    # update motor position 
             else:
-                raise Exception('Motor position lost. Current position is:', motor_position)
-            
-            motor_position = 2    # update motor position 
-            
+                print('Reached min_step, stopping golden section')
+                return (a,b,c,d)
             #f3 = f(c) # need to think about how to move motors
        
-            else :
-                raise Exception('Focus score evaluated incorrectly')
+        else :
+            raise Exception('Focus score evaluated incorrectly')
         iterations += 1
         tolerance = abs(f4 - f1)
         #time.sleep(1)
@@ -260,9 +269,9 @@ def gradient_descent(z_initial, f, tolerance = 50, max_iter = 100000, alpha = 50
         z = z + delta_z   # update search position
         f_previous = f_current      # update search history
         f_nearby = f.move_motor(alpha).focus()       # check nearby position to evaluate gradient
-        time.sleep(10)
+        time.sleep(15)
         f_current = f.move_motor(delta_z).focus()           # update current search value
-        time.sleep(10)
+        time.sleep(15)
         
         gradient = (f_nearby - f_current)/alpha     # calculate approx. gradient 
         print('Score :%f' % f_current, 'Gradient :%f' % gradient)
@@ -278,7 +287,7 @@ def gradient_descent(z_initial, f, tolerance = 50, max_iter = 100000, alpha = 50
     print('Minimum at z = %f' % z)
     return z
         
-def new_gradient_descent(z_initial, f, tolerance = 50, max_iter = 100000, alpha = 0.1):
+def new_gradient_descent(z_initial, f, tolerance = 50, max_iter = 50, alpha = 0.1):
     """ Carry out steepest descent to find minimum of a unimodal R^1 function 
     gradient_descent(z_initial, f , tolerance = 50, max_iter = 100000, alpha = 0.1)
     z_initial    : inital search postion
@@ -296,34 +305,37 @@ def new_gradient_descent(z_initial, f, tolerance = 50, max_iter = 100000, alpha 
             self.score = []     # foocus score 
             self.gradients = [] # gradient of focus score
             self.no_of_pics = 5       # no of pics to take
-            self.steps = 500 # no of motor steps to move
+            #steps = 500 # no of motor steps to move
             
         def eval_score(self):
             """ Evaluate the focus score """
             for i in self.img:
-                self.score.append(-1*dwt.nleveldwt(3,i).focus_score())
+                # a = dwt.nleveldwt(3,i)
+                # self.score.append(-1*dwt.focus_score(a))
+                self.score.append(-1*dwt.focus_score(i))
             return self
             
         def grads(self):
-            """ Calculate the gradient given two points"""
-            for i in len(self.score)-1:
+            """ Calculate the gradient given a few points """
+            for i in range(len(self.score)-1):
                 self.gradients.append((self.score[i+1]- self.score[i])/(self.t[i+1] - self.t[i]))
             return self
         
         def gradient(self):
             """ Calculate the average gradient from raw data """
             self.eval_score()
+            print('Scores: ',self.score)
             self.grads()
             return np.mean(self.gradients)
 
-        def clear():
+        def clear(self):
             """ Clear all the stored data """
             self.t = []         # times that pics were taken
             self.img = []       # images 
             self.score = []     # foocus score 
             self.gradients = [] # gradient of focus score
         
-        def get_data(self, steps = self.steps):
+        def get_data(self, steps = 500):
             """ Move motor and take pics """
             # Clear data
             self.clear()
@@ -332,16 +344,21 @@ def new_gradient_descent(z_initial, f, tolerance = 50, max_iter = 100000, alpha 
                 self.img.append(f.get_image())
                 self.t.append(time.time())
             f.move_motor(-steps) # Move back to original position
+            #print('No of pics capture :%d' %len(self.img))
+            print('Times:',self.t)
+            return self
             
 
     imgs = data() # data class 
     
-    delta_z = -alpha
-    z = z_initial + 50
-    no_of_pics = 5
+    #delta_z = -alpha
+    #z = z_initial + 50
+    #no_of_pics = 5
     
     # Current camera view
-    f_current = imgs.img.append(f.get_image()).eval_score() # Store image in imgs.img and store the focus score in f_current
+    print('Start')
+    imgs.img.append(f.get_image())
+    f_current = f.focus() # Store image in imgs.img and store the focus score in f_current
     imgs.t.append(time.time()) # Store the time as well
     
     # Move motor and take a few pictures and calculate gradient
@@ -354,9 +371,22 @@ def new_gradient_descent(z_initial, f, tolerance = 50, max_iter = 100000, alpha 
         delta_z = -alpha * gradient 
         #z = z + delta_z   # update search position
         f_previous = f_current      # update search history
-        f_current = f.move_motor(delta_z).focus
+        
+        
+        # Limit oscillations
+        if abs(delta_z)<= 1000:
+            print('Iteration: %d' % iterations)
+            f_current = f.move_motor(delta_z).focus()
+        else:
+            f_current = f.move_motor(np.sign(delta_z)*1000).focus()
+            
+        time.sleep(5)
+        #print('Calculating gradient')
         gradient = imgs.get_data().gradient()     # calculate approx. gradient 
+        print('Calculating gradient')
+        time.sleep(5)
         print('Score :%f' % f_current, 'Gradient :%f' % gradient)
+        
         iterations += 1             # update no of iterations
         
         if abs(f_current-f_previous)<=tolerance:
@@ -383,8 +413,8 @@ class microscope_control:
         ctx.verify_mode  = ssl.CERT_NONE
         https_handler = urllib.request.HTTPSHandler(context=ctx)
 
-        #top_level_url = 'https://172.29.9.20:9000/'
-        top_level_url = 'https://192.168.0.1:9000/'
+        top_level_url = 'https://172.29.9.20:9000/'
+        # top_level_url = 'https://192.168.0.1:9000/'
         pmgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
         pmgr.add_password(None, top_level_url, username, password)
         handler = urllib.request.HTTPBasicAuthHandler(pmgr)
@@ -396,19 +426,19 @@ class microscope_control:
         
     def move_motor(self,steps,axis = 2):
         """ Control motos """
-        # pagehandle = urllib.request.urlopen('https://172.29.9.20:9000/_webshell/control/motor/%d/%d' %(axis, steps))
-        pagehandle = urllib.request.urlopen('https://192.168.0.1:9000/_webshell/control/motor/%d/%d' %(axis, steps))
+        pagehandle = urllib.request.urlopen('https://172.29.9.20:9000/_webshell/control/motor/%d/%d' %(axis, steps))
+        # pagehandle = urllib.request.urlopen('https://192.168.0.1:9000/_webshell/control/motor/%d/%d' %(axis, steps))
         
         #print(pagehandle.read())
         print('Motor %d move %d' %(axis,steps))
-        #time.sleep(4)
+        #time.sleep(10)
         return self
         
     def get_image(self):
         """Return image captured"""
         
-        # uro = urllib.request.urlopen('https://172.29.9.20:9000/_stream/?action=snapshot') # When Pi is connected to the internet
-        uro = urllib.request.urlopen('https://192.168.0.1:9000/_stream/?action=snapshot')   # When connected to Pi
+        uro = urllib.request.urlopen('https://172.29.9.20:9000/_stream/?action=snapshot') # When Pi is connected to the internet
+        # uro = urllib.request.urlopen('https://192.168.0.1:9000/_stream/?action=snapshot')   # When connected to Pi
         # uro = urllib.request.urlopen('https://192.168.0.1:9000/_stream/?action=stream')
         
         
@@ -421,7 +451,9 @@ class microscope_control:
     def focus(self):
         """ Return focus score """
         #return -1*dwt.focus_score(self.get_image())
-        return -1*dwt.nleveldwt(3,self.get_image()).focus_score()
+        #a = dwt.nleveldwt(3,self.get_image())
+        #return -1*dwt.focus_score(a)
+        return -1*dwt.focus_score(self.get_image())
     
 if __name__ == '__main__':
     
@@ -431,8 +463,13 @@ if __name__ == '__main__':
     
     # ################# Testing the autofocus ##################3
     m = microscope_control()
-    gradient_descent(0,m)
+    #gradient_descent(0,m)
+    print('Starting golden section interval reduction')
+    interval = (0, 5000)
+    golden_section_interval_reduction(interval, m, min_tolerance = 100, max_iter = 1000) 
     
+    print('Starting gradient descent')
+    new_gradient_descent(0,m)
+    print('Finished')
     
-    #interval = (0, 5000)
-    #golden_section_interval_reduction(interval, m, min_tolerance = 100, max_iter = 1000) 
+
