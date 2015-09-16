@@ -116,9 +116,14 @@ class MjpgStreamer:
     def scaleCaptureImg(fname):
         im = Image.open("/home/pi/igem15-sw%s" % fname)
         width, height = im.size
+        fov_w = 540
+
+        with open('/home/pi/igem15-sw/gui/portal/webshell/fov.json') as fov:
+            data = json.load(fov)
+            fov_w = data[0]
 
         startline = (int(width/100.0), int(height * 90/100.0))
-        endline = (int(width/100.0 + width*100/540.0), int(height * 90/100.0))
+        endline = (int(width/100.0 + width*100.0/fov_w), int(height * 90/100.0))
 
         draw = ImageDraw.Draw(im)
         draw.line([startline, endline], width=int(height*9/1000.0))
