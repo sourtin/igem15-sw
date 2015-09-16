@@ -81,19 +81,24 @@ def golden_section_interval_reduction(interval, f, min_tolerance = 5, max_iter =
     b = a + delta_x
     c = d - delta_x
     
-    f1 = f.move_motor(a).focus(); time.sleep(5)
-    f2 = f.move_motor(delta_x).focus(); time.sleep(5)
-    f3 = f.move_motor(b-c).focus(); time.sleep(5)
-    f4 = f.move_motor(delta_x).focus(); time.sleep(5)
-    # motor_positions : a  b  c  d 
+    # f1 = f.move_motor(a).focus(); time.sleep(5)
+    f.move_motor(a); time.sleep(2); f1 = f.focus()
+    # f2 = f.move_motor(delta_x).focus(); time.sleep(5)
+    f.move_motor(delta_x); time.sleep(10); f2 = f.focus()
+    # f3 = f.move_motor(b-c).focus(); time.sleep(5)
+    f.move_motor(c-b); time.sleep(10); f3 = f.focus()
+    # f4 = f.move_motor(delta_x).focus(); time.sleep(5)
+    f.move_motor(delta_x); time.sleep(10); f4 = f.focus()
+    # # motor_positions : a  b  c  d 
     #                   0  1  2  3
     motor_position = 3
         
     tolerance = f4-f1
     iterations = 1
-    min_step = 100
+    min_step = 20
 
-    while(min_tolerance < tolerance and max_iter > iterations):
+    #while(min_tolerance < tolerance and max_iter > iterations):
+    while(max_iter > iterations):
 
         print('iter: %d' % iterations, '(%f,%f,%f,%f)' % (a,b,c,d))
         
@@ -113,9 +118,15 @@ def golden_section_interval_reduction(interval, f, min_tolerance = 5, max_iter =
                 
                 # Move motor to position 'b' depending on current position
                 if motor_position != 0 :
-                    f2 = f.move_motor(b - curr_range[motor_position]).focus(); time.sleep(5)
+                    #f2 = f.move_motor(b - curr_range[motor_position]).focus(); time.sleep(8)
+                    f.move_motor(b - curr_range[motor_position]); 
+                    time.sleep(5); 
+                    f2 = f.focus()
                 elif motor_position == 0:
-                    f2 = f.move_motor(delta_x).focus(); time.sleep(5)
+                    #f2 = f.move_motor(delta_x).focus(); 
+                    f.move_motor(delta_x); 
+                    time.sleep(5);
+                    f2 = f.focus()
                 else:
                     raise Exception('Motor position lost. Current position is:' , motor_position)
                 
@@ -136,9 +147,16 @@ def golden_section_interval_reduction(interval, f, min_tolerance = 5, max_iter =
                 
                 # Move motor to position 'b' depending on current position
                 if motor_position != 3:
-                    f3 = f.move_motor(curr_range[3] - curr_range[motor_position]- delta_x).focus(); time.sleep(5)
+                    #f3 = f.move_motor(curr_range[3] - curr_range[motor_position]- delta_x).focus(); time.sleep(8)
+                    f.move_motor(curr_range[3] - curr_range[motor_position]-delta_x)
+                    time.sleep(5)
+                    f3 = f.focus()
                 elif motor_position == 3:
-                    f3 = f.move_motor(-1*delta_x).focus(); time.sleep(5)
+                    #f3 = f.move_motor(-1*delta_x).focus(); time.sleep(8)
+                    f.move_motor(-1*delta_x)
+                    time.sleep(5)
+                    f3 = f.focus(); 
+                #else
                 else:
                     raise Exception('Motor position lost. Current position is:', motor_position)
                 
@@ -324,7 +342,7 @@ def new_gradient_descent(z_initial, f, tolerance = 50, max_iter = 50, alpha = 0.
         def gradient(self):
             """ Calculate the average gradient from raw data """
             self.eval_score()
-            print('Scores: ',self.score)
+            #print('Scores: ',self.score)
             self.grads()
             return np.mean(self.gradients)
 
@@ -335,7 +353,7 @@ def new_gradient_descent(z_initial, f, tolerance = 50, max_iter = 50, alpha = 0.
             self.score = []     # foocus score 
             self.gradients = [] # gradient of focus score
         
-        def get_data(self, steps = 500):
+        def get_data(self, steps = 400):
             """ Move motor and take pics """
             # Clear data
             self.clear()
@@ -345,7 +363,7 @@ def new_gradient_descent(z_initial, f, tolerance = 50, max_iter = 50, alpha = 0.
                 self.t.append(time.time())
             f.move_motor(-steps) # Move back to original position
             #print('No of pics capture :%d' %len(self.img))
-            print('Times:',self.t)
+            #print('Times:',self.t)
             return self
             
 
@@ -363,6 +381,7 @@ def new_gradient_descent(z_initial, f, tolerance = 50, max_iter = 50, alpha = 0.
     
     # Move motor and take a few pictures and calculate gradient
     gradient = imgs.get_data().gradient()
+    #print('Gradient %f' %gradient)
     converged = False
     iterations = 1
     
@@ -462,14 +481,34 @@ if __name__ == '__main__':
     # print(x)
     
     # ################# Testing the autofocus ##################3
-    m = microscope_control()
-    #gradient_descent(0,m)
-    print('Starting golden section interval reduction')
-    interval = (0, 5000)
-    golden_section_interval_reduction(interval, m, min_tolerance = 100, max_iter = 1000) 
-    
-    print('Starting gradient descent')
-    new_gradient_descent(0,m)
-    print('Finished')
+    while(1):
+        m = microscope_control()
+        #gradient_descent(0,m)
+        com = input('Golden section = 1, Gradient descent = 2, Quit = q \n')
+        if com == 'q':
+            break
+        elif com == '1':
+            
+            print('Starting golden section interval reduction')
+            interval = (0, 3000)
+            golden_section_interval_reduction(interval, m) 
+            com = input("Continue or Quit = Q \n")
+        
+        elif com == '2':
+            print('Starting gradient descent')
+            new_gradient_descent(0,m)
+            print('Bye-bye')
+            break
+        else: 
+            break
+            
+        if com == 'q':
+            print("Bye")
+            break
+        else :
+            print('Starting gradient descent')
+            new_gradient_descent(0,m)
+            print('Bye-bye')
+            break
     
 
