@@ -76,11 +76,15 @@ def capture():
 
 @app.route("/capture_scale/")
 def capture_scale():
-    return MjpgStreamer.scaleCaptureImg(request.authorization.username)
+    return MjpgStreamer.scaleCaptureImg(MjpgStreamer.captureImg(request.authorization.username))
 
 @app.route("/snap/")
 def snap():
     return MjpgStreamer.captureSnap(request.authorization.username)
+
+@app.route("/snap_scale/")
+def snap_scale():
+    return MjpgStreamer.scaleCaptureImg(MjpgStreamer.captureSnap(request.authorization.username))
 
 @app.route("/prune/")
 def prune():
