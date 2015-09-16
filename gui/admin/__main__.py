@@ -26,6 +26,10 @@ def md5_password(password):
 def root():
     return '<meta http-equiv="refresh" content="0;URL=/admin/index.html">'
 
+@app.route("/user/")
+def user():
+    return request.authorization.username
+
 @app.route("/set/<user>/")
 def set_blank(user):
     return 'Nothing changed'
