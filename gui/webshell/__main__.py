@@ -15,6 +15,8 @@ tlThread = None
 
 app = Flask(__name__)
 
+iso = 400
+
 @app.route("/timelapse/set/<delay>/<times>")
 def timelapse(delay, times):
     global tlThread
