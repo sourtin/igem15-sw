@@ -456,6 +456,10 @@ $("#setexp").click(function(){
     });
 });
 
+$("#clearline").click(function(){
+$("#line").css("width", "0")
+});
+
 });
 
 var draggingDistance = false, dragStartX = 0, dragStartY=0, dragEndX = 0, dragEndY = 0;
@@ -518,7 +522,7 @@ $.ajax({
           <h2>Measurement</h2>
           <p>
 <center><span id="measureinfo"></span><br />
-<a class="btn btn-default" href="#" role="button" id="dragbtn">Drag to measure</a><br />
+<a class="btn btn-default" href="#" role="button" id="dragbtn">Drag to measure</a> <a class="btn btn-default" href="#" role="button" id="clearline">Clear line</a><br />
 
            </center></p>
 
