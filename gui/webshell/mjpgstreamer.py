@@ -74,6 +74,7 @@ class MjpgStreamer:
         with picamera.PiCamera() as camera:
             camera.resolution = (2048, 1536)
             camera.exposure_mode = 'night'
+            camera.iso = int(MjpgStreamer.iso)
             camera.start_preview()
             time.sleep(0.1)
             camera.capture('%s/%s.%s.jpg' % (user.replace('/', ''), fname, uid))
