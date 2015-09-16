@@ -105,6 +105,8 @@ class TileStitcher:
         self.tiles = np.empty(images.shape, object)
         for c in np.ndindex(self.tiles.shape):
             images[c].data = context.pre(images[c].data)
+            from lib.canvas import Image
+            Image(None, context.features(images[c].data)).show()
             self.tiles[c] = TileStitcher.Tile(images[c])
         for c in np.ndindex(self.tiles.shape):
             self.tiles[c].meet_neighbours(c, self.tiles)
