@@ -149,6 +149,7 @@ $("#cam").html("<img src='/_stream/?action=stream&date="+d.getTime()+"' />");
 
 $(document).ready(function(){
 $("a").click(function(e) {
+if($(this).attr("href") == "#")
     e.preventDefault();
 })
 
@@ -211,7 +212,7 @@ $("#ledmode").html(data)
 $("#camcap").on("click", function(){
 //$("#cam").html("Say cheese, little cells!")
 $.ajax({
-  url: "/_webshell/capture/",
+  url: "/_webshell/capture"+($("#scalecap").is(":checked") ? "_scale" : "")+"/",
   context: document.body
 }).done(function(data){
 $("#capt").html("<img src=\""+data+"\"/>")
@@ -221,7 +222,7 @@ setTimeout(restartCam, 1000)
 
 $("#camsnap").on("click", function(){
 $.ajax({
-  url: "/_webshell/snap/",
+  url: "/_webshell/snap"+($("#scalecap").is(":checked") ? "_scale" : "")+"/",
   context: document.body
 }).done(function(data){
 $("#capt").html("<img src=\""+data+"\"/>")
@@ -287,43 +288,49 @@ $.ajax({
   context: document.body
 })
 
+$.ajax({
+  url: "/_webshell/iso/get/",
+  context: document.body
+}).done(function(data){
+$("#enterexp").attr("value", data)
+});
 
 $('html').keyup(function(e){
-    if(e.keyCode == 38){
+    if(e.keyCode == 87){
 $.ajax({
   url: "/_webshell/control/motor/1/"+((-1)*($("#motx_").attr("value"))),
   context: document.body
 }).done();
 e.preventDefault();
     }
-    if(e.keyCode == 39){
+    if(e.keyCode == 68){
 $.ajax({
   url: "/_webshell/control/motor/0/"+($("#moty_").attr("value")),
   context: document.body
 }).done();
 e.preventDefault();
     }
-    if(e.keyCode == 37){
+    if(e.keyCode == 65){
 $.ajax({
   url: "/_webshell/control/motor/0/"+((-1)*($("#moty_").attr("value"))),
   context: document.body
 }).done();
 e.preventDefault();
     }
-    if(e.keyCode == 40){
+    if(e.keyCode == 83){
 $.ajax({
   url: "/_webshell/control/motor/1/"+($("#motx_").attr("value")),
   context: document.body
 }).done();
 e.preventDefault();
     }
-    if(e.keyCode == 65){
+    if(e.keyCode == 81){
 $.ajax({
   url: "/_webshell/control/motor/2/"+($("#motz_").attr("value")),
   context: document.body
 }).done();
     }
-    if(e.keyCode == 83){
+    if(e.keyCode == 69){
 $.ajax({
   url: "/_webshell/control/motor/2/"+((-1)*($("#motz_").attr("value"))),
   context: document.body
@@ -368,7 +375,7 @@ $(".ruler[data-items]").each(function() {
     });
 
 // wanna know i came up with these numbers? it was a very late night. i gave up.
-$(".ruler").css("padding-right", "72px").find("li").
+$(".ruler").css("padding-right", "60px").find("li").
             css("padding-left", "57.63px").
             find("span").css("margin-left", "-25px")
 
@@ -413,7 +420,7 @@ $("body").mousemove(function(e){
         var height2 = (height/600) * 405;
 
         var len = Math.sqrt(Math.pow(width2, 2) + Math.pow(height2, 2))
-        $("#measureinfo").text("Measured: "+len.toFixed(2)+" microns")
+        $("#measureinfo").html("Measured: "+len.toFixed(2)+"&plusmn;1% microns")
 
         var len2 = Math.sqrt(Math.pow(width, 2) + Math.pow(height, 2))
         $("#line").css("top", dragStartY + "px")
@@ -431,6 +438,28 @@ dragStartY = e.pageY;
 return false;
 }
 })
+
+$("#setexp").click(function(){
+    $.ajax({
+        url: "/_webshell/iso/set/"+$("#enterexp").attr("value"),
+        context: document.body
+    }).done(function(data){
+        $("#cam").html("Reconnecting...");
+        $.ajax({
+            url: "/_webshell/control/power/off",
+            context: document.body
+        }).done(function(){
+            $.ajax({
+                url: "/_webshell/control/power/on",
+                context: document.body
+            }).done(function(){setTimeout(restartCam, 1000)});
+        });
+    });
+});
+
+$("#clearline").click(function(){
+$("#line").css("width", "0")
+});
 
 });
 
@@ -467,7 +496,7 @@ $.ajax({
 
     <div class="container" style="margin-top: 50px">
       <div class="row" style="height: 100%">
-        <div class="col-md-4" style="width: 70%">
+        <div class="col-md-4" style="width: 70%;">
           <h2>Live view</h2>
           <p><div id="cam"></div></p>
 <p><div id="sidescalebar"><ul class="sideruler" data-items="20"></ul>
@@ -483,21 +512,26 @@ $.ajax({
 <a style="float:right" href="/_webshell/pruneall/">Prune everyone's old files to under 500M</a>
 </p>
         </div>
-        <div class="col-md-4" style="width: 30%;">
+        <div class="col-md-4" style="width: 30%;padding-left: 5px">
           <h2>Camera Control</h2>
           <p><center>
 <a class="btn btn-default" href="#" role="button" id="camhold">Hold</a>
 <a class="btn btn-default" href="#" role="button" id="camrel">Release</a><br />
+<label class="checkbox">
+    <input type="checkbox" id="scalecap"> Add scale bar to captured images
+</label>
 <a class="btn btn-default btn-success" href="#" role="button" id="camcap">Capture high-res</a> <a class="btn btn-default" href="#" role="button" id="camsnap">Save jpg snap from stream</a><br />
 </center></p>
+
           <h2>Measurement</h2>
           <p>
 <center><span id="measureinfo"></span><br />
-<a class="btn btn-default" href="#" role="button" id="dragbtn">Drag to measure</a><br />
+<a class="btn btn-default" href="#" role="button" id="dragbtn">Drag to measure</a> <a class="btn btn-default" href="#" role="button" id="clearline">Clear line</a><br />
 
            </center></p>
 
          <h2>LED Control</h2>
+<p>(Pressing Shift to toggle works too)</p>
           <p>Current LED: <span id="ledmode"></span> </p>
           <p><center>
 <a class="btn btn-default" href="#" role="button" id="led0">Brightfield</a>
@@ -506,6 +540,7 @@ $.ajax({
 <a class="btn btn-default btn-warning" href="#" role="button" id="ledtog">Toggle</a>
 </center></p>
           <h2>Motor Control</h2>
+<p>(Pressing WASD for x and y movement and Q and E for z movement works too)</p>
           <p>
         <form class="form-inline">
 X: <input type="text" class="input-large" value="100" id="motx_" /> <a class="btn btn-default" href="#" role="button" id="motx">Go!</a> <a class="btn btn-default" href="#" role="button" id="motxb">Back!</a><br />
@@ -520,6 +555,13 @@ Delay between images (seconds): <input type="text" id="delay" value="60" /><br /
 Number of images to take: <input type="text" id="times" value="2" /></p><p>
 <a href="#" role="button" class="btn btn-default btn-danger" id="tl">Set timelapse</a>
 </p></center>
+
+          <h2>Exposure</h2>
+          <p>
+<center>ISO: <input type="text" id="enterexp" value="400" />
+<a class="btn btn-default" href="#" role="button" id="setexp">Set</a><br />
+
+           </center></p>
 
          </div>
 <br style="clear:both"/>

@@ -3,6 +3,7 @@
 * localhost:9001 - gunicorn for webshell
 * localhost:9002 - mjpg-streamer
 * localhost:9003 - gunicorn for admin panel
+* localhost:9004 - tileserver for micromaps
 
 # Key
 
