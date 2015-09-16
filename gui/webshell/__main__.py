@@ -1,6 +1,6 @@
 from werkzeug.contrib.fixers import ProxyFix
 from flask import Flask
-from flask import request
+from flask import request, Response
 import json
 
 import sys
