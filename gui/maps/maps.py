@@ -134,6 +134,11 @@ class MicroMaps:
             return cap
 
         else:
+            # early alpha; image stitching is not very reliable
+            # so we will avoid adding other images
+            # perhaps improve upon cv2.bfmatcher? (see lib.stitch)
+            return None
+
             x0, y0 = self.pos
             δx = factors['signx'] * self.px2rot(x - x0)
             δy = factors['signy'] * self.px2rot(y - y0)
@@ -148,12 +153,14 @@ class MicroMaps:
             self.pos = x, y
             self.prune()
 
+            # image stitching bad, try overlaying?
             """ the hackiest hack that ever hacked
                 will not work well even slightly
                 what am I even doing with my life """
             cap = (x, y), _raw()
             self.caps.append(cap)
             return cap
+            # this did not work well .. as expected
 
             self.pos = x0, y0
             im = _raw()
@@ -217,7 +224,5 @@ class MicroMaps:
             for (x0, y0), cap in self.match(x, y, w, h):
                 region = cap[y-y0:y-y0+h,x-x0:x-x0+w,:]
                 canvas = np.maximum.reduce([canvas, region])
-        else:
-            canvas[:,:,2] = 255
         return canvas
 
