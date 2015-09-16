@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Gallery</title>
+
+    <link href="/assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/assets/fancybox/gallery.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <script src="/assets/jquery-1.11.3.min.js"></script>
+    <script src="/assets/fancybox/gallery.js"></script>
+<style>
+.main {
+padding-top: 25px;
+}
+.main div {
+margin-left: 30px;
+}
+#nopics {
+display: none;
+}
+</style>
+
+  </head>
+
+  <body>
+
+<script type="text/javascript">
+var username = "", galdat = "", currstart = 0, currend = 19;
+
+$(document).ready(function(){
+
+$.ajax({
+    url: "/_admin/user/",
+    context: document.body
+}).done(function(data){
+    $("#user").text(data);
+    username = data;
+    // load images into gallery
+    $.ajax({
+        url: "/captured/"+username+"/",
+        context: document.body
+    }).done(function(data){
+        //console.log(data)
+        galdat = data
+        generateGal(currstart, currend)
+    })
+})
+
+
+})
+
+
+function generateGal(start, end) {
+$("#gall").html("")
+arr = galdat.split("href=\"").splice(2)
+if(arr.length == 0) {
+$("#nopics").show()
+$("#mypics").hide()
+return;
+}
+        for(var i=start; i < Math.min(arr.length, end); i++){
+            var url = arr[i].split("\"")[0]
+            addGal("/captured"+username+"/"+url, "")
+        }
+        readyGallery()
+}
+
+function addGal(url, title) {
+$("#gall").append($('<a class="fancybox" rel="gallery1" href="'+url+'" title="'+title+'"><img src="'+url+'" style="width: 200px" alt="" /></a>'));
+}
+
+function readyGallery() {
+$(".fancybox").fancybox({
+		prevEffect	: 'none',
+		nextEffect	: 'none',
+		helpers	: {
+			title	: {
+				type: 'outside'
+			},
+			thumbs	: {
+				width	: 50,
+				height	: 50
+			}
+		}
+	});
+}
+</script>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">Gallery.</a>
+        </div>
+<div id="navbar" class="collapse navbar-collapse" style="float: right">
+          <ul class="nav navbar-nav">
+            <li><a href="/">&#8593; Up</a></li>
+            <li><a href='javascript:(function(c){var a,b="You should be logged out now.";try{a=document.execCommand("ClearAuthenticationCache")}catch(d){}a||((a=window.XMLHttpRequest?new window.XMLHttpRequest:window.ActiveXObject?new ActiveXObject("Microsoft.XMLHTTP"):void 0)?(a.open("HEAD",c||location.href,!0,"logout",(new Date).getTime().toString()),a.send(""),a=1):a=void 0);a||(b="Your browser is too old or too weird to support log out functionality. Close all windows and restart the browser.");alert(b);location.reload()})(/*pass safeLocation here if you need*/);'>Logout</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+<br style="clear:both">
+    <div class="container">
+
+      <div class="main">
+        <h1>Let's see some of your images, <span id="user"></span></h1>
+        <p id="nopics" class="lead">Boo! You haven't taken any yet. Why not take some using <a href="/webshell/main.html">webshell</a>?</p>
+<div id="mypics">
+<p class="lead">Your images</p>
+<p><div id="gall"></div></p>
+
+<p><a href="">Next</a></p>
+</div>
+
+<div id="theirpics">
+<p class="lead">Other users</p>
+<p>List goes here...</p>
+</div>
+
+      </div>
+<hr />
+<div>
+<p>Feelin old? <a href="/captured/">Go retro</a>.</p>
+</div>
+
+
+      <hr>
+
+      <footer>
+        <p><center>Made with &hearts; from Cambridge-JIC iGEM 2015</center></p>
+      </footer>
+    </div><!-- /.container -->
+
+
+    <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="/assets/bootstrap/js/ie10-viewport-bug-workaround.js"></script>
+  </body>
+</html>
+
