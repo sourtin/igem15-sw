@@ -29,7 +29,9 @@ im = stitcher.assemble()
 
 h, w = im.shape[:2]
 im2 = cv2.resize(im, (800, int(800*h/w)))
+im3 = cv2.resize(im, (1,1))
 imshow(im2)
+imshow(im3)
 save = lambda fn: cv2.imwrite(fn, im)
 #os._exit(0)
 
