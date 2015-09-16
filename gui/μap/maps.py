@@ -7,7 +7,7 @@ class MicroMaps:
     def __init__(self):
         pass
 
-    def get_test(self, x, y):
+    def get_test(self, x, y, w, h):
         import hashlib
         m = hashlib.md5()
         m.update(("%d %d" % (x,y)).encode())
@@ -16,5 +16,5 @@ class MicroMaps:
         return raw
 
     def get(self, x, y, w, h):
-        return self.get_test(x, y)
+        return self.get_test(x, y, w, h)
 

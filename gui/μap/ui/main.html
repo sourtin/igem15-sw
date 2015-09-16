@@ -27,7 +27,8 @@ var map = new ol.Map({
   layers: [
     new ol.layer.Tile({
       source: new ol.source.XYZ({
-        url: '/tile/{x}/{y}/{z}'
+        url: '/tile/'+ol.has.DEVICE_PIXEL_RATIO+'/{x}/{y}/{z}',
+        tilePixelRatio: ol.has.DEVICE_PIXEL_RATIO
       }),
       wrapX: false,
       wrapY: false,
