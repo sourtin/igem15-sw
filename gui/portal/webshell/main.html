@@ -508,6 +508,7 @@ $(this).next("div").slideToggle("fast")
 $("#incal").hide()
 $("#calb").click(function(){
   if(calibration == 0) {
+$(".container").css("cursor", "crosshair");
     calibration = 1;
     draggingDistance = true;
     $(this).text("Drag to select a region of known size")
