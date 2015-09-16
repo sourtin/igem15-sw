@@ -1,13 +1,101 @@
-<!--<meta http-equiv="refresh" content="1;URL=/webshell/main.html">
-Ohai, pls waits.
-<img src="http://stuffpoint.com/cats/image/191760-cats-cat-waiting.jpg">
--->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
 
-Microscopy awaits you.<br />
-<p>
-<a href="/webshell/main.html">Webshell</a>
-<br />
-<a href="/gallery">Gallery</a>
-<br />
-<a href="/admin">User access control</a>
-</p>
+    <title>OpenScope</title>
+
+    <link href="/assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/assets/fancybox/gallery.css" rel="stylesheet">
+    <link href="/assets/awesome/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <script src="/assets/jquery-1.11.3.min.js"></script>
+    <script src="/assets/fancybox/gallery.js"></script>
+<style>
+.main {
+padding-top: 25px;
+}
+</style>
+
+  </head>
+
+  <body>
+
+<script>
+$(document).ready(function(){
+
+$.ajax({
+    url: "/_admin/user/",
+    context: document.body
+}).done(function(data){
+    $("#user").text(data);
+})
+
+})
+</script>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">OpenScope.</a>
+        </div>
+<div id="navbar" class="collapse navbar-collap se" style="float: right">
+          <ul class="nav navbar-nav">
+            <li><a href='javascript:(function(c){var a,b="You should be logged out now.";try{a=document.execCommand("ClearAuthenticationCache")}catch(d){}a||((a=window.XMLHttpRequest?new window.XMLHttpRequest:window.ActiveXObject?new ActiveXObject("Microsoft.XMLHTTP"):void 0)?(a.open("HEAD",c||location.href,!0,"logout",(new Date).getTime().toString()),a.send(""),a=1):a=void 0);a||(b="Your browser is too old or too weird to support log out functionality. Close all windows and restart the browser.");alert(b);location.reload()})(/*pass safeLocation here if you need*/);'>Logout</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+<br style="clear:both">
+    <div class="container">
+
+      <div class="main">
+        <h1>Welcome to OpenScope, <span id="user"></span>.</h1>
+<br /><br /><br />
+<div class="row">
+        <div class="col-lg-4" style="text-align: center">
+          <i class="fa fa-camera-retro fa-5x"></i>
+          <h2>WebShell</h2>
+          <p>Direct access to the microscope basics.<br />And more.</p>
+          <p><a class="btn btn-default" href="#" role="button">View details »</a></p>
+        </div><!-- /.col-lg-4 -->
+        <div class="col-lg-4">
+          <img class="img-circle" src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="Generic placeholder image" height="140" width="140">
+          <h2>Heading</h2>
+          <p>Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit. Cras mattis consectetur purus sit amet fermentum. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh.</p>
+          <p><a class="btn btn-default" href="#" role="button">View details »</a></p>
+        </div><!-- /.col-lg-4 -->
+        <div class="col-lg-4">
+          <img class="img-circle" src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="Generic placeholder image" height="140" width="140">
+          <h2>Heading</h2>
+          <p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
+          <p><a class="btn btn-default" href="#" role="button">View details »</a></p>
+        </div><!-- /.col-lg-4 -->
+      </div>
+
+      </div>
+
+      <hr/>
+
+      <footer>
+        <p><center>Made with &hearts; from Cambridge-JIC iGEM 2015</center></p>
+      </footer>
+    </div><!-- /.container -->
+
+
+    <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="/assets/bootstrap/js/ie10-viewport-bug-workaround.js"></script>
+  </body>
+</html>
+

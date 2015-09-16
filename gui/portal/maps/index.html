@@ -19,10 +19,14 @@
 <body>
 <div id="map" class="map"></div>
 <script>
-var url = "/_maps" + (window.location.hash
-                        ? "/im/" + window.location.hash.slice(1)
+var url = "/_maps" + (window.location.search
+                        ? "/im/" + window.location.search.slice(1)
                         : "") +
           "/tile/{x}/{y}/{z}";
+
+var attribution = new ol.control.Attribution({
+  collapsible: false
+});
 
 var map = new ol.Map({
   interactions: ol.interaction.defaults().extend([
@@ -32,16 +36,24 @@ var map = new ol.Map({
     new ol.layer.Tile({
       source: new ol.source.XYZ({
         url: url,
+        attributions: [
+            new ol.Attribution({
+                html: 'Made with &hearts; from Cambridge-JIC iGEM 2015'
+            }),
+        ],
       }),
       wrapX: false,
       wrapY: false,
       wrapDateLine: false,
     }),
   ],
+  controls: ol.control.defaults({ attribution: false }).extend([attribution]),
   target: 'map',
   view: new ol.View({
     center: [0, 0],
-    zoom: 8
+    zoom: 8,
+    minZoom: 4,
+    maxZoom: 12
   })
 });
 
