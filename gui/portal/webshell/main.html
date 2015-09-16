@@ -21,6 +21,9 @@
     <style>
         html, body {height: 100%;}
         .container {height: 100%;}
+.col-md-4 h2:hover {
+cursor: pointer;
+}
 .btn {
 margin-bottom: 7px;
 }
@@ -461,6 +464,11 @@ $("#clearline").click(function(){
 $("#line").css("width", "0")
 });
 
+
+$(".col-md-4 h2").click(function(){
+$(this).next("div").slideToggle("fast")
+})
+
 });
 
 var draggingDistance = false, dragStartX = 0, dragStartY=0, dragEndX = 0, dragEndY = 0;
@@ -514,6 +522,7 @@ $.ajax({
         </div>
         <div class="col-md-4" style="width: 30%;padding-left: 5px">
           <h2>Camera Control</h2>
+<div id="camcontrol">
           <p><center>
 <a class="btn btn-default" href="#" role="button" id="camhold">Hold</a>
 <a class="btn btn-default" href="#" role="button" id="camrel">Release</a><br />
@@ -522,47 +531,50 @@ $.ajax({
     <input type="checkbox" id="scalecap"> Add scale bar to captured images
 </label>
 </center></p>
+</div>
 
           <h2>Measurement</h2>
-          <p>
+<div id="measurement">          <p>
 <center><span id="measureinfo"></span><br />
 <a class="btn btn-default" href="#" role="button" id="dragbtn"><span class="glyphicon glyphicon-pushpin"></span><br />Drag to measure</a> <a class="btn btn-default" href="#" role="button" id="clearline"><span class="glyphicon glyphicon-erase"></span><br />Clear</a><br />
 
-           </center></p>
+           </center></p></div>
 
          <h2>LED Control</h2>
-<p>(Pressing Shift to toggle works too)</p>
+<div id="leds"><p>(Pressing Shift to toggle works too)</p>
           <p>Current LED: <span id="ledmode"></span> </p>
           <p><center>
 <a class="btn btn-default" href="#" role="button" id="led0">Brightfield</a>
 <a class="btn btn-default" href="#" role="button" id="led1">Fluorescence</a>
 <a class="btn btn-default" href="#" role="button" id="led2">Off</a><br/>
 <a class="btn btn-default btn-warning" href="#" role="button" id="ledtog">Toggle</a>
-</center></p>
+</center></p></div>
+
           <h2>Motor Control</h2>
-<p>(Pressing WASD for x and y movement and Q and E for z movement works too)</p>
+<div id="motors"><p>(Pressing WASD for x and y movement and Q and E for z movement works too)</p>
           <p>
-        <form class="form-inline">
 X: <input type="text" class="input-large" value="100" id="motx_" /> <a class="btn btn-default" href="#" role="button" id="motx">Go!</a> <a class="btn btn-default" href="#" role="button" id="motxb">Back!</a><br />
 Y: <input type="text" class="input-large" value="100" id="moty_" /> <a class="btn btn-default" href="#" role="button" id="moty">Go!</a> <a class="btn btn-default" href="#" role="button" id="motyb">Back!</a><br />
 Z: <input type="text" class="input-large" value="600" id="motz_" /> <a class="btn btn-default" href="#" role="button" id="motz">Go!</a> <a class="btn btn-default" href="#" role="button" id="motzb">Back!</a><br />
-</form>
-</p>
+</p></div>
+
           <h2>Timelapse</h2>
+<div id="timelapse">
           <center><p>
 <div id="currtl"></div>
 Delay between images (seconds): <input type="text" id="delay" value="60" /><br />
 Number of images to take: <input type="text" id="times" value="2" /></p><p>
 <a href="#" role="button" class="btn btn-default btn-danger" id="tl"><span class="glyphicon glyphicon-time"></span><br />Set</a>
 </p></center>
+</div>
 
           <h2>Exposure</h2>
-          <p>
+<div id="exposure">          <p>
 <center>ISO: <input type="text" id="enterexp" value="400" />
 <a class="btn btn-default" href="#" role="button" id="setexp">Set</a><br />
 
            </center></p>
-
+</div>
          </div>
 <br style="clear:both"/>
       <hr>
