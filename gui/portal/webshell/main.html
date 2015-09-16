@@ -295,41 +295,41 @@ $("#enterexp").attr("value", data)
 });
 
 $('html').keyup(function(e){
-    if(e.keyCode == 38){
+    if(e.keyCode == 87){
 $.ajax({
   url: "/_webshell/control/motor/1/"+((-1)*($("#motx_").attr("value"))),
   context: document.body
 }).done();
 e.preventDefault();
     }
-    if(e.keyCode == 39){
+    if(e.keyCode == 68){
 $.ajax({
   url: "/_webshell/control/motor/0/"+($("#moty_").attr("value")),
   context: document.body
 }).done();
 e.preventDefault();
     }
-    if(e.keyCode == 37){
+    if(e.keyCode == 65){
 $.ajax({
   url: "/_webshell/control/motor/0/"+((-1)*($("#moty_").attr("value"))),
   context: document.body
 }).done();
 e.preventDefault();
     }
-    if(e.keyCode == 40){
+    if(e.keyCode == 83){
 $.ajax({
   url: "/_webshell/control/motor/1/"+($("#motx_").attr("value")),
   context: document.body
 }).done();
 e.preventDefault();
     }
-    if(e.keyCode == 65){
+    if(e.keyCode == 81){
 $.ajax({
   url: "/_webshell/control/motor/2/"+($("#motz_").attr("value")),
   context: document.body
 }).done();
     }
-    if(e.keyCode == 83){
+    if(e.keyCode == 69){
 $.ajax({
   url: "/_webshell/control/motor/2/"+((-1)*($("#motz_").attr("value"))),
   context: document.body
@@ -527,6 +527,7 @@ $.ajax({
            </center></p>
 
          <h2>LED Control</h2>
+<p>(Pressing Shift to toggle works too)</p>
           <p>Current LED: <span id="ledmode"></span> </p>
           <p><center>
 <a class="btn btn-default" href="#" role="button" id="led0">Brightfield</a>
@@ -535,6 +536,7 @@ $.ajax({
 <a class="btn btn-default btn-warning" href="#" role="button" id="ledtog">Toggle</a>
 </center></p>
           <h2>Motor Control</h2>
+<p>(Pressing WASD for x and y movement and Q and E for z movement works too)</p>
           <p>
         <form class="form-inline">
 X: <input type="text" class="input-large" value="100" id="motx_" /> <a class="btn btn-default" href="#" role="button" id="motx">Go!</a> <a class="btn btn-default" href="#" role="button" id="motxb">Back!</a><br />
