@@ -19,6 +19,8 @@ native_z = 8
 w, h = 256, 256
 @app.route('/tile/<x>/<y>/<z>')
 def tile(x, y, z):
+    import time
+    start = time.time()
     global native_z, w, h, maps
     x, y, z = int(x), int(y), int(z)
     #y = (1 << z) - y
@@ -39,10 +41,11 @@ def tile(x, y, z):
             im[yy*hh:(yy+1)*hh,xx*ww:(xx+1)*ww] = thumb
 
     _, buf = cv2.imencode('.png', im)
-    return Response(buf.tobytes(), mimetype='image/png')
+    print(time.time() - start)
+    return Response(buf.tostring(), mimetype='image/png')
 
 if __name__ == '__main__':
-    from gui.μap.maps import MicroMaps
+    from gui.maps.micro import MicroMaps
     maps = MicroMaps()
-    app.run('0.0.0.0', 8080, debug=True)
+    app.run('0.0.0.0', 9005, debug=True)
 

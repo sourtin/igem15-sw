@@ -68,6 +68,8 @@ def set(user, pw):
     fo = open("nginx/server.htpasswd.disabled", "w")
     fo.writelines(lines_dis)
     fo.close()
+
+    os.makedirs("/home/pi/igem15-sw/captured/%s" % user.replace('/', ''), exist_ok=True)
     #os.system("nginx/nginx -p nginx -c nginx.conf -s reload")
     return 'OK'
 

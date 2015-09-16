@@ -37,7 +37,17 @@ display: none;
   <body>
 
 <script type="text/javascript">
-var username = "", galdat = "", currstart = 0, currend = 20;
+var username = "", galdat = "", currstart = 0, currend = 20, usr = "";
+
+function getQueryString(variable) {
+   var query = window.location.search.substring(1);
+   var vars = query.split("&");
+   for (var i=0;i<vars.length;i++) {
+      var pair = vars[i].split("=");
+      if(pair[0] == variable){return pair[1];}
+   }
+   return false;
+}
 
 $(document).ready(function(){
 
@@ -45,14 +55,14 @@ $.ajax({
     url: "/_admin/user/",
     context: document.body
 }).done(function(data){
-    $("#user").text(data);
+    usr = getQueryString("name")
+    $("#user").text(usr);
     username = data;
     // load images into gallery
     $.ajax({
-        url: "/captured/"+username+"/",
+        url: "/captured/"+usr+"/",
         context: document.body
     }).done(function(data){
-        console.log(data)
         galdat = data
         generateGal()
     })
@@ -64,8 +74,12 @@ $.ajax({
         var arr = data.split("\">").splice(3)
         for(var i=0;i<arr.length;i++){
             var s = arr[i].split("/</a")[0]
-            if(s != username)
-                addUser(s)
+            if(s != username){
+                if(s != usr){
+                    addUser(s)
+                }
+            } else
+                addSelf(s)
         }
     })
 })
@@ -77,6 +91,7 @@ $.ajax({
 function generateGal() {
 $("#gall").html("")
 arr = galdat.split("href=\"").splice(2)
+
 if(arr.length == 0) {
 $("#nopics").show()
 $("#mypics").hide()
@@ -101,18 +116,27 @@ $("#npage").css("color", "#337AB7")
 
         for(var i=currstart; i < Math.min(arr.length, currend); i++){
             var url = arr[i].split("\"")[0]
-            addGal("/captured/"+username+"/"+url, unescape(url))
+            addGal("/captured"+usr+"/"+url, unescape(url))
         }
         readyGallery()
 }
 
 function addUser(name) {
-$("#usrs").append($('<li><a href="user.html?name='+escape(name)+'">'+name+'</a></li>'))
+$("#usrs").append($('<li><a href="usergal.html?name='+escape(name)+'">'+name+'</a></li>'))
+}
+
+function addSelf(name) {
+$("#usrs").append($('<li><a href="index.html">'+name+'</a></li>'))
 }
 
 function addGal(url, title) {
 $("#gall").append($('<a class="fancybox" rel="gallery1" href="'+url+'" title="'+title+'"><img src="'+url+'" style="width: 200px" alt="" /></a>'));
 }
+
+function addUser(name) {
+$("#usrs").append($('<li><a href="usergal.html?name='+escape(name)+'">'+name+'</a></li>'))
+}
+
 
 function readyGallery() {
 $(".fancybox").fancybox({
@@ -166,10 +190,10 @@ generateGal()
     <div class="container">
 
       <div class="main">
-        <h1>Let's see some of your images, <span id="user"></span></h1>
-        <p id="nopics" class="lead">Boo! You haven't taken any yet. Why not take some using <a href="/webshell/main.html">webshell</a>?</p>
+        <h1>Let's see some of <span id="user"></span>'s images.</h1>
+        <p id="nopics" class="lead">Boo! They haven't taken any yet. Why not one-up them and take some using <a href="/webshell/main.html">webshell</a>?</p>
 <div id="mypics">
-<h3>Your images</h3>
+<h3>Their images</h3>
 <p><center><a href="javascript:prevPage()" id="ppage">&lt;</a> <span id="pname"></span> <a href="javascript:nextPage()" id="npage">&gt;</a></center></p>
 <p><div id="gall"></div></p>
 
