@@ -9,6 +9,7 @@ import re
 import uuid
 import fnmatch
 import urllib
+import json
 from PIL import Image, ImageDraw, ImageFont
 
 class MjpgStreamer:
@@ -122,8 +123,11 @@ class MjpgStreamer:
             data = json.load(fov)
             fov_w = data[0]
 
-        startline = (int(width/100.0), int(height * 90/100.0))
-        endline = (int(width/100.0 + width*100.0/fov_w), int(height * 90/100.0))
+
+        print(fov_w)
+
+        startline = (int(width*5/100.0), int(height * 90/100.0))
+        endline = (int(width*5/100.0 + width*100.0/fov_w), int(height * 90/100.0))
 
         draw = ImageDraw.Draw(im)
         draw.line([startline, endline], width=int(height*9/1000.0))
