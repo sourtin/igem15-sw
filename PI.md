@@ -31,7 +31,15 @@ First the installation media must be prepared. Acquire a 16GB+ microSD card (8GB
 After downloading the latest version from the raspberry pi foundation and imaging a microSD card with it, boot the raspberrry pi from it by inserting the microSD card into it and supplying power. Now you will be provided with a menu. You should expand the filesystem, change the password and enable the camera. You may at this point want to increase the graphics memory split from 128 (MB) to 256. You can do this within Advanced Options, under Memory Split.
 
 ### Packages
-Edit `/etc/apt/sources.list` with your favourite text editor, e.g. `nano`, or `vi` (`sudo nano /etc/apt/sources.list`) and change `wheezy` to `jessie` (or later) to get the appropriate packages. Now update the cache using `sudo apt-get update` and the distribution with `sudo apt-get dist-upgrade`. *This may take a while*. Finally let's recover some space with `sudo apt-get clean`. Finally, update your firmware to the latest version by running `sudo rpi-update`.
+Edit `/etc/apt/sources.list` with your favourite text editor, e.g. `nano`, or `vi` (`sudo nano /etc/apt/sources.list`) and change `wheezy` to `jessie` (or later) to get the appropriate packages. Now update the cache using `sudo apt-get -y update` and the distribution with `sudo apt-get -y dist-upgrade`. *This may take a while*. Finally let's recover some space with `sudo apt-get -y clean`. Finally, update your firmware to the latest version by running `sudo rpi-update`.
+
+    sudo nano /etc/apt/sources.list
+    sudo apt-get -y update
+    sudo apt-get -y dist-upgrade
+    sudo apt-get -y clean
+    sudo rpi-update
+
+Select 'yes' when prompted!
 
 Now obtain our software, entering your password as needed:
 
