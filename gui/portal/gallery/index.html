@@ -67,8 +67,10 @@ $("#gall").html("")
 arr = galdat.split("href=\"").splice(2)
 if(arr.length == 0) {
 $("#nopics").show()
+$("#mypics").hide()
+return;
 }
-        for(var i=start; i<arr.length || i < end; i++){
+        for(var i=start; i < Math.min(arr.length, end); i++){
             var url = arr[i].split("\"")[0]
             addGal("/captured"+username+"/"+url, "")
         }
