@@ -2,6 +2,7 @@ from werkzeug.contrib.fixers import ProxyFix
 from flask import Flask
 from flask import request, Response
 import json
+import requests
 
 import sys
 sys.path.append("/home/pi/igem15-sw/")
@@ -44,14 +45,12 @@ def get_if_timelapse():
 @app.route("/zstack/<amount>/<times>")
 def zstack(amount, times):
     imgs = []
-    MjpgStreamer.stop()
+
+    driver.move_motor(2, int(-int(amount)*int(times)/2))
     for _ in range(int(times)):
-        imgs.append("/home/pi/igem15-sw%s" % MjpgStreamer.captureImgNoStop(request.authorization.username))
+        imgs.append(requests.get("http://127.0.0.1:9002/?action=snapshot").content)
         driver.move_motor(2, int(amount))
-    MjpgStreamer.start()
-    #ret = ''
-    #for a in imgs:
-    #    ret += '<a href="'+a+'">'+a+'</a><br/>'
+    driver.move_motor(2, int(+int(amount)*int(times)/2))
 
     ret = edf.edf(imgs, request.authorization.username)
     return ret
