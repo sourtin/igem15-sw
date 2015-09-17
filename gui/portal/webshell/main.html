@@ -234,7 +234,7 @@ $.ajax({
   url: "/_webshell/zstack/"+$("#zamountmove").prop("value")+"/"+$("#zsettimes").prop("value"),
   context: document.body
 }).done(function(data){
-$(this).attr("disabled", "false")
+$(this).removeAttr("disabled")
 $("#capt").html("<img src=\""+data+"\"/>")
 //setTimeout(restartCam, 1000)
 });
