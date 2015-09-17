@@ -3,3 +3,4 @@ __pycache__
 *.pyc
 nginx/server*
 captured/*
+gui/portal/webshell/fov.json
