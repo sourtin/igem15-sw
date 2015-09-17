@@ -229,10 +229,12 @@ $("#ledmode").html(data)
 
 
 $("#zstack").on("click", function(){
+$(this).prop("disabled", "true")
 $.ajax({
   url: "/_webshell/zstack/"+$("#zamountmove").prop("value")+"/"+$("#zsettimes").prop("value"),
   context: document.body
 }).done(function(data){
+$(this).prop("disabled", "false")
 $("#capt").html("<img src=\""+data+"\"/>")
 setTimeout(restartCam, 1000)
 });
@@ -682,7 +684,7 @@ Number of images to take: <input type="number" id="times" value="2" /></p><p>
 <span id="ntz">Number of times to take images: <input type="number" id="zsettimes" value="5" /></span><br />
 <span id="ntz2">Amount to move motor each time: <input type="number" id="zamountmove" value="100" /></span><br />
 
-<a class="btn btn-default" href="#" role="button" id="zstack">Run Z-Stack</a> 
+<a class="btn btn-default" href="#" role="button" id="zstack">Run Z-Stack</a>
            </center></p></div>
 
          </div>
