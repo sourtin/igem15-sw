@@ -28,7 +28,7 @@ def reset():
 
 def prune(timeout=30):
     global maps_im
-    for im in list(maps):
+    for im in list(maps_im):
         stamp, _ = maps_im[im]
         if time.time() - stamp > timeout:
             del maps_im[im]
