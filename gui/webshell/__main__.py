@@ -2,6 +2,7 @@ from werkzeug.contrib.fixers import ProxyFix
 from flask import Flask
 from flask import request, Response
 import json
+import requests
 
 import sys
 sys.path.append("/home/pi/igem15-sw/")
@@ -9,7 +10,9 @@ sys.path.append("/home/pi/igem15-sw/")
 from gui.webshell.mjpgstreamer import MjpgStreamer
 import gui.webshell.locker
 from gui.webshell.timelapser import Timelapser
+from gui.webshell import edf
 from hw.ledmotorcontrol import driver
+from img_processing.identificationTesting.autofocus import test_autofocus
 
 tlThread = None
 
@@ -43,18 +46,20 @@ def get_if_timelapse():
 @app.route("/zstack/<amount>/<times>")
 def zstack(amount, times):
     imgs = []
-    for _ in xrange(int(times)):
-        imgs.append(MjpgStreamer.captureImg(request.authorization.username))
+
+    driver.move_motor(2, int(-int(amount)*int(times)/2))
+    for _ in range(int(times)):
+        imgs.append(requests.get("http://127.0.0.1:9002/?action=snapshot").content)
         driver.move_motor(2, int(amount))
-    # todo:
-    # apply z stack algorithm to images
-    # save image
-    # return image file
-    # for now, link to the captured images and let user do it themselves
-    ret = ''
-    for a in imgs:
-        ret += '<a href="'+a+'">'+a+'</a><br/>'
+    driver.move_motor(2, int(+int(amount)*int(times)/2))
+
+    ret = edf.edf(imgs, request.authorization.username)
     return ret
+
+@app.route("/autofocus/")
+def autofocus():
+    test_autofocus(timeout=90)
+    return "done"
 
 @app.route("/")
 def root():

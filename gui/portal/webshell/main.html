@@ -228,10 +228,9 @@ $("#ledmode").html(data)
 });
 
 
-$("#camcap").on("click", function(){
-//$("#cam").html("Say cheese, little cells!")
+$("#zstack").on("click", function(){
 $.ajax({
-  url: "/_webshell/capture"+($("#scalecap").prop("checked") ? "_scale/"+fov_w : "/"),
+  url: "/_webshell/zstack/"+$("#zamountmove").prop("value")+"/"+$("#zsettimes").prop("value"),
   context: document.body
 }).done(function(data){
 $("#capt").html("<img src=\""+data+"\"/>")
@@ -245,8 +244,25 @@ $.ajax({
   context: document.body
 }).done(function(data){
 $("#capt").html("<img src=\""+data+"\"/>")
+
+//openMicroMaps(data) // does not work fully yet... ask will why!
+
 });
 });
+
+
+$("#camcap").on("click", function(){
+//$("#cam").html("Say cheese, little cells!")
+$.ajax({
+  url: "/_webshell/capture"+($("#scalecap").prop("checked") ? "_scale/"+fov_w : "/"),
+  context: document.body
+}).done(function(data){
+$("#capt").html("<img src=\""+data+"\"/>")
+//openMicroMaps(data)
+setTimeout(restartCam, 1000)
+});
+});
+
 
 
 $("#motx").on("click", function(){
@@ -292,6 +308,13 @@ $.ajax({
   url: "/_webshell/control/motor/2/"+(parseInt($("#motz_").attr("value"))*(-1)),
   context: document.body
 }).done(function(){$("#motzb").removeAttr("disabled")});
+});
+$("#autofocus").on("click", function(){
+$("#autofocus").attr("disabled", "true")
+$.ajax({
+  url: "/_webshell/autofocus/",
+  context: document.body
+}).done(function(){$("#autofocus").removeAttr("disabled")});
 });
 
 
@@ -531,6 +554,14 @@ $(".container").css("cursor", "crosshair");
 
 });
 
+function openMicroMaps(data) {
+$("#buttons").html("")
+$('<a href="#" role="button" class="btn btn-default btn-success launch"><span class="glyphicon glyphicon-globe"></span><br />Open in MicroMaps (alpha)</a>').click(function(){
+window.location.href = "/maps/?"+data.substring(10)
+}).appendTo("#buttons");
+
+}
+
 var draggingDistance = false, dragStartX = 0, dragStartY=0, dragEndX = 0, dragEndY = 0, calibration = 0, callen = 0, caldeg = 0;
 
 function ensureTl(){
@@ -582,6 +613,7 @@ $.ajax({
 <p>
 <h2>Last captured image:</h2>
 <div id="capt"></div>
+<div id="buttons" style="text-align: center; margin-top: 20px"></div>
 <br />
 Wanna see what you've got? Visit your <a href="/gallery/">gallery</a>...
 </p>
@@ -623,6 +655,7 @@ Wanna see what you've got? Visit your <a href="/gallery/">gallery</a>...
 X: <input type="number" class="input-large" value="100" id="motx_" /> <a class="btn btn-default" href="#" role="button" id="motx">Go!</a> <a class="btn btn-default" href="#" role="button" id="motxb">Back!</a><br />
 Y: <input type="number" class="input-large" value="100" id="moty_" /> <a class="btn btn-default" href="#" role="button" id="moty">Go!</a> <a class="btn btn-default" href="#" role="button" id="motyb">Back!</a><br />
 Z: <input type="number" class="input-large" value="600" id="motz_" /> <a class="btn btn-default" href="#" role="button" id="motz">Go!</a> <a class="btn btn-default" href="#" role="button" id="motzb">Back!</a><br />
+<center><a class="btn btn-default" href="#" role="button" id="autofocus">Autofocus!</a></center><br />
 </p></div>
 
           <h2>Timelapse</h2>
@@ -642,6 +675,16 @@ Number of images to take: <input type="number" id="times" value="2" /></p><p>
 
            </center></p>
 </div>
+          <h2>Z-stack</h2>
+<div id="zstack">
+<p>Put in focus first.</p>
+          <p>
+<span id="ntz">Number of times to take images: <input type="number" id="zsettimes" value="5" /></span><br />
+<span id="ntz2">Amount to move motor each time: <input type="number" id="zamountmove" value="100" /></span><br />
+
+<a class="btn btn-default" href="#" role="button" id="zstack">Run Z-Stack</a> 
+           </center></p></div>
+
          </div>
 <br style="clear:both"/>
 <hr />
