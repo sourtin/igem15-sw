@@ -51,7 +51,7 @@ def zstack(amount, times):
     for _ in range(int(times)):
         imgs.append(requests.get("http://127.0.0.1:9002/?action=snapshot").content)
         driver.move_motor(2, int(amount))
-    driver.move_motor(2, int(+int(amount)*int(times)/2))
+    driver.move_motor(2, int(-int(amount)*int(times)/2))
 
     ret = edf.edf(imgs, request.authorization.username)
     return ret
