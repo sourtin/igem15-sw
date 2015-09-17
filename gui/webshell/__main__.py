@@ -78,9 +78,9 @@ def capture():
 def capture_stream():
     return Response(MjpgStreamer.captureImgStream(), mimetype='image/png')
 
-@app.route("/capture_scale/")
-def capture_scale():
-    return MjpgStreamer.scaleCaptureImg(MjpgStreamer.captureImg(request.authorization.username))
+@app.route("/capture_scale/<cal>")
+def capture_scale(cal):
+    return MjpgStreamer.scaleCaptureImg(MjpgStreamer.captureImg(request.authorization.username), cal)
 
 @app.route("/calibrate/<len>/<rad>/<actual>")
 def calibrate(len, rad, actual):
@@ -95,9 +95,9 @@ def calibrate(len, rad, actual):
 def snap():
     return MjpgStreamer.captureSnap(request.authorization.username)
 
-@app.route("/snap_scale/")
-def snap_scale():
-    return MjpgStreamer.scaleCaptureImg(MjpgStreamer.captureSnap(request.authorization.username))
+@app.route("/snap_scale/<cal>")
+def snap_scale(cal):
+    return MjpgStreamer.scaleCaptureImg(MjpgStreamer.captureSnap(request.authorization.username), cal)
 
 @app.route("/prune/")
 def prune():
