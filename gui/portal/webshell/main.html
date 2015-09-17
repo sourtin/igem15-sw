@@ -231,7 +231,7 @@ $("#ledmode").html(data)
 $("#camcap").on("click", function(){
 //$("#cam").html("Say cheese, little cells!")
 $.ajax({
-  url: "/_webshell/capture"+($("#scalecap").prop("checked") ? "_scale" : "")+"/",
+  url: "/_webshell/capture"+($("#scalecap").prop("checked") ? "_scale/"+fov_w : "/"),
   context: document.body
 }).done(function(data){
 $("#capt").html("<img src=\""+data+"\"/>")
@@ -241,7 +241,7 @@ setTimeout(restartCam, 1000)
 
 $("#camsnap").on("click", function(){
 $.ajax({
-  url: "/_webshell/snap"+($("#scalecap").is(":checked") ? "_scale" : "")+"/",
+  url: "/_webshell/snap"+($("#scalecap").is(":checked") ? "_scale/"+fov_w : "/"),
   context: document.body
 }).done(function(data){
 $("#capt").html("<img src=\""+data+"\"/>")
