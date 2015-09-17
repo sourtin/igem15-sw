@@ -19,6 +19,12 @@ from gui.maps.micro import MicroMaps
 maps_live = MicroMaps()
 maps_im = {}
 
+@app.route("/reset/")
+def reset():
+    global maps_live
+    maps_live = MicroMaps()
+    return redir()
+
 native_z = 8
 w, h = 256, 256
 def tile(maps, x, y, z):
@@ -41,7 +47,10 @@ def tile(maps, x, y, z):
             im[yy*hh:(yy+1)*hh,xx*ww:(xx+1)*ww] = thumb
 
     _, buf = cv2.imencode('.png', im)
-    return Response(buf.tostring(), mimetype='image/png')
+    response = Response(buf.tostring(), mimetype='image/png')
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
 
 @app.route('/tile/<x>/<y>/<z>')
 def live(x, y, z):
