@@ -315,47 +315,43 @@ $("#enterexp").attr("value", data)
 });
 
 $('html').keyup(function(e){
-    if(e.keyCode == 87){
+    if(e.keyCode == 87){ // w
 $.ajax({
-  url: "/_webshell/control/motor/1/"+((-1)*($("#motx_").attr("value"))),
+  url: "/_webshell/control/motor/1/"+((-1)*($("#moty_").attr("value"))),
   context: document.body
 }).done();
-e.preventDefault();
     }
-    if(e.keyCode == 68){
+    if(e.keyCode == 68){ // d
 $.ajax({
-  url: "/_webshell/control/motor/0/"+($("#moty_").attr("value")),
+  url: "/_webshell/control/motor/0/"+($("#motx_").attr("value")),
   context: document.body
 }).done();
-e.preventDefault();
     }
-    if(e.keyCode == 65){
+    if(e.keyCode == 65){ // a
 $.ajax({
-  url: "/_webshell/control/motor/0/"+((-1)*($("#moty_").attr("value"))),
+  url: "/_webshell/control/motor/0/"+((-1)*($("#motx_").attr("value"))),
   context: document.body
 }).done();
-e.preventDefault();
     }
-    if(e.keyCode == 83){
+    if(e.keyCode == 83){ // s
 $.ajax({
-  url: "/_webshell/control/motor/1/"+($("#motx_").attr("value")),
+  url: "/_webshell/control/motor/1/"+($("#moty_").attr("value")),
   context: document.body
 }).done();
-e.preventDefault();
     }
-    if(e.keyCode == 81){
+    if(e.keyCode == 81){ // q
 $.ajax({
   url: "/_webshell/control/motor/2/"+($("#motz_").attr("value")),
   context: document.body
 }).done();
     }
-    if(e.keyCode == 69){
+    if(e.keyCode == 69){ // e
 $.ajax({
   url: "/_webshell/control/motor/2/"+((-1)*($("#motz_").attr("value"))),
   context: document.body
 }).done();
     }
-if(e.keyCode == 16){
+if(e.keyCode == 90){ // z
 $.ajax({
   url: "/_webshell/control/led/toggle/_",
   context: document.body
@@ -612,7 +608,7 @@ Wanna see what you've got? Visit your <a href="/gallery/">gallery</a>...
            </center></p></div>
 
          <h2>LED Control</h2>
-<div id="leds"><p>(Pressing Shift to toggle works too)</p>
+<div id="leds"><p>(Pressing <strong>Z</strong> to toggle works too)</p>
           <p>Current LED: <span id="ledmode"></span> </p>
           <p><center>
 <a class="btn btn-default" href="#" role="button" id="led0">Brightfield</a>
@@ -622,7 +618,7 @@ Wanna see what you've got? Visit your <a href="/gallery/">gallery</a>...
 </center></p></div>
 
           <h2>Motor Control</h2>
-<div id="motors"><p>(Pressing WASD for x and y movement and Q and E for z movement works too)</p>
+<div id="motors"><p>(Pressing <strong>WASD</strong> for x and y movement and <strong>Q</strong> and <strong>E</strong> for z movement works too)</p>
           <p>
 X: <input type="number" class="input-large" value="100" id="motx_" /> <a class="btn btn-default" href="#" role="button" id="motx">Go!</a> <a class="btn btn-default" href="#" role="button" id="motxb">Back!</a><br />
 Y: <input type="number" class="input-large" value="100" id="moty_" /> <a class="btn btn-default" href="#" role="button" id="moty">Go!</a> <a class="btn btn-default" href="#" role="button" id="motyb">Back!</a><br />
