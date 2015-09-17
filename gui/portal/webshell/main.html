@@ -531,6 +531,8 @@ $(".container").css("cursor", "crosshair");
   }
 })
 
+//$(window).scroll(function(){$("div.col-md-4:nth-child(2)").css("margin-top", ($(window).scrollTop()-40)+"px")})
+
 });
 
 var draggingDistance = false, dragStartX = 0, dragStartY=0, dragEndX = 0, dragEndY = 0, calibration = 0, callen = 0, caldeg = 0;
@@ -559,7 +561,7 @@ $.ajax({
     <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="container">
         <div class="navbar-header">
-          <a class="navbar-brand" href="#">WebShell.</a>
+          <a class="navbar-brand" href="/">WebShell.</a>
         </div>
 
 <div id="navbar" class="collapse navbar-collapse" style="float: right">
@@ -588,7 +590,7 @@ $.ajax({
 Wanna see what you've got? Visit your <a href="/gallery/">gallery</a>...
 </p>
         </div>
-        <div class="col-md-4" style="width: 30%;padding-left: 5px">
+        <div class="col-md-4" style="width: 29%;padding-left: 25px;">
           <h2>Camera Control</h2>
 <div id="camcontrol">
           <p><center>
