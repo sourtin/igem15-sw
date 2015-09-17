@@ -235,6 +235,7 @@ $.ajax({
   context: document.body
 }).done(function(data){
 $("#capt").html("<img src=\""+data+"\"/>")
+openMicroMaps(data)
 setTimeout(restartCam, 1000)
 });
 });
@@ -245,6 +246,9 @@ $.ajax({
   context: document.body
 }).done(function(data){
 $("#capt").html("<img src=\""+data+"\"/>")
+
+openMicroMaps(data)
+
 });
 });
 
@@ -531,6 +535,14 @@ $(".container").css("cursor", "crosshair");
 
 });
 
+function openMicroMaps(data) {
+$("#buttons").html("")
+$('<a href="#" role="button" class="btn btn-default btn-success launch"><span class="glyphicon glyphicon-globe"></span><br />Open in MicroMaps (alpha)</a>').click(function(){
+window.location.href = "/maps/?"+data.substring(10)
+}).appendTo("#buttons");
+
+}
+
 var draggingDistance = false, dragStartX = 0, dragStartY=0, dragEndX = 0, dragEndY = 0, calibration = 0, callen = 0, caldeg = 0;
 
 function ensureTl(){
@@ -582,6 +594,7 @@ $.ajax({
 <p>
 <h2>Last captured image:</h2>
 <div id="capt"></div>
+<div id="buttons" style="text-align: center; margin-top: 20px"></div>
 <br />
 Wanna see what you've got? Visit your <a href="/gallery/">gallery</a>...
 </p>
