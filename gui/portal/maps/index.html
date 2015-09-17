@@ -14,33 +14,33 @@
         height: 100%;
     }
 
-    .overlay, .map {
+    .map {
         position: absolute;
         top: 0;
         left: 0;
-    }
-
-    .overlay {
-        color: green;
-        z-index: 100;
     }
 
     .reset-button {
         position: absolute;
         bottom: 10px;
         left: 10px;
+        z-index: 100;
     }
 </style>
 
 </head>
 <body>
-<div class="overlay"><a class="btn btn-default btn-danger reset-button" href="/_maps/reset/">Reset</a></div>
+<a class="btn btn-default btn-danger reset-button" href="/_maps/reset/">Reset</a>
 <div id="map" class="map"></div>
 <script>
 var url = "/_maps" + (window.location.search
                         ? "/im/" + window.location.search.slice(1)
                         : "") +
           "/tile/{x}/{y}/{z}";
+
+if (window.location.search ) {
+    $('.reset-button').remove();
+}
 
 var attribution = new ol.control.Attribution({
   collapsible: false
