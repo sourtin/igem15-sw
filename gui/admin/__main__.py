@@ -56,9 +56,9 @@ def set(user, pw):
     users_dis = [line.split(":")[0] for line in lines_dis]
 
     if user in users_dis:
-        lines_dis[users_dis.index(user)] = user+":"+pw+"\n"
+        lines_dis[users_dis.index(user)] = user.replace(':', '')+":"+pw+"\n"
     elif user in users:
-        lines[users.index(user)] = user+":"+pw+"\n"
+        lines[users.index(user)] = user.replace(':', '')+":"+pw+"\n"
     else:
         lines.append(user+":"+pw+"\n")
 
