@@ -176,6 +176,14 @@ def get_dis():
     lines = [line.split(":")[0] for line in lines]
     return json.dumps(lines)
 
+@app.route("/delfile/<file>")
+def delfile(file):
+    try:
+        os.remove("/home/pi/igem15-sw/captured/%s/%s" % (request.authorization.username.replace('/', '').replace('..', ''), file.replace('/', '').replace('..', '')))
+    except:
+        return 'exception happened...'
+    return 'ok'
+
 app.wsgi_app = ProxyFix(app.wsgi_app)
 
 if __name__ == '__main__':
