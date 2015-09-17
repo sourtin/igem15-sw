@@ -153,6 +153,7 @@ fi
 
 sudo systemctl disable wicd
 sudo service wicd stop
+sudo mkdir -p /home/pi/igem15-sw/captured/admin
 sudo chown -R pi:pi /home/pi/igem15-sw
 echo SUCCESS, install completed
 
