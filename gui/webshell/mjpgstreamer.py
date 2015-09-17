@@ -57,7 +57,7 @@ class MjpgStreamer:
     @staticmethod
     def start():
         # start mjpg-streamer
-        if not MjpgStreamer.is_running("mjpg_streamer") and not os.path.isfile("/tmp/igemcam-lock"):
+        if not MjpgStreamer.is_running("mjpg_streamer"):# and not os.path.isfile("/tmp/igemcam-lock"):
             threading.Thread(target=MjpgStreamer._start).start()
 
     @staticmethod
@@ -67,7 +67,7 @@ class MjpgStreamer:
 
     @staticmethod
     def captureImg(user):
-        MjpgStreamer.touch("/tmp/igemcam-lock")
+        #MjpgStreamer.touch("/dev/shm/igemcam-lock")
         MjpgStreamer.stop()
         os.makedirs("/home/pi/igem15-sw/captured", exist_ok=True)
         os.chdir("/home/pi/igem15-sw/captured")
@@ -81,13 +81,13 @@ class MjpgStreamer:
             camera.start_preview()
             time.sleep(0.1)
             camera.capture('%s/%s.%s.jpg' % (user.replace('/', '').replace('..', ''), fname, uid))
-        os.remove("/tmp/igemcam-lock")
+        #os.remove("/dev/shm/igemcam-lock")
         MjpgStreamer.start()
         return '/captured/%s/%s.%s.jpg' % (user.replace('/', '').replace('..', ''), fname, uid)
 
     @staticmethod
     def captureImgStream():
-        MjpgStreamer.touch("/tmp/igemcam-lock")
+        #MjpgStreamer.touch("/dev/shm/igemcam-lock")
         MjpgStreamer.stop()
         stream = io.BytesIO()
         with picamera.PiCamera() as camera:
@@ -97,7 +97,7 @@ class MjpgStreamer:
             camera.start_preview()
             time.sleep(0.1)
             camera.capture(stream, format='png')
-        os.remove("/tmp/igemcam-lock")
+        #os.remove("/dev/igemcam-lock")
         MjpgStreamer.start()
         return stream.getvalue()
 

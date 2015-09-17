@@ -231,7 +231,7 @@ $("#ledmode").html(data)
 $("#camcap").on("click", function(){
 //$("#cam").html("Say cheese, little cells!")
 $.ajax({
-  url: "/_webshell/capture"+($("#scalecap").is(":checked") ? "_scale" : "")+"/",
+  url: "/_webshell/capture"+($("#scalecap").prop("checked") ? "_scale" : "")+"/",
   context: document.body
 }).done(function(data){
 $("#capt").html("<img src=\""+data+"\"/>")
@@ -598,7 +598,7 @@ Wanna see what you've got? Visit your <a href="/gallery/">gallery</a>...
 <a class="btn btn-default" href="#" role="button" id="camrel">Release</a><br />
 <a class="btn btn-default btn-success" href="#" role="button" id="camcap"><span class="glyphicon glyphicon-camera"></span><br />High-res</a> <a class="btn btn-default" href="#" role="button" id="camsnap"><span class="glyphicon glyphicon-picture"></span><br />Quick JPEG</a><br />
 <label class="checkbox">
-    <input type="checkbox" id="scalecap"> Add scale bar to captured images
+    <input type="checkbox" id="scalecap" checked="checked"> Add scale bar to captured images
 </label>
 </center></p>
 </div>
