@@ -33,7 +33,25 @@ display: none;
 .adminonly {
 display: none;
 }
+.imgd {
+position: relative;
+}
 
+.imgr {
+cursor: pointer
+}
+
+.topright {
+position: absolute;
+right: 10px;
+top: -50px;
+color:red;
+display: none
+}
+
+.imgd:hover > .topright {
+display:block;
+}
 </style>
 
   </head>
@@ -44,7 +62,6 @@ display: none;
 var username = "", galdat = "", currstart = 0, currend = 20;
 
 $(document).ready(function(){
-
 $.ajax({
     url: "/_admin/user/",
     context: document.body
@@ -57,7 +74,7 @@ $.ajax({
         url: "/captured/"+username+"/",
         context: document.body
     }).done(function(data){
-        console.log(data)
+        //console.log(data)
         galdat = data
         generateGal()
     })
@@ -106,7 +123,8 @@ $("#npage").css("color", "#337AB7")
 
         for(var i=currstart; i < Math.min(arr.length, currend); i++){
             var url = arr[i].split("\"")[0]
-            addGal("/captured/"+username+"/"+url, unescape(url))
+            if (i % 5 == 0) $("<br />").appendTo($("#gall"))
+            addGal("/captured/"+username+"/"+url, unescape(url), url)
         }
         readyGallery()
 }
@@ -115,8 +133,29 @@ function addUser(name) {
 $("#usrs").append($('<li><a href="user.html?name='+escape(name)+'">'+name+'</a></li>'))
 }
 
-function addGal(url, title) {
-$("#gall").append($('<span class="imgd"><span class="topright glyphicon glyphicon-remove"></span><a class="fancybox" rel="gallery1" href="'+url+'" title="'+title+'"><img src="'+url+'" style="width: 200px" alt="" /></a></span>'));
+function addGal(url, title, actual) {
+var addd = $('<span class="imgd"><span class="imgr topright glyphicon glyphicon-remove"></span><a class="fancybox" rel="gallery1" href="'+url+'" title="'+title+'"><img src="'+url+'" style="width: 200px" data-actual="'+actual+'" alt="" /></a></span>')
+addd.children(".imgr").mouseup(function(){
+
+var nm = ($(this).siblings("a").children("img").data("actual"));
+
+$.ajax({
+    url: "/_admin/delfile/"+nm,
+    context: document.body
+}).done(function(data){
+    $.ajax({
+        url: "/captured/"+username+"/",
+        context: document.body
+    }).done(function(data){
+        //console.log(data)
+        galdat = data
+        generateGal()
+    })
+})
+
+});
+
+$("#gall").append(addd)
 }
 
 function readyGallery() {
