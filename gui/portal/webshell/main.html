@@ -309,6 +309,13 @@ $.ajax({
   context: document.body
 }).done(function(){$("#motzb").removeAttr("disabled")});
 });
+$("#autofocus").on("click", function(){
+$("#autofocus").attr("disabled", "true")
+$.ajax({
+  url: "/_webshell/autofocus/",
+  context: document.body
+}).done(function(){$("#autofocus").removeAttr("disabled")});
+});
 
 
 $.ajax({
@@ -648,6 +655,7 @@ Wanna see what you've got? Visit your <a href="/gallery/">gallery</a>...
 X: <input type="number" class="input-large" value="100" id="motx_" /> <a class="btn btn-default" href="#" role="button" id="motx">Go!</a> <a class="btn btn-default" href="#" role="button" id="motxb">Back!</a><br />
 Y: <input type="number" class="input-large" value="100" id="moty_" /> <a class="btn btn-default" href="#" role="button" id="moty">Go!</a> <a class="btn btn-default" href="#" role="button" id="motyb">Back!</a><br />
 Z: <input type="number" class="input-large" value="600" id="motz_" /> <a class="btn btn-default" href="#" role="button" id="motz">Go!</a> <a class="btn btn-default" href="#" role="button" id="motzb">Back!</a><br />
+<center><a class="btn btn-default" href="#" role="button" id="autofocus">Autofocus!</a></center><br />
 </p></div>
 
           <h2>Timelapse</h2>
