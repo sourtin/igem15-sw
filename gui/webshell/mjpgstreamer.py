@@ -86,6 +86,22 @@ class MjpgStreamer:
         return '/captured/%s/%s.%s.jpg' % (user.replace('/', '').replace('..', ''), fname, uid)
 
     @staticmethod
+    def captureImgNoStop(user):
+        os.makedirs("/home/pi/igem15-sw/captured", exist_ok=True)
+        os.chdir("/home/pi/igem15-sw/captured")
+        os.makedirs(user.replace('/', '').replace('..', ''), exist_ok=True)
+        fname = str(datetime.datetime.now())
+        uid = str(uuid.uuid4())
+        with picamera.PiCamera() as camera:
+            camera.resolution = (2048, 1536)
+            camera.exposure_mode = 'night'
+            camera.iso = int(MjpgStreamer.iso)
+            camera.start_preview()
+            time.sleep(0.1)
+            camera.capture('%s/%s.%s.jpg' % (user.replace('/', '').replace('..', ''), fname, uid))
+        return '/captured/%s/%s.%s.jpg' % (user.replace('/', '').replace('..', ''), fname, uid)
+
+    @staticmethod
     def captureImgStream():
         #MjpgStreamer.touch("/dev/shm/igemcam-lock")
         MjpgStreamer.stop()
