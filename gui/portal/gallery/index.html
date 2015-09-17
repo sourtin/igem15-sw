@@ -8,7 +8,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Gallery</title>
+    <title>Gallery | OpenScope</title>
 
     <link href="/assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="/assets/fancybox/gallery.css" rel="stylesheet">
@@ -30,6 +30,9 @@ margin-left: 30px;
 #nopics {
 display: none;
 }
+.adminonly {
+display: none;
+}
 </style>
 
   </head>
@@ -47,6 +50,7 @@ $.ajax({
 }).done(function(data){
     $("#user").text(data);
     username = data;
+    if(data == "admin") $(".adminonly").show()
     // load images into gallery
     $.ajax({
         url: "/captured/"+username+"/",
@@ -172,6 +176,10 @@ generateGal()
 <h3>Your images</h3>
 <p><center><a href="javascript:prevPage()" id="ppage">&lt;</a> <span id="pname"></span> <a href="javascript:nextPage()" id="npage">&gt;</a></center></p>
 <p><div id="gall"></div></p>
+
+<br />
+<a style="float:right" href="/_webshell/prune/">Prune your old files till it takes up less than 50M</a> <br />
+<a class="adminonly" style="float:right" href="/_webshell/pruneall/">Prune everyone's old files to under 500M</a>
 
 </div>
 
