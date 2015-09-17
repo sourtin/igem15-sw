@@ -51,6 +51,7 @@ def tile(maps, x, y, z):
     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
+    return response
 
 @app.route('/tile/<x>/<y>/<z>')
 def live(x, y, z):
