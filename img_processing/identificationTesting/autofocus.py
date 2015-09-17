@@ -1,5 +1,11 @@
+# Carries out an autofocus algorithm from the textbook
+#  Microscope Image Processing by Qiang Wu (2008)
+# The implementation below is from section 16.3.3 (DWT is unstested and commented out)
+# 'Multiresolution Search for In-Focus Position'
+
+
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 #import dwt
 import urllib.request
 import ssl
@@ -496,6 +502,7 @@ def hill_climbing(f, step_size = 500):
             iterations +=1
             
         elif(iterations <= 2):
+            print('Changing search direction')
             return hill_climbing(f, -step_size)
             
          
@@ -506,7 +513,7 @@ def hill_climbing(f, step_size = 500):
             return ((z2 - 2 * step_size -2 , z2 - step_size, z2), (f0, f1, f2))
         
   
- def untested_hill_climbing(f, step_size = 500):
+def untested_hill_climbing(f, step_size = 500):
     """ Climb to a higher place, find a smaller interval containing focus position
     (z1, z2, z3),(f1, f2, f3) = hill_climbing(f)
     
@@ -618,15 +625,14 @@ def test_z_axis_repeatability():
     
 def test_autofocus():
     global score_history
-    print('Remember to start from below focus position')
     start_time = time.time()
     
     score_history = [] # Clear history
     m = microscope_control()
     
     # Find small interval containing focus position
-    #z,f = hill_climbing(m) # uses the raw variance score
-    z,f = untested_hill_climbing(m) # using DWT low resolution images, should have less noise!
+    z,f = hill_climbing(m) # uses the raw variance score
+    #z,f = untested_hill_climbing(m) # using DWT low resolution images, should have less noise!
     #print('Peak in between', z)
     #time.sleep(5)
     
@@ -637,7 +643,7 @@ def test_autofocus():
     m.move_motor(-z[2]+mu, 2)
     score_history.append(m.eval_score())
     #print('Prediction Score : %f' % score_history[-1])
-    interval = (mu-500, mu + 500)
+    interval = (mu-600, mu + 600)
     
     #print('Interval for fibonacci search', interval)
     #time.sleep(5)
@@ -657,12 +663,12 @@ def test_autofocus():
     end_time = time.time()
     print('Time takes is %f' %(end_time-start_time))
     
-    plt.plot(score_history)
-    plt.xlabel('Iterations')
-    plt.ylabel('Score')
-    plt.title('Score history')
-    plt.grid()
-    plt.show()
+    #plt.plot(score_history)
+    #plt.xlabel('Iterations')
+    #plt.ylabel('Score')
+    #plt.title('Score history')
+    #plt.grid()
+    #plt.show()
     
     return(score_history)
     
