@@ -1,5 +1,3 @@
-# bruteforce autofocus
-
 import numpy as np
 import matplotlib.pyplot as plt
 #import dwt
@@ -65,24 +63,108 @@ def parabola_fitting(z , f):
     else:
         return 0.5 * (E * (z3 ** 2 - z2 ** 2) - (z2 ** 2 - z1 ** 2))/(E * (z3 - z2) - (z2 - z1))
         
+def fibonacci_search(interval, f ):
+    """ Carry out the fibonacci search method according* to the paper:
+        'Autofocusing for tissue microscopy' by T.T.E.Yeo et al
+        
+        fibonacci_search(interval, f)
+        interval = (a, b)
+        f is the microscope control class
+        
+        
+        * The paper made two mistakes, the evaluations should be if (y1 > y2) not the other way round 
+        """
+
+    # ################### Functions #######################
     
+    phi = 0.5 * (1 + 5 ** 0.5) # Golden ratio
     
+    def fibs(n=None):
+        """ A generator, (thanks to W.J.Earley) that returns the fibonacci series """
+        a, b = 0, 1
+        yield 0
+        yield 1
+        if n is not None:
+            for _ in range(1,n):
+                b = b + a
+                a = b - a
+                yield(b)
+        else:
+            while True:
+                b = b + a
+                a = b - a
+                yield(b)
+            
+    def smallfib(m):
+        """ Return N such that fib(N) >= m """
+        n = 0
+        for fib in fibs(m):
+            if fib >= m:
+                return n
+            n = n + 1
+
+    def fib(n):
+        """ Evaluate the n'th fibonacci number """
+        return (phi ** n - (-phi) ** (-n))/(5 ** 0.5)
+
+    # ################# Fibonacci search #########################
+    a = interval[0]
+    b = interval[1]
+    N = smallfib(b-a)
+    delta = (fib(N-2)/fib(N))*(b-a)
+        
+    x1 = a + delta
+    x2 = b - delta
+    y1 = f(x1)
+    y2 = f(x2)
+           
+    for n in range(N-1, 1, -1):
+        #print ((x1,x2),(a,b))
+        if y1 > y2 :
+            a = x1
+            x1 = x2
+            y1 = y2
+            x2 = b - (fib(n-2)/fib(n))*(b-a)
+            y2 = f(x2)
+        else:
+            b = x2
+            x2 = x1
+            y2 = y1
+            x1 = a + (fib(n-2)/fib(n))*(b-a)
+            y1 = f(x1)
+    
+    if y1 < y2:
+        return x1
+    else:
+        return x2
+        
 class microscope_control:
     """ Microscope class to control motors and read images """
 
-    def __init__(self):
-        """ Set up HTTP request stuff """
+    def __init__(self, connection = 0):
+        """ Set up HTTP request stuff 
+        Connected to internet : connection = 0
+        Connected to OpenScope: connection = 1
+        """
         username = 'admin'
         password = 'test'
-        #theurl = 'https://172.29.9.20:9000/_webshell/control/motor/%d/%d' % (2,0)
 
         ctx = ssl.create_default_context()
         ctx.check_hostname = False
         ctx.verify_mode  = ssl.CERT_NONE
         https_handler = urllib.request.HTTPSHandler(context=ctx)
 
-        top_level_url = 'https://172.29.9.20:9000/'
-        # top_level_url = 'https://192.168.0.1:9000/'
+        # Set the urls
+        if connection == 0:
+            top_level_url = 'https://172.29.9.20:9000/' # Connected to internet           
+        elif connection == 1:
+
+            top_level_url = 'https://192.168.0.1:9000/' # Connected to OpenScope
+        else:
+            raise Exception(' connection = 0 for internet, 1 for OpenScope')
+        self.motor_url_request = top_level_url + '_webshell/control/motor/%d/%d'
+        self.img_url_request = top_level_url + '_stream/?action=snapshot'
+        
         pmgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
         pmgr.add_password(None, top_level_url, username, password)
         handler = urllib.request.HTTPBasicAuthHandler(pmgr)
@@ -99,28 +181,34 @@ class microscope_control:
             pause : wait after moving motor? 
             axis  : 0 = x, 1 = y, 2 = z
             """
+        print('Moving %d' %steps)
         if abs(steps)>=100:
-            pagehandle = urllib.request.urlopen('https://172.29.9.20:9000/_webshell/control/motor/%d/%d' %(axis, steps))
+            #pagehandle = urllib.request.urlopen('https://172.29.9.20:9000/_webshell/control/motor/%d/%d' %(axis, steps))
+            #pagehandle = urllib.request.urlopen('https://192.168.0.1:9000/_webshell/control/motor/%d/%d' %(axis, steps))
+            pagehandle = urllib.request.urlopen(self.motor_url_request %(axis, steps))
+            
             if (pause != None):
                 time.sleep(pause)
                 
             # pagehandle = urllib.request.urlopen('https://192.168.0.1:9000/_webshell/control/motor/%d/%d' %(axis, steps))
         else:
-            pagehandle = urllib.request.urlopen('https://172.29.9.20:9000/_webshell/control/motor/%d/%d' %(axis, steps + 300))
-            time.sleep(1)
-            pagehandle = urllib.request.urlopen('https://172.29.9.20:9000/_webshell/control/motor/%d/%d' %(axis, - 300))
+            print('Moving up then down')
+            pagehandle = urllib.request.urlopen(self.motor_url_request %(axis, steps + 300))
+            time.sleep(5)
+            pagehandle = urllib.request.urlopen(self.motor_url_request%(axis, - 300))
             if (pause != None):
                 time.sleep(pause)
         
         #print(pagehandle.read())
-        print('Moving %d' %steps)
+        
         #time.sleep(10)
         return self
         
     def get_image(self):
         """Return image captured"""
         
-        uro = urllib.request.urlopen('https://172.29.9.20:9000/_stream/?action=snapshot') # When Pi is connected to the internet
+        uro = urllib.request.urlopen(self.img_url_request)
+        # When Pi is connected to the internet
         # uro = urllib.request.urlopen('https://192.168.0.1:9000/_stream/?action=snapshot')   # When connected to Pi
         # uro = urllib.request.urlopen('https://192.168.0.1:9000/_stream/?action=stream')
         
@@ -137,18 +225,102 @@ class microscope_control:
         #a = dwt.nleveldwt(3,self.get_image())
         #return -1*dwt.focus_score(a)
         #return -1*dwt.focus_score(self.get_image())
-        return -1*np.var(image)
+        return np.var(image)
+    
+    def eval_score(self):
+        return self.focus_score(self.get_image())
+
+def hill_climbing(f):
+    """ Climb to a higher place 
+    hill_climbing(f)
+    return ((z1, z2, z3),(f1, f2, f3))
+    """
+    
+    f1 = f.eval_score()
+    z1 = 0
+    f2 = f.move_motor(500, 3).eval_score()
+    z2 = 500
+    
+    while(1):
+        print(f1,f2)
+        if(f2 > f1):
+            f0 = f1
+            f1 = f2
+            f2 = f.move_motor(500,5).eval_score()
+            z2 += 500
+        else:
+            print ('Finised hill climbing') 
+            return ((z2 - 1001 , z2 - 500, z2), (f0, f1, f2))
+        
+    
+    
+    
+                
+def test_autofocus():
+    # Get 3 points that encompass the focused position
+    # I am assuming that the microscope starts below focus and then moves up
+    # the middle value must be bigger than either of the endpoints
+    m = microscope_control()
+    z1 = 0
+    print('Evaluating f1')
+    f1 = m.eval_score()
+    z2 = 500
+    print('Evaluating f2')
+    f2 = m.move_motor(z2, 5).eval_score()
+    while(True):
+        if f2 < f1:
+            f2 = m.move_motor(200, 5).eval_score()
+            z2 += 200
+        else :
+            break
+    z3 = z2 + 500
+    print('Evaluating f3')
+    f3 = m.move_motor(500, 5).eval_score()
+    while(True):
+        if f2 < f3:
+            f3 = m.move_motor(200, 5).eval_score()
+            z3 += 200
+        else :
+            break
+    
+    #print(f1, f2, f3)
+    
+    # Gaussian prediction
+    print('Gaussian fitting')
+    mu = gaussian_fitting((z1, z2, z3), (f1, f2, f3))
+    
+    #print(mu)
+    # Move motor to predicted position from z3
+    m.move_motor(mu-z3)
+    
+    
     
     
 if __name__ == '__main__':
-    # m = microscope_control()
+    #m = microscope_control()
     # plot_score(m)
-    z1 = -5; z2 = 5; z3 = 10;
-    f = test_function;
-    x = gaussian_fitting((z1, z2, z3), (f(z1), f(z2), f(z3)))
-    print(x)
-    x = parabola_fitting((z1, z2, z3), (f(z1), f(z2), f(z3)))
-    print(x)    
+    # z1 = -5; z2 = 5; z3 = 10;
+    # f = test_function;
+    # x = gaussian_fitting((z1, z2, z3), (f(z1), f(z2), f(z3)))
+    # print(x)
+    # x = parabola_fitting((z1, z2, z3), (f(z1), f(z2), f(z3)))
+    # print(x)
+    #test_autofocus()
+    m = microscope_control()
+    z, f = hill_climbing(m)
+    mu = gaussian_fitting(z,f)
+    print(z , f)
+    print('Moving to predicted position: %f' %mu)
+    m.move_motor(-z[2]+mu, 8)
+    print('Final Score : %f' % m.eval_score())
+
+
+            
+    
+    
+    
+    
+    
     
     
     
