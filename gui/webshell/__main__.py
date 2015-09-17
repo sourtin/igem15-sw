@@ -12,6 +12,7 @@ import gui.webshell.locker
 from gui.webshell.timelapser import Timelapser
 from gui.webshell import edf
 from hw.ledmotorcontrol import driver
+from img_processing.identificationTesting.autofocus import test_autofocus
 
 tlThread = None
 
@@ -54,6 +55,11 @@ def zstack(amount, times):
 
     ret = edf.edf(imgs, request.authorization.username)
     return ret
+
+@app.route("/autofocus/")
+def autofocus():
+    test_autofocus(timeout=90)
+    return "done"
 
 @app.route("/")
 def root():
