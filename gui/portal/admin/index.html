@@ -104,7 +104,7 @@ padding: 20px;
   </div>
   <div class="form-group">
     <div class="col-sm-offset-2 col-sm-10">
-      <button type="submit" id="save" class="btn btn-default"><span class="glyphicon glyphicon-floppy-disk"></span> Save</button> <a href="#" class="btn btn-default btn-large btn-danger" id="del"><span class="glyphicon glyphicon-trash"></span> Remove</a> 
+      <a id="save" class="btn btn-default"><span class="glyphicon glyphicon-floppy-disk"></span> Save</a> <a href="#" class="btn btn-default btn-large btn-danger" id="del"><span class="glyphicon glyphicon-trash"></span> Remove</a> 
     </div>
   </div>
 </form>
@@ -143,13 +143,14 @@ $.getJSON( "/_admin/get/", function( data ) {
 
 reloadUsers()
 
-$("#refr").on("click", function(){reloadUsers(); $("#editor").hide(); addNew = 0; $("#usr2").attr("value", "")});
+$("#refr").on("click", function(){reloadUsers(); $("#editor").hide(); addNew = 0; $("#usr2").prop("value", "")});
 
 $("#save").on("click", function() {
     if(addNew == 1) {
-        selectedUser = $("#usr").attr("value")
+        selectedUser = $("#usr").prop("value")
+alert(selectedUser)
     }
-    $.ajax("/_admin/set/" + escape(selectedUser) + "/" + escape($("#pass").attr("value"))).done(function(){
+    $.ajax("/_admin/set/" + escape(selectedUser) + "/" + escape($("#pass").prop("value"))).done(function(){
         if($("#enab").prop("checked"))
             $.ajax("/_admin/enable/"+escape(selectedUser))
         else
@@ -157,7 +158,7 @@ $("#save").on("click", function() {
         reloadUsers()
         selectedUser = ""
         $("#editor").hide()
-        $(".user").css("background-color", "white")
+        $(".user").parent().parent().attr("class", "")
     })
 })
 
@@ -179,11 +180,11 @@ $("#kick").on("click", function() {
 })
 
 $("#add").on("click", function(){
-    $(".user").css("background-color", "white")
+    $(".user").parent().parent().attr("class", "")
     addNew = 1
     selectedUser = ""
-    $("#usr").attr("value", "")
-    $("#pass").attr("value", "")
+    $("#usr").prop("value", "")
+    $("#pass").prop("value", "")
     $("#enab").prop("checked", true)
     $("#usrshow").show()
     $("#usrstatshow").hide()
@@ -211,12 +212,11 @@ function onClick(item) {
 
     if( $("#usr2").attr("value") == selectedUser)   {
        $(".user").parent().parent().attr("class", "")
-       $(".user").parent().attr("class", "")
        addNew = 0
-       $("#usr").attr("value", "")
-       $("#pass").attr("value", "")
+       $("#usr").prop("value", "")
+       $("#pass").prop("value", "")
        $("#editor").hide()
-      $("#usr2").attr("value", "")
+      $("#usr2").prop("value", "")
        return;
      }
 
@@ -224,12 +224,10 @@ function onClick(item) {
     //$(".user").css("background-color", "white")
     //$(item).css("background-color", "grey")
     $(".user").parent().parent().attr("class", "")
-    $(".user").parent().attr("class", "")
     $(item).parent().parent().attr("class", "info")
-    $(item).parent().attr("class", "info")
 
-    $("#usr").attr("value", "")
-    $("#pass").attr("value", "")
+    $("#usr").prop("value", "")
+    $("#pass").prop("value", "")
     if($(item).data("dis") == 0)
         $("#enab").prop("checked", true);
     else
@@ -238,7 +236,7 @@ function onClick(item) {
     $("#del").show()
     $("#usrshow").hide()
     $("#usrstatshow").show()
-    $("#usr2").attr("value", selectedUser)
+    $("#usr2").prop("value", selectedUser)
 }
 
 </script>
