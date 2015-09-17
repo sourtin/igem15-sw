@@ -148,7 +148,6 @@ $("#refr").on("click", function(){reloadUsers(); $("#editor").hide(); addNew = 0
 $("#save").on("click", function() {
     if(addNew == 1) {
         selectedUser = $("#usr").prop("value")
-alert(selectedUser)
     }
     $.ajax("/_admin/set/" + escape(selectedUser) + "/" + escape($("#pass").prop("value"))).done(function(){
         if($("#enab").prop("checked"))
