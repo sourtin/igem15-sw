@@ -23,6 +23,20 @@
 .main {
 padding-top: 25px;
 }
+#btns {
+display: none;
+}
+.user {
+display: inline-block;
+width: 100%;
+height: 100%;
+}
+#editor {
+display: none;
+background-color: #F7F7F9;
+border: 1px solid #E1E1E8;
+padding: 20px;
+}
 </style>
 
   </head>
@@ -52,17 +66,56 @@ padding-top: 25px;
       <div class="main">
         <center><h1>User Access Control</h1></center>
 <i><center>This will only work if you are logged in as admin!</i></center><hr />
+
+<div id="btns"><a href="#" class="btn btn-default btn-large btn-success" id="add"><span class="glyphicon glyphicon-plus"></span> Add</a> <a href="#" class="btn btn-default btn-large" id="kick">Kick streams from current sessions</a> <a href="#" class="btn btn-default btn-large" id="refr"><span class="glyphicon glyphicon-refresh"></span> Refresh</a></div>
+
 <div class="row">
 <div id="userlist">
 </div>
-<a href="#" id="add">Add</a> <a href="#" id="del">Remove</a> <a href="#" id="kick">Kick streams from current sessions</a>
 
+
+<form id="editor" class="form-horizontal">
+  <div id="usrshow" class="form-group">
+    <label for="usr" class="col-sm-2 control-label">Username</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" id="usr" placeholder="Username">
+    </div>
+  </div>
+  <div id="usrstatshow" class="form-group">
+    <label for="usr" class="col-sm-2 control-label">Username</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" id="usr2" value="UNKNOWN" disabled="disabled" placeholder="Username">
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="pass" class="col-sm-2 control-label">Password</label>
+    <div class="col-sm-10">
+      <input type="password" class="form-control" id="pass" placeholder="Password (leave blank to keep unchanged)">
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="col-sm-offset-2 col-sm-10">
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" id="enab"> Enabled
+        </label>
+      </div>
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="col-sm-offset-2 col-sm-10">
+      <button type="submit" id="save" class="btn btn-default"><span class="glyphicon glyphicon-floppy-disk"></span> Save</button> <a href="#" class="btn btn-default btn-large btn-danger" id="del"><span class="glyphicon glyphicon-trash"></span> Remove</a> 
+    </div>
+  </div>
+</form>
+
+<!--
 <div id="editor" style="display:none">
 <span id="usrshow">Username: <input type="text" id="usr" /><br /></span>
 Password: <input type="password" id="pass" /><br />
 Enabled? <input type="checkbox" id="enab" /><br />
 <input type="button" value="Save" id="save" />
-</div>
+</div>-->
       </div>
 
       </div>
@@ -79,8 +132,10 @@ Enabled? <input type="checkbox" id="enab" /><br />
 function reloadUsers() {
 $.getJSON( "/_admin/get/", function( data ) {
     $("#userlist").html("")
+    if(data.length > 0) $("#btns").show()
     addData(data, 0)
     $.getJSON( "/_admin/get_disabled/", function( data ) {
+        if(data.length > 0) $("<span>Disabled Users:</span>").appendTo($("#userlist"))
         addData(data, 1)
     });
 })
@@ -88,12 +143,14 @@ $.getJSON( "/_admin/get/", function( data ) {
 
 reloadUsers()
 
+$("#refr").on("click", function(){reloadUsers(); $("#editor").hide(); addNew = 0; $("#usr2").attr("value", "")});
+
 $("#save").on("click", function() {
     if(addNew == 1) {
         selectedUser = $("#usr").attr("value")
     }
     $.ajax("/_admin/set/" + escape(selectedUser) + "/" + escape($("#pass").attr("value"))).done(function(){
-        if($("#enab").attr("checked") == "checked")
+        if($("#enab").prop("checked"))
             $.ajax("/_admin/enable/"+escape(selectedUser))
         else
             $.ajax("/_admin/disable/"+escape(selectedUser))
@@ -105,6 +162,7 @@ $("#save").on("click", function() {
 })
 
 $("#del").on("click", function() {
+if(!confirm("Are you sure you with to delete the user "+selectedUser+"?")) return;
     if(selectedUser != "") {
         $(".user").css("background-color", "white")
         $.ajax("/_admin/del/"+escape(selectedUser)).done(function(){
@@ -126,29 +184,49 @@ $("#add").on("click", function(){
     selectedUser = ""
     $("#usr").attr("value", "")
     $("#pass").attr("value", "")
-    $("#enab").attr("checked", "checked")
+    $("#enab").prop("checked", true)
     $("#usrshow").show()
+    $("#usrstatshow").hide()
     $("#editor").show()
+    $("#del").hide()
 })
 
 function addData(data, dis) {
     var items = [];
     $.each( data, function( key, val ) {
-        items.push( "<li>" + (dis == 1 ? "(disabled) " : "") + "<a href='#' onclick='onClick(this)' class='user' data-dis='"+dis+"'>" + val + "</a></li>" );
+        items.push( "<tr><td>" + (dis == 1 ? "(disabled) " : "") + "<a href='#' onclick='onClick(this)' class='user' data-dis='"+dis+"'>" + val + "</a></td></tr>" );
     });
- 
-    $( "<ul/>", {
-        html: items.join( "" )
-    }).appendTo("#userlist");
+
+    if(items.length > 0) {
+    $( "<table/>", {
+        html: "<thead><tr><td>Username</td></tr></thead><tbody>"+items.join( "" )+"</tbody>"
+    }).attr("class", "table").appendTo("#userlist");
+    }
 }
 
 var selectedUser = "", addNew = 0
 
 function onClick(item) {
     selectedUser = $(item).html()
+
+    if( $("#usr2").attr("value") == selectedUser)   {
+       $(".user").parent().parent().attr("class", "")
+       $(".user").parent().attr("class", "")
+       addNew = 0
+       $("#usr").attr("value", "")
+       $("#pass").attr("value", "")
+       $("#editor").hide()
+      $("#usr2").attr("value", "")
+       return;
+     }
+
     addNew = 0
-    $(".user").css("background-color", "white")
-    $(item).css("background-color", "grey")
+    //$(".user").css("background-color", "white")
+    //$(item).css("background-color", "grey")
+    $(".user").parent().parent().attr("class", "")
+    $(".user").parent().attr("class", "")
+    $(item).parent().parent().attr("class", "info")
+    $(item).parent().attr("class", "info")
 
     $("#usr").attr("value", "")
     $("#pass").attr("value", "")
@@ -157,7 +235,10 @@ function onClick(item) {
     else
         $("#enab").prop("checked", false);
     $("#editor").show()
+    $("#del").show()
     $("#usrshow").hide()
+    $("#usrstatshow").show()
+    $("#usr2").attr("value", selectedUser)
 }
 
 </script>
