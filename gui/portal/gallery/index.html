@@ -46,7 +46,10 @@ position: absolute;
 right: 10px;
 top: -50px;
 color:red;
-display: none
+display: none;
+background: white;
+border: 1px solid black;
+padding: 3px;
 }
 
 .imgd:hover > .topright {
@@ -139,6 +142,9 @@ addd.children(".imgr").mouseup(function(){
 
 var nm = ($(this).siblings("a").children("img").data("actual"));
 
+if($("#allconf").prop("checked"))
+if(!confirm("Are you sure you wish to delete "+unescape(nm)+"?")) return false;
+
 $.ajax({
     url: "/_admin/delfile/"+nm,
     context: document.body
@@ -201,6 +207,7 @@ generateGal()
 <div id="navbar" class="collapse navbar-collapse" style="float: right">
           <ul class="nav navbar-nav">
             <li><a href="/">&#8593; Up</a></li>
+            <li><a href="/webshell/main.html"><span class="glyphicon glyphicon-camera"></span> Webshell</a></li>
             <li><a href='javascript:(function(c){var a,b="You should be logged out now.";try{a=document.execCommand("ClearAuthenticationCache")}catch(d){}a||((a=window.XMLHttpRequest?new window.XMLHttpRequest:window.ActiveXObject?new ActiveXObject("Microsoft.XMLHTTP"):void 0)?(a.open("HEAD",c||location.href,!0,"logout",(new Date).getTime().toString()),a.send(""),a=1):a=void 0);a||(b="Your browser is too old or too weird to support log out functionality. Close all windows and restart the browser.");alert(b);location.reload()})(/*pass safeLocation here if you need*/);'>Logout</a></li>
           </ul>
         </div>
@@ -218,9 +225,12 @@ generateGal()
 <p><div id="gall"></div></p>
 
 <br />
-<a style="float:right" href="/_webshell/prune/">Prune your old files till it takes up less than 50M</a> <br />
+<p>
+<h4>More Options...</h4>
+<span style="float: left; line-height: 10px">Always confirm before delete: </span> <input id="allconf" class="checkbox" type="checkbox" checked="checked" /><br />
+<a href="/_webshell/prune/">Prune your old files till it takes up less than 50M</a> <br />
 <a class="adminonly" style="float:right" href="/_webshell/pruneall/">Prune everyone's old files to under 500M</a>
-
+</p>
 </div>
 
 <div id="theirpics">
