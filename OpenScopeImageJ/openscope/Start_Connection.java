@@ -398,19 +398,19 @@ public class Start_Connection implements PlugIn, KeyListener {
 
 	@Override
 	public void keyReleased(KeyEvent arg0) {
-		if (arg0.getKeyCode() == KeyEvent.VK_DOWN) {
+		if (arg0.getKeyCode() == KeyEvent.VK_S) {
 			move(1, Integer.parseInt(motor1.getText()));
-		} else if (arg0.getKeyCode() == KeyEvent.VK_UP) {
+		} else if (arg0.getKeyCode() == KeyEvent.VK_W) {
 			move(1, -1 * Integer.parseInt(motor1.getText()));
-		} else if (arg0.getKeyCode() == KeyEvent.VK_RIGHT) {
+		} else if (arg0.getKeyCode() == KeyEvent.VK_D) {
 			move(0, Integer.parseInt(motor0.getText()));
-		} else if (arg0.getKeyCode() == KeyEvent.VK_LEFT) {
+		} else if (arg0.getKeyCode() == KeyEvent.VK_A) {
 			move(0, -1 * Integer.parseInt(motor0.getText()));
-		} else if (arg0.getKeyCode() == KeyEvent.VK_SHIFT) {
+		} else if (arg0.getKeyCode() == KeyEvent.VK_Z) {
 			toggleLed();
-		} else if (arg0.getKeyChar() == 'a') {
+		} else if (arg0.getKeyCode() == KeyEvent.VK_Q) {
 			move(2, Integer.parseInt(motor2.getText()));
-		} else if (arg0.getKeyChar() == 's') {
+		} else if (arg0.getKeyCode() == KeyEvent.VK_E) {
 			move(2, -1 * Integer.parseInt(motor2.getText()));
 		}
 	}
