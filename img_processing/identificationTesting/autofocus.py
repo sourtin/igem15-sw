@@ -4,10 +4,11 @@
 # 'Multiresolution Search for In-Focus Position'
 
 
+from hw.ledmotorcontrol import driver
 import numpy as np
 #import matplotlib.pyplot as plt
 #import dwt
-import urllib.request
+import requests
 import ssl
 import cv2
 import time
@@ -374,38 +375,22 @@ def fibonacci_search(interval, f ):
 class microscope_control:
     """ Microscope class to control motors and read images """
 
-    def __init__(self, connection = 0):
-        """ Set up HTTP request stuff 
-        Connected to internet : connection = 0
-        Connected to OpenScope: connection = 1
-        """
-        username = 'admin'
-        password = 'test'
-
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode  = ssl.CERT_NONE
-        https_handler = urllib.request.HTTPSHandler(context=ctx)
+    def __init__(self, timeout=None):
+        """ Set up HTTP request stuff """
+        self.begin = time.time()
+        self.timeout = timeout
 
         # Set the urls
-        if connection == 0:
-            top_level_url = 'https://172.29.9.20:9000/' # Connected to internet           
-        elif connection == 1:
-
-            top_level_url = 'https://192.168.0.1:9000/' # Connected to OpenScope
-        else:
-            raise Exception(' connection = 0 for internet, 1 for OpenScope')
-        self.motor_url_request = top_level_url + '_webshell/control/motor/%d/%d'
-        self.img_url_request = top_level_url + '_stream/?action=snapshot'
+        self.motor_url_request = 'http://127.0.0.1:9001/control/motor/%d/%d'
+        self.img_url_request = 'http://127.0.0.1:9002/?action=snapshot'
         
-        pmgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
-        pmgr.add_password(None, top_level_url, username, password)
-        handler = urllib.request.HTTPBasicAuthHandler(pmgr)
-        opener = urllib.request.build_opener(https_handler, handler)
-        opener.open(top_level_url)
-        urllib.request.install_opener(opener)
         #pagehandle = urllib.request.urlopen(theurl)
         #print(pagehandle.read())
+
+    def check_time(self):
+        if self.timeout is not None:
+            if time.time() - self.begin > self.timeout:
+                raise Exception("timed out")
         
     def move_motor(self,steps,pause = None, axis = 2):
         """ Control motors 
@@ -414,12 +399,13 @@ class microscope_control:
             pause : wait after moving motor? 
             axis  : 0 = x, 1 = y, 2 = z
             """
-         
+        self.check_time()
+
         #print('Moving %d' %steps)
         if abs(steps)>=100:
             #pagehandle = urllib.request.urlopen('https://172.29.9.20:9000/_webshell/control/motor/%d/%d' %(axis, steps))
             #pagehandle = urllib.request.urlopen('https://192.168.0.1:9000/_webshell/control/motor/%d/%d' %(axis, steps))
-            pagehandle = urllib.request.urlopen(self.motor_url_request %(axis, steps))
+            driver.move_motor(axis, steps)
             
             if (pause != None):
                 time.sleep(pause)
@@ -427,9 +413,9 @@ class microscope_control:
             # pagehandle = urllib.request.urlopen('https://192.168.0.1:9000/_webshell/control/motor/%d/%d' %(axis, steps))
         elif steps != 0:
             #print('Moving up then down')
-            pagehandle = urllib.request.urlopen(self.motor_url_request %(axis, steps + 300))
+            driver.move_motor(axis, steps + 300)
             time.sleep(2)
-            pagehandle = urllib.request.urlopen(self.motor_url_request%(axis, - 300))
+            driver.move_motor(axis, -300)
             if (pause != None):
                 time.sleep(pause)
         else :
@@ -442,14 +428,14 @@ class microscope_control:
         
     def get_image(self):
         """Return image captured"""
+        self.check_time()
         
-        uro = urllib.request.urlopen(self.img_url_request)
+        raw = requests.get(self.img_url_request).content
         # When Pi is connected to the internet
         # uro = urllib.request.urlopen('https://192.168.0.1:9000/_stream/?action=snapshot')   # When connected to Pi
         # uro = urllib.request.urlopen('https://192.168.0.1:9000/_stream/?action=stream')
         
         
-        raw = uro.read()
         # print (raw)
         nparr = np.fromstring(raw, np.uint8)
         img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
@@ -461,9 +447,11 @@ class microscope_control:
         #a = dwt.nleveldwt(3,self.get_image())
         #return -1*dwt.focus_score(a)
         #return -1*dwt.focus_score(self.get_image())
+        self.check_time()
         return np.var(image)
     
     def eval_score(self):
+        self.check_time()
         return self.focus_score(self.get_image())
 
 def hill_climbing(f, step_size = 500):
@@ -623,52 +611,56 @@ def test_z_axis_repeatability():
     plt.title('Focus score varying repeated movements')
     plt.show()      
     
-def test_autofocus():
+def test_autofocus(timeout=90):
     global score_history
     start_time = time.time()
     
     score_history = [] # Clear history
-    m = microscope_control()
+    m = microscope_control(timeout=timeout)
     
-    # Find small interval containing focus position
-    z,f = hill_climbing(m) # uses the raw variance score
-    #z,f = untested_hill_climbing(m) # using DWT low resolution images, should have less noise!
-    #print('Peak in between', z)
-    #time.sleep(5)
-    
-    # Gaussian prediction
-    print('Gaussian prediction')
-    mu = gaussian_fitting(z,f)
-    #print('Moving to predicted position: %f' %mu)
-    m.move_motor(-z[2]+mu, 2)
-    score_history.append(m.eval_score())
-    #print('Prediction Score : %f' % score_history[-1])
-    interval = (mu-600, mu + 600)
-    
-    #print('Interval for fibonacci search', interval)
-    #time.sleep(5)
-    
-    # Fibonacci search
-    (a,b,x, z1, z3, z2) = fibonacci_search(interval, m)
-    #print('Interval for parabola fitting: (%f, %f, %f)' %(a,x,b) )
-    print('Parabola prediction')
-    # # Parabola prediction
-    mu = parabola_fitting((z1,z2,z3), (-score_history[-2],-score_history[-1],-score_history[-3]))
-    #print ('Moving to predicted position: %f' % mu)
-    m.move_motor(-x+mu, pause = 3)
-    score_history.append(m.eval_score())
-    print('Final Score: %f' %score_history[-1])
-    
-    
-    end_time = time.time()
-    print('Time takes is %f' %(end_time-start_time))
-    
-    #plt.plot(score_history)
-    #plt.xlabel('Iterations')
-    #plt.ylabel('Score')
-    #plt.title('Score history')
-    #plt.grid()
-    #plt.show()
+    try:
+        # Find small interval containing focus position
+        z,f = hill_climbing(m) # uses the raw variance score
+        #z,f = untested_hill_climbing(m) # using DWT low resolution images, should have less noise!
+        #print('Peak in between', z)
+        #time.sleep(5)
+        
+        # Gaussian prediction
+        print('Gaussian prediction')
+        mu = gaussian_fitting(z,f)
+        #print('Moving to predicted position: %f' %mu)
+        m.move_motor(-z[2]+mu, 2)
+        score_history.append(m.eval_score())
+        #print('Prediction Score : %f' % score_history[-1])
+        interval = (mu-600, mu + 600)
+        
+        #print('Interval for fibonacci search', interval)
+        #time.sleep(5)
+        
+        # Fibonacci search
+        (a,b,x, z1, z3, z2) = fibonacci_search(interval, m)
+        #print('Interval for parabola fitting: (%f, %f, %f)' %(a,x,b) )
+        print('Parabola prediction')
+        # # Parabola prediction
+        mu = parabola_fitting((z1,z2,z3), (-score_history[-2],-score_history[-1],-score_history[-3]))
+        #print ('Moving to predicted position: %f' % mu)
+        m.move_motor(-x+mu, pause = 3)
+        score_history.append(m.eval_score())
+        print('Final Score: %f' %score_history[-1])
+        
+        
+        end_time = time.time()
+        print('Time takes is %f' %(end_time-start_time))
+        
+        #plt.plot(score_history)
+        #plt.xlabel('Iterations')
+        #plt.ylabel('Score')
+        #plt.title('Score history')
+        #plt.grid()
+        #plt.show()
+
+    except Exception:
+        print("timeout")
     
     return(score_history)
     
