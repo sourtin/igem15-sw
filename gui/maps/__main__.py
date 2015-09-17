@@ -15,6 +15,10 @@ app.wsgi_app = ProxyFix(app.wsgi_app)
 def redir():
     return Response('<meta http-equiv="refresh" content="0;URL=/maps/">')
 
+from gui.maps.micro import MicroMaps
+maps_live = MicroMaps()
+maps_im = {}
+
 native_z = 8
 w, h = 256, 256
 def tile(maps, x, y, z):
@@ -41,10 +45,12 @@ def tile(maps, x, y, z):
 
 @app.route('/tile/<x>/<y>/<z>')
 def live(x, y, z):
+    global maps_live
     return tile(maps_live, x, y, z)
 
 @app.route('/im/<user>/<im>/tile/<x>/<y>/<z>')
 def custom(user, im, x, y, z):
+    global maps_im
     root = '/home/pi/igem15-sw/captured/%s'
 
     user = user.replace('/', '')
@@ -58,8 +64,5 @@ def custom(user, im, x, y, z):
     return tile(maps_im[subpath], x, y, z)
 
 if __name__ == '__main__':
-    from gui.maps.micro import MicroMaps
-    maps_live = MicroMaps()
-    maps_im = {}
     app.run('0.0.0.0', 9004, debug=True)
 
