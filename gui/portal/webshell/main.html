@@ -229,14 +229,14 @@ $("#ledmode").html(data)
 
 
 $("#zstack").on("click", function(){
-$(this).prop("disabled", "true")
+$(this).attr("disabled", "true")
 $.ajax({
   url: "/_webshell/zstack/"+$("#zamountmove").prop("value")+"/"+$("#zsettimes").prop("value"),
   context: document.body
 }).done(function(data){
-$(this).prop("disabled", "false")
+$(this).attr("disabled", "false")
 $("#capt").html("<img src=\""+data+"\"/>")
-setTimeout(restartCam, 1000)
+//setTimeout(restartCam, 1000)
 });
 });
 
