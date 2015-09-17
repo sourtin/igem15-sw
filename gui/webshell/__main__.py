@@ -9,6 +9,7 @@ sys.path.append("/home/pi/igem15-sw/")
 from gui.webshell.mjpgstreamer import MjpgStreamer
 import gui.webshell.locker
 from gui.webshell.timelapser import Timelapser
+from gui.webshell import edf
 from hw.ledmotorcontrol import driver
 
 tlThread = None
@@ -43,17 +44,16 @@ def get_if_timelapse():
 @app.route("/zstack/<amount>/<times>")
 def zstack(amount, times):
     imgs = []
-    for _ in xrange(int(times)):
-        imgs.append(MjpgStreamer.captureImg(request.authorization.username))
+    MjpgStreamer.stop()
+    for _ in range(int(times)):
+        imgs.append("/home/pi/igem15-sw%s" % MjpgStreamer.captureImgNoStop(request.authorization.username))
         driver.move_motor(2, int(amount))
-    # todo:
-    # apply z stack algorithm to images
-    # save image
-    # return image file
-    # for now, link to the captured images and let user do it themselves
-    ret = ''
-    for a in imgs:
-        ret += '<a href="'+a+'">'+a+'</a><br/>'
+    MjpgStreamer.start()
+    #ret = ''
+    #for a in imgs:
+    #    ret += '<a href="'+a+'">'+a+'</a><br/>'
+
+    ret = edf.edf(imgs, request.authorization.username)
     return ret
 
 @app.route("/")

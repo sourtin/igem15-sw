@@ -228,14 +228,12 @@ $("#ledmode").html(data)
 });
 
 
-$("#camcap").on("click", function(){
-//$("#cam").html("Say cheese, little cells!")
+$("#zstack").on("click", function(){
 $.ajax({
-  url: "/_webshell/capture"+($("#scalecap").prop("checked") ? "_scale/"+fov_w : "/"),
+  url: "/_webshell/zstack/"+$("#zamountmove").prop("value")+"/"+$("#zsettimes").prop("value"),
   context: document.body
 }).done(function(data){
 $("#capt").html("<img src=\""+data+"\"/>")
-//openMicroMaps(data)
 setTimeout(restartCam, 1000)
 });
 });
@@ -251,6 +249,20 @@ $("#capt").html("<img src=\""+data+"\"/>")
 
 });
 });
+
+
+$("#camcap").on("click", function(){
+//$("#cam").html("Say cheese, little cells!")
+$.ajax({
+  url: "/_webshell/capture"+($("#scalecap").prop("checked") ? "_scale/"+fov_w : "/"),
+  context: document.body
+}).done(function(data){
+$("#capt").html("<img src=\""+data+"\"/>")
+//openMicroMaps(data)
+setTimeout(restartCam, 1000)
+});
+});
+
 
 
 $("#motx").on("click", function(){
@@ -655,6 +667,15 @@ Number of images to take: <input type="number" id="times" value="2" /></p><p>
 
            </center></p>
 </div>
+          <h2>Z-stack</h2>
+<div id="zstack">
+          <p>
+<span id="ntz">Number of times to take images: <input type="number" id="zsettimes" value="5" /></span><br />
+<span id="ntz2">Amount to move motor each time: <input type="number" id="zamountmove" value="100" /></span><br />
+
+<a class="btn btn-default" href="#" role="button" id="zstack">Run Z-Stack</a> 
+           </center></p></div>
+
          </div>
 <br style="clear:both"/>
 <hr />
