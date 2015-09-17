@@ -2,6 +2,7 @@
 from werkzeug.contrib.fixers import ProxyFix
 from flask import Flask, Response, send_from_directory
 import numpy as np
+import time
 import cv2
 
 # werkzeug hack
@@ -19,9 +20,24 @@ from gui.maps.micro import MicroMaps
 maps_live = MicroMaps()
 maps_im = {}
 
+@app.route("/reset/")
+def reset():
+    global maps_live
+    maps_live = MicroMaps()
+    return redir()
+
+def prune(timeout=30):
+    global maps_im
+    for im in list(maps_im):
+        stamp, _ = maps_im[im]
+        if time.time() - stamp > timeout:
+            del maps_im[im]
+
 native_z = 8
 w, h = 256, 256
 def tile(maps, x, y, z):
+    prune()
+
     global native_z, w, h
     x, y, z = int(x), int(y), int(z)
     factor = 1 << (native_z - z)
@@ -41,7 +57,11 @@ def tile(maps, x, y, z):
             im[yy*hh:(yy+1)*hh,xx*ww:(xx+1)*ww] = thumb
 
     _, buf = cv2.imencode('.png', im)
-    return Response(buf.tostring(), mimetype='image/png')
+    response = Response(buf.tostring(), mimetype='image/png')
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 @app.route('/tile/<x>/<y>/<z>')
 def live(x, y, z):
@@ -50,6 +70,7 @@ def live(x, y, z):
 
 @app.route('/im/<user>/<im>/tile/<x>/<y>/<z>')
 def custom(user, im, x, y, z):
+    prune()
     global maps_im
     root = '/home/pi/igem15-sw/captured/%s'
 
@@ -60,8 +81,8 @@ def custom(user, im, x, y, z):
 
     subpath = '%s/%s' % (user, im)
     if subpath not in maps_im:
-        maps_im[subpath] = MicroMaps(root % subpath)
-    return tile(maps_im[subpath], x, y, z)
+        maps_im[subpath] = time.time(), MicroMaps(root % subpath)
+    return tile(maps_im[subpath][1], x, y, z)
 
 if __name__ == '__main__':
     app.run('0.0.0.0', 9004, debug=True)
