@@ -33,6 +33,7 @@ display: none;
 .adminonly {
 display: none;
 }
+
 </style>
 
   </head>
@@ -115,7 +116,7 @@ $("#usrs").append($('<li><a href="user.html?name='+escape(name)+'">'+name+'</a><
 }
 
 function addGal(url, title) {
-$("#gall").append($('<a class="fancybox" rel="gallery1" href="'+url+'" title="'+title+'"><img src="'+url+'" style="width: 200px" alt="" /></a>'));
+$("#gall").append($('<span class="imgd"><span class="topright glyphicon glyphicon-remove"></span><a class="fancybox" rel="gallery1" href="'+url+'" title="'+title+'"><img src="'+url+'" style="width: 200px" alt="" /></a></span>'));
 }
 
 function readyGallery() {
