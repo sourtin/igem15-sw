@@ -457,14 +457,20 @@ class microscope_control:
 # moosd's simple autofocus search implementation
 def naive_autofocus(f, step_size = 500):
     print("Is simple better?")
-    prev = f.eval_score(), curr = f.move_motor(step_size, 1).eval_score()
+    prev = f.eval_score()    
+
+    f.move_motor(step_size, 1)
+    time.sleep(1)
+    curr = f.eval_score()
+    print(prev)
+    print(curr)
 
     # check direction to climb
     diff = curr - prev
     direction = 1 if diff > 0 else -1
 
     # climb in smaller increments until theshold
-    step_thresh = 100
+    step_thresh = 150
 
     # for sanity
     timeout = 100
@@ -474,11 +480,19 @@ def naive_autofocus(f, step_size = 500):
     while step_size > step_thresh:
         while tprogress < timeout:
             prev = curr
-            curr = f.move_motor(direction * step_size, 1).eval_score()
+            f.move_motor(direction * step_size, 1)
+            time.sleep(1)
+            curr = f.eval_score()
+            print(curr)
+            if curr > 1000:
+                print("tres focused")
+                return
+
             diff = curr - prev
             curdir = 1 if diff > 0 else -1
-            if curdir != direction:
-                direction = curdir
+            direction = curdir * direction
+            if curdir == -1:
+                print("back back back")
                 break
             tprogress = tprogress + 1
         tprogress = 0
