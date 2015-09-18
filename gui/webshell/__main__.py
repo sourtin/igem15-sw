@@ -47,11 +47,14 @@ def get_if_timelapse():
 def zstack(amount, times):
     imgs = []
 
-    driver.move_motor(2, int(-int(amount)*int(times)/2))
+    driver.move_motor(2, int(-int(amount)*(int(times)-1)/2))
+    time.sleep(2)
     for _ in range(int(times)):
         imgs.append(requests.get("http://127.0.0.1:9002/?action=snapshot").content)
-        driver.move_motor(2, int(amount))
-    driver.move_motor(2, int(-int(amount)*int(times)/2))
+        if _ != (int(times)-1):
+            driver.move_motor(2, int(amount))
+            time.sleep(2)
+    driver.move_motor(2, int(int(amount)*(int(times)-1)/2))
 
     ret = edf.edf(imgs, request.authorization.username)
     return ret
