@@ -455,7 +455,7 @@ class microscope_control:
         return self.focus_score(self.get_image())
 
 # moosd's simple autofocus search implementation
-def naive_autofocus(f, step_size = 500):
+def naive_autofocus(f, step_size = 500, thresh = 999999):
     print("Is simple better?")
     prev = f.eval_score()    
 
@@ -465,12 +465,16 @@ def naive_autofocus(f, step_size = 500):
     print(prev)
     print(curr)
 
+    if curr > thresh:
+        print("tres focused")
+        return
+
     # check direction to climb
     diff = curr - prev
     direction = 1 if diff > 0 else -1
 
     # climb in smaller increments until theshold
-    step_thresh = 150
+    step_thresh = 99
 
     # for sanity
     timeout = 100
@@ -484,7 +488,7 @@ def naive_autofocus(f, step_size = 500):
             time.sleep(1)
             curr = f.eval_score()
             print(curr)
-            if curr > 1000:
+            if curr > thresh:
                 print("tres focused")
                 return
 
@@ -493,6 +497,10 @@ def naive_autofocus(f, step_size = 500):
             direction = curdir * direction
             if curdir == -1:
                 print("back back back")
+                f.move_motor(direction * step_size, 1)
+                if thresh == 999999:
+                    thresh = prev#naive_autofocus(f, step_size, prev - 100)
+                    #return
                 break
             tprogress = tprogress + 1
         tprogress = 0
@@ -663,9 +671,9 @@ def test_autofocus(timeout=90):
     
     score_history = [] # Clear history
     m = microscope_control(timeout=timeout)
+    naive_autofocus(m)
     
     try:
-        naive_autofocus(m)
         return score_history
         # Find small interval containing focus position
         z,f = hill_climbing(m) # uses the raw variance score
