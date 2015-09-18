@@ -3,6 +3,7 @@ from flask import Flask
 from flask import request, Response
 import json
 import requests
+import time
 
 import sys
 sys.path.append("/home/pi/igem15-sw/")
@@ -47,7 +48,7 @@ def get_if_timelapse():
 def zstack(amount, times):
     imgs = []
 
-    driver.move_motor(2, int(-int(amount)*(int(times)-1)/2))
+    driver.move_motor(2, -int(int(amount)*(int(times)-1)/2))
     time.sleep(2)
     for _ in range(int(times)):
         imgs.append(requests.get("http://127.0.0.1:9002/?action=snapshot").content)
