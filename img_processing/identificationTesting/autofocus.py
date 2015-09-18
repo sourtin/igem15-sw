@@ -454,6 +454,34 @@ class microscope_control:
         self.check_time()
         return self.focus_score(self.get_image())
 
+def naiive_autofocus(f, step_size = 500):
+    threshold = 0
+    direction = 0
+    curr = f.eval_score()
+    print(curr)
+
+    while True:
+        prev = curr
+        if direction == 0:
+            f.move_motor(step_size, 1)
+        else:
+            f.move_motor(direction * step_size, 1)
+        time.sleep(1)
+        curr = f.eval_score()
+        print(curr)
+
+        if direction == 0:
+            direction = 1 if (curr-prev) > 0 else -1
+        elif threshold > 0 and curr > threshold:
+               return
+        else:
+            curdir = 1 if (curr-prev) > 0 else -1
+            if curdir != direction:
+                direction = curdir * direction
+                if threshold == 0:
+                    threshold = prev
+                step_size = step_size / 2
+
 # moosd's simple autofocus search implementation
 def naive_autofocus(f, step_size = 500, thresh = 999999):
     print("Is simple better?")
