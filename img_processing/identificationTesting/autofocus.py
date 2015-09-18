@@ -454,6 +454,38 @@ class microscope_control:
         self.check_time()
         return self.focus_score(self.get_image())
 
+# moosd's simple autofocus search implementation
+def naive_autofocus(f, step_size = 500):
+    print("Is simple better?")
+    prev = f.eval_score(), curr = f.move_motor(step_size, 1).eval_score()
+
+    # check direction to climb
+    diff = curr - prev
+    direction = 1 if diff > 0 else -1
+
+    # climb in smaller increments until theshold
+    step_thresh = 100
+
+    # for sanity
+    timeout = 100
+    tprogress = 0
+
+    # climb, baby, climb!
+    while step_size > step_thresh:
+        while tprogress < timeout:
+            prev = curr
+            curr = f.move_motor(direction * step_size, 1).eval_score()
+            diff = curr - prev
+            curdir = 1 if diff > 0 else -1
+            if curdir != direction:
+                direction = curdir
+                break
+            tprogress = tprogress + 1
+        tprogress = 0
+        step_size = step_size / 2
+
+    print("Done naive hill climb")
+
 def hill_climbing(f, step_size = 500):
     """ Climb to a higher place, find a smaller interval containing focus position
     (z1, z2, z3),(f1, f2, f3) = hill_climbing(f)
@@ -619,6 +651,8 @@ def test_autofocus(timeout=90):
     m = microscope_control(timeout=timeout)
     
     try:
+        naive_autofocus(m)
+        return score_history
         # Find small interval containing focus position
         z,f = hill_climbing(m) # uses the raw variance score
         #z,f = untested_hill_climbing(m) # using DWT low resolution images, should have less noise!
